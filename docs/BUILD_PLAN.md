@@ -36,6 +36,8 @@ Current first slice:
 
 - Structured `loss_ratio` request resolves through the catalogue into a logical
   plan, parameterised SQL, and provenance without database execution.
+- A development preview endpoint exposes that structured request path until the
+  final `/ask` flow is ready.
 
 ## Phase 3: Safety And Audit
 
