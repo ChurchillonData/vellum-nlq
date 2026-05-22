@@ -3,7 +3,62 @@ from typing import Any
 from pydantic import BaseModel
 
 from app.analytics.models import AnalyticsRequest, QueryBuildResult
+from app.semantic.models import MetricSpec
 from app.sql.guard import SqlGuardResult
+
+
+class MetricFormulaResponse(BaseModel):
+    """Formula fields exposed by the metrics catalogue endpoint."""
+
+    numerator: str
+    denominator: str | None
+    expression: str
+
+
+class MetricResponse(BaseModel):
+    """One metric definition exposed to API clients."""
+
+    id: str
+    label: str
+    description: str
+    formula: MetricFormulaResponse
+    required_tables: list[str]
+    time_anchor: str
+    currency: str | None
+    filters_default: list[str]
+    synonyms: list[str]
+    owner: str
+    version: str
+    last_reviewed: str
+
+    @classmethod
+    def from_metric(cls, metric: MetricSpec) -> "MetricResponse":
+        """Convert a catalogue metric into the public API shape."""
+        return cls(
+            id=metric.id,
+            label=metric.label,
+            description=metric.description,
+            formula=MetricFormulaResponse(
+                numerator=metric.formula.numerator,
+                denominator=metric.formula.denominator,
+                expression=metric.formula.expression,
+            ),
+            required_tables=list(metric.required_tables),
+            time_anchor=metric.time_anchor,
+            currency=metric.currency,
+            filters_default=list(metric.filters_default),
+            synonyms=list(metric.synonyms),
+            owner=metric.owner,
+            version=metric.version,
+            last_reviewed=metric.last_reviewed,
+        )
+
+
+class MetricsResponse(BaseModel):
+    """Loaded metric definitions for the active catalogue."""
+
+    catalogue: str
+    metrics: list[MetricResponse]
 
 
 class QueryPreviewRequest(AnalyticsRequest):

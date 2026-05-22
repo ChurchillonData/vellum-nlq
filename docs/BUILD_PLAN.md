@@ -38,6 +38,8 @@ Current first slice:
   plan, parameterised SQL, and provenance without database execution.
 - A development preview endpoint exposes that structured request path until the
   final `/ask` flow is ready.
+- `GET /metrics` returns active catalogue metric definitions for the future
+  Catalogue Explorer frontend.
 
 ## Phase 3: Safety And Audit
 
