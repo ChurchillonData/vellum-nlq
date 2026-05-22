@@ -41,9 +41,17 @@ Current first slice:
 
 ## Phase 3: Safety And Audit
 
+Status: in progress
+
 - Add the SQL guard and allowlists.
 - Run queries through a read-only database role.
 - Add the append-only audit path and red-team tests.
+
+Current first slice:
+
+- SQLGlot parses generated SQL before execution exists.
+- The first guard rules reject comments, parse failures, stacked statements,
+  non-SELECT statements, and system schema references.
 
 ## Phase 4: OpenAI Intent Layer
 

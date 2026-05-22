@@ -26,6 +26,8 @@ def test_preview_endpoint_returns_loss_ratio_sql_and_provenance() -> None:
         "columns": ["loss_ratio"],
         "grain": "single_metric",
     }
+    assert body["validation"]["passed"] is True
+    assert "select_only" in body["validation"]["rules_checked"]
 
 
 def test_preview_endpoint_reports_unknown_metric() -> None:

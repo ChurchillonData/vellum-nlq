@@ -28,3 +28,4 @@ def test_loss_ratio_query_is_parameterised_and_has_provenance(health_uk_catalogu
     assert result.provenance.formula.startswith("SUM(claims.net_incurred_amount)")
     assert result.provenance.tables_used == ("claims", "members", "plans", "premium")
     assert result.provenance.result_shape.grain == "single_metric"
+    assert result.validation.passed is True

@@ -4,6 +4,7 @@ from datetime import date
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.semantic.models import JoinEdge, MetricSpec
+from app.sql.guard import SqlGuardResult
 
 
 class AnalyticsRequest(BaseModel):
@@ -83,4 +84,4 @@ class QueryBuildResult:
     plan: LogicalPlan
     query: GeneratedQuery
     provenance: QueryProvenance
-
+    validation: SqlGuardResult
