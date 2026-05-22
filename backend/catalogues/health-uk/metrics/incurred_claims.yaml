@@ -1,0 +1,21 @@
+id: incurred_claims
+label: Incurred claims
+description: >
+  Paid claims plus reserve movement recorded on the claim header for the
+  selected incurred period.
+formula:
+  numerator: SUM(claims.net_incurred_amount)
+  expression: SUM(claims.net_incurred_amount)
+required_tables:
+  - claims
+time_anchor: claims.incurred_date
+currency: GBP
+filters_default:
+  - claims.status != 'void'
+synonyms:
+  - incurred claims
+  - incurred cost
+owner: actuarial
+version: 0.1.0
+last_reviewed: "2026-05-22"
+

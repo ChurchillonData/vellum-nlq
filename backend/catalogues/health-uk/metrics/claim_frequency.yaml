@@ -1,0 +1,22 @@
+id: claim_frequency
+label: Claim frequency
+description: >
+  Claim count per thousand member months for the selected incurred period.
+formula:
+  numerator: COUNT(DISTINCT claims.id)
+  denominator: SUM(enrolment_months.member_months)
+  expression: COUNT(DISTINCT claims.id) * 1000 / NULLIF(SUM(enrolment_months.member_months), 0)
+required_tables:
+  - claims
+  - enrolment_months
+time_anchor: claims.incurred_date
+currency: null
+filters_default:
+  - claims.status != 'void'
+synonyms:
+  - claim frequency
+  - claims per thousand members
+owner: actuarial
+version: 0.1.0
+last_reviewed: "2026-05-22"
+

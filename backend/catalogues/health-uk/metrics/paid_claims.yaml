@@ -1,0 +1,20 @@
+id: paid_claims
+label: Paid claims
+description: >
+  Sum of claim line payments posted in the selected period. Payments are
+  anchored by paid date.
+formula:
+  numerator: SUM(claim_lines.net_paid_amount)
+  expression: SUM(claim_lines.net_paid_amount)
+required_tables:
+  - claim_lines
+time_anchor: claim_lines.paid_date
+currency: GBP
+filters_default: []
+synonyms:
+  - paid claims
+  - claim payments
+owner: claims
+version: 0.1.0
+last_reviewed: "2026-05-22"
+

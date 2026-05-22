@@ -1,0 +1,21 @@
+id: claim_severity
+label: Claim severity
+description: >
+  Average net paid amount for closed claims in the selected paid period.
+formula:
+  numerator: SUM(claim_lines.net_paid_amount)
+  denominator: COUNT(DISTINCT claims.id)
+  expression: SUM(claim_lines.net_paid_amount) / NULLIF(COUNT(DISTINCT claims.id), 0)
+required_tables:
+  - claims
+  - claim_lines
+time_anchor: claim_lines.paid_date
+currency: GBP
+filters_default:
+  - claims.status = 'closed'
+synonyms:
+  - claim severity
+  - average paid claim
+owner: actuarial
+version: 0.1.0
+last_reviewed: "2026-05-22"

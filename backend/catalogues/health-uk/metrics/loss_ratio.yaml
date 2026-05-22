@@ -1,0 +1,22 @@
+id: loss_ratio
+label: Loss ratio
+description: >
+  Incurred claims divided by earned premium for the selected reporting slice.
+  Claims are anchored by incurred date.
+formula:
+  numerator: SUM(claims.net_incurred_amount)
+  denominator: SUM(premium.earned_amount)
+  expression: SUM(claims.net_incurred_amount) / NULLIF(SUM(premium.earned_amount), 0)
+required_tables:
+  - claims
+  - premium
+time_anchor: claims.incurred_date
+currency: null
+filters_default:
+  - claims.status != 'void'
+synonyms:
+  - loss ratio
+  - incurred loss ratio
+owner: actuarial
+version: 0.1.0
+last_reviewed: "2026-05-22"

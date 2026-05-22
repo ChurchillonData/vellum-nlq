@@ -1,0 +1,191 @@
+tables:
+  - name: plans
+    description: Product metadata for a member's cover.
+    columns:
+      - name: id
+        type: uuid
+        description: Primary plan identifier.
+      - name: plan_code
+        type: text
+        description: Stable plan code.
+      - name: plan_tier
+        type: text
+        description: Product tier name.
+      - name: hospital_network
+        type: text
+        description: Hospital network offered by the plan.
+      - name: excess_amount
+        type: numeric
+        description: Member excess amount in GBP.
+  - name: members
+    description: One covered person in the portfolio.
+    columns:
+      - name: id
+        type: uuid
+        description: Primary member identifier.
+      - name: plan_id
+        type: uuid
+        description: Current plan identifier.
+      - name: region
+        type: text
+        description: Member region.
+      - name: date_of_birth
+        type: date
+        description: Member birth date.
+      - name: enrolled_from
+        type: date
+        description: First cover date.
+      - name: enrolled_to
+        type: date
+        description: Last cover date when cover has ended.
+  - name: enrolment_months
+    description: One covered member month for denominator metrics.
+    columns:
+      - name: id
+        type: uuid
+        description: Primary enrolment month identifier.
+      - name: member_id
+        type: uuid
+        description: Covered member identifier.
+      - name: coverage_month
+        type: date
+        description: First day of the covered month.
+      - name: member_months
+        type: numeric
+        description: Covered member month contribution.
+  - name: providers
+    description: Hospital and consultant directory.
+    columns:
+      - name: id
+        type: uuid
+        description: Primary provider identifier.
+      - name: name
+        type: text
+        description: Provider display name.
+      - name: specialty
+        type: text
+        description: Consultant specialty.
+      - name: network_status
+        type: text
+        description: In-network or out-of-network status.
+      - name: region
+        type: text
+        description: Provider region.
+  - name: claims
+    description: One claim header submitted by a covered member.
+    columns:
+      - name: id
+        type: uuid
+        description: Primary claim identifier.
+      - name: member_id
+        type: uuid
+        description: Covered member identifier.
+      - name: incurred_date
+        type: date
+        description: Date the insured event was incurred.
+      - name: received_date
+        type: date
+        description: Date the claim reached the insurer.
+      - name: adjudicated_date
+        type: date
+        description: Date the claim was adjudicated.
+      - name: closed_date
+        type: date
+        description: Date the claim closed.
+      - name: status
+        type: text
+        description: Current claim status.
+      - name: net_incurred_amount
+        type: numeric
+        description: Paid amount plus reserve movement for the claim.
+  - name: claim_lines
+    description: One billed service line on a claim.
+    columns:
+      - name: id
+        type: uuid
+        description: Primary claim line identifier.
+      - name: claim_id
+        type: uuid
+        description: Parent claim identifier.
+      - name: provider_id
+        type: uuid
+        description: Treating provider identifier.
+      - name: service_date
+        type: date
+        description: Date the service was delivered.
+      - name: procedure_code
+        type: text
+        description: Procedure code.
+      - name: diagnosis_category
+        type: text
+        description: Diagnosis group.
+      - name: paid_date
+        type: date
+        description: Date paid amount was posted.
+      - name: net_paid_amount
+        type: numeric
+        description: Paid amount net of adjustments.
+      - name: declined_amount
+        type: numeric
+        description: Amount declined on the line.
+  - name: claim_status_history
+    description: Append-only claim status transitions.
+    columns:
+      - name: id
+        type: uuid
+        description: Primary status event identifier.
+      - name: claim_id
+        type: uuid
+        description: Parent claim identifier.
+      - name: status
+        type: text
+        description: Status after the transition.
+      - name: changed_at
+        type: timestamp
+        description: Timestamp of the transition.
+  - name: reserves
+    description: Period-end case reserve snapshots.
+    columns:
+      - name: id
+        type: uuid
+        description: Primary reserve snapshot identifier.
+      - name: claim_id
+        type: uuid
+        description: Parent claim identifier.
+      - name: snapshot_date
+        type: date
+        description: Reserve snapshot date.
+      - name: case_reserve_amount
+        type: numeric
+        description: Reserve amount in GBP.
+  - name: premium
+    description: Earned premium by member and coverage month.
+    columns:
+      - name: id
+        type: uuid
+        description: Primary premium row identifier.
+      - name: member_id
+        type: uuid
+        description: Covered member identifier.
+      - name: coverage_month
+        type: date
+        description: First day of the earned premium month.
+      - name: earned_amount
+        type: numeric
+        description: Earned premium amount in GBP.
+  - name: declines
+    description: Decline reason codes attached to claim lines.
+    columns:
+      - name: id
+        type: uuid
+        description: Primary decline identifier.
+      - name: claim_line_id
+        type: uuid
+        description: Declined claim line identifier.
+      - name: reason_code
+        type: text
+        description: Stable decline reason code.
+      - name: reason_text
+        type: text
+        description: Human-readable decline reason.
+

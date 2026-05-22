@@ -1,0 +1,47 @@
+joins:
+  - left_table: members
+    left_column: plan_id
+    right_table: plans
+    right_column: id
+    cardinality: many_to_one
+  - left_table: enrolment_months
+    left_column: member_id
+    right_table: members
+    right_column: id
+    cardinality: many_to_one
+  - left_table: claims
+    left_column: member_id
+    right_table: members
+    right_column: id
+    cardinality: many_to_one
+  - left_table: claim_lines
+    left_column: claim_id
+    right_table: claims
+    right_column: id
+    cardinality: many_to_one
+  - left_table: claim_lines
+    left_column: provider_id
+    right_table: providers
+    right_column: id
+    cardinality: many_to_one
+  - left_table: claim_status_history
+    left_column: claim_id
+    right_table: claims
+    right_column: id
+    cardinality: many_to_one
+  - left_table: reserves
+    left_column: claim_id
+    right_table: claims
+    right_column: id
+    cardinality: many_to_one
+  - left_table: premium
+    left_column: member_id
+    right_table: members
+    right_column: id
+    cardinality: many_to_one
+  - left_table: declines
+    left_column: claim_line_id
+    right_table: claim_lines
+    right_column: id
+    cardinality: many_to_one
+
