@@ -52,6 +52,8 @@ Current first slice:
 - SQLGlot parses generated SQL before execution exists.
 - The first guard rules reject comments, parse failures, stacked statements,
   non-SELECT statements, and system schema references.
+- The guard now checks physical tables, columns, functions, and joins against
+  the active semantic catalogue for the generated `loss_ratio` path.
 
 ## Phase 4: OpenAI Intent Layer
 

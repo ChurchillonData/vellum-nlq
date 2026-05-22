@@ -23,32 +23,74 @@ def test_guard_accepts_generated_loss_ratio_sql(health_uk_catalogue) -> None:
         "single_statement",
         "select_only",
         "system_schema_absent",
+        "table_allowlist",
+        "column_allowlist",
+        "function_allowlist",
+        "join_allowlist",
     )
 
 
-def test_guard_rejects_non_select_statement() -> None:
-    result = validate_sql("DROP TABLE claims")
+def test_guard_rejects_non_select_statement(health_uk_catalogue) -> None:
+    result = validate_sql("DROP TABLE claims", health_uk_catalogue)
 
     assert result.passed is False
     assert result.rejections[0].rule == "select_only"
 
 
-def test_guard_rejects_multiple_statements() -> None:
-    result = validate_sql("SELECT 1; DROP TABLE claims")
+def test_guard_rejects_multiple_statements(health_uk_catalogue) -> None:
+    result = validate_sql("SELECT 1; DROP TABLE claims", health_uk_catalogue)
 
     assert result.passed is False
     assert result.rejections[0].rule == "single_statement"
 
 
-def test_guard_rejects_system_schema_reference() -> None:
-    result = validate_sql("SELECT table_name FROM pg_catalog.pg_tables")
+def test_guard_rejects_system_schema_reference(health_uk_catalogue) -> None:
+    result = validate_sql(
+        "SELECT table_name FROM pg_catalog.pg_tables",
+        health_uk_catalogue,
+    )
 
     assert result.passed is False
     assert result.rejections[0].rule == "system_schema_absent"
 
 
-def test_guard_rejects_sql_comments() -> None:
-    result = validate_sql("SELECT 1 -- hidden payload")
+def test_guard_rejects_sql_comments(health_uk_catalogue) -> None:
+    result = validate_sql("SELECT 1 -- hidden payload", health_uk_catalogue)
 
     assert result.passed is False
     assert result.rejections[0].rule == "comments_absent"
+
+
+def test_guard_rejects_unknown_table(health_uk_catalogue) -> None:
+    result = validate_sql("SELECT users.id FROM users", health_uk_catalogue)
+
+    assert result.passed is False
+    assert result.rejections[0].rule == "table_allowlist"
+
+
+def test_guard_rejects_unknown_column(health_uk_catalogue) -> None:
+    result = validate_sql(
+        "SELECT claims.secret_notes FROM claims",
+        health_uk_catalogue,
+    )
+
+    assert result.passed is False
+    assert result.rejections[0].rule == "column_allowlist"
+
+
+def test_guard_rejects_disallowed_function(health_uk_catalogue) -> None:
+    result = validate_sql("SELECT pg_sleep(1) FROM claims", health_uk_catalogue)
+
+    assert result.passed is False
+    assert result.rejections[0].rule == "function_allowlist"
+
+
+def test_guard_rejects_unapproved_physical_join(health_uk_catalogue) -> None:
+    result = validate_sql(
+        "SELECT claims.id FROM claims "
+        "JOIN plans ON claims.member_id = plans.id",
+        health_uk_catalogue,
+    )
+
+    assert result.passed is False
+    assert result.rejections[0].rule == "join_allowlist"

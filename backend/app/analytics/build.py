@@ -11,7 +11,7 @@ def build_query(catalogue: Catalogue, request: AnalyticsRequest) -> QueryBuildRe
     resolved = resolve_request(catalogue, request)
     plan = build_loss_ratio_plan(catalogue, resolved)
     query = generate_loss_ratio_query(plan)
-    validation = validate_sql(query.sql)
+    validation = validate_sql(query.sql, catalogue)
     provenance = QueryProvenance(
         metric_id=plan.metric.id,
         metric_label=plan.metric.label,
