@@ -36,6 +36,19 @@ class JsonlAuditLogger:
             handle.write(json.dumps(asdict(event), default=_json_default))
             handle.write("\n")
 
+    def find_by_query_id(self, query_id: str) -> dict[str, object] | None:
+        """Return one audit event by query ID from the local JSONL log."""
+        if not self.path.exists():
+            return None
+
+        with self.path.open(encoding="utf-8") as handle:
+            for line in handle:
+                event = json.loads(line)
+                if event.get("query_id") == query_id:
+                    return event
+
+        return None
+
 
 def build_preview_audit_event(
     request: QueryPreviewRequest,

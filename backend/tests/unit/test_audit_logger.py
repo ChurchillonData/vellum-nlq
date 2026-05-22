@@ -36,3 +36,25 @@ def test_jsonl_audit_logger_records_preview_event(tmp_path, health_uk_catalogue)
     }
     assert record["validation"]["passed"] is True
     assert "join_allowlist" in record["validation"]["rules_checked"]
+
+
+def test_jsonl_audit_logger_finds_event_by_query_id(tmp_path, health_uk_catalogue) -> None:
+    request = QueryPreviewRequest(
+        metric_id="loss_ratio",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+        plan_tier="Comprehensive",
+    )
+    build_result = build_query(
+        health_uk_catalogue,
+        AnalyticsRequest.model_validate(request),
+    )
+    event = build_preview_audit_event(request, build_result)
+    logger = JsonlAuditLogger(tmp_path / "audit-log.jsonl")
+    logger.record(event)
+
+    record = logger.find_by_query_id(event.query_id)
+
+    assert record is not None
+    assert record["query_id"] == event.query_id
+    assert record["metric_id"] == "loss_ratio"

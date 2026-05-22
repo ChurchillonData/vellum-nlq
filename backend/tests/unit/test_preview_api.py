@@ -36,6 +36,51 @@ def test_preview_endpoint_writes_audit_event(tmp_path) -> None:
     assert records[0]["validation"]["passed"] is True
 
 
+def test_query_lookup_endpoint_returns_audit_event(tmp_path) -> None:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+
+    try:
+        client = TestClient(app)
+        preview_response = client.post(
+            "/queries/preview",
+            json={
+                "metric_id": "loss_ratio",
+                "start_date": "2026-01-01",
+                "end_date": "2026-03-31",
+                "plan_tier": "Comprehensive",
+            },
+        )
+        query_id = preview_response.json()["query_id"]
+
+        lookup_response = client.get(f"/queries/{query_id}")
+    finally:
+        settings.audit_log_path = original_path
+
+    body = lookup_response.json()
+
+    assert lookup_response.status_code == 200
+    assert body["query_id"] == query_id
+    assert body["event_type"] == "query_preview"
+    assert body["metric_id"] == "loss_ratio"
+    assert body["provenance"]["time_anchor"] == "claims.incurred_date"
+
+
+def test_query_lookup_endpoint_reports_missing_query(tmp_path) -> None:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+
+    try:
+        response = TestClient(app).get("/queries/q_missing")
+    finally:
+        settings.audit_log_path = original_path
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "query not found: q_missing"}
+
+
 def test_preview_endpoint_returns_loss_ratio_sql_and_provenance() -> None:
     response = TestClient(app).post(
         "/queries/preview",

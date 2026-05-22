@@ -56,6 +56,8 @@ Current first slice:
   the active semantic catalogue for the generated `loss_ratio` path.
 - Successful preview requests now create a local JSONL audit event with a
   query ID, SQL, parameters, request payload, and validation outcome.
+- `GET /queries/{query_id}` can read back local JSONL audit events while the
+  Postgres audit table is not built yet.
 
 ## Phase 4: OpenAI Intent Layer
 

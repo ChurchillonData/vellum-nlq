@@ -31,3 +31,14 @@ def preview_query(request: QueryPreviewRequest) -> QueryPreviewResponse:
         build_result,
         query_id=audit_event.query_id,
     )
+
+
+@router.get("/queries/{query_id}")
+def get_query(query_id: str) -> dict[str, object]:
+    """Return one development audit trace by query ID."""
+    settings = get_settings()
+    event = JsonlAuditLogger(settings.audit_log_path).find_by_query_id(query_id)
+    if event is None:
+        raise HTTPException(status_code=404, detail=f"query not found: {query_id}")
+
+    return event
