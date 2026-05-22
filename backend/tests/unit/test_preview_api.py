@@ -1,6 +1,39 @@
+import json
+
 from fastapi.testclient import TestClient
 
+from app.config import get_settings
 from app.main import app
+
+
+def test_preview_endpoint_writes_audit_event(tmp_path) -> None:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+
+    try:
+        response = TestClient(app).post(
+            "/queries/preview",
+            json={
+                "metric_id": "loss_ratio",
+                "start_date": "2026-01-01",
+                "end_date": "2026-03-31",
+                "plan_tier": "Comprehensive",
+            },
+        )
+    finally:
+        settings.audit_log_path = original_path
+
+    body = response.json()
+    records = [
+        json.loads(line)
+        for line in (tmp_path / "audit-log.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+
+    assert response.status_code == 200
+    assert body["query_id"].startswith("q_")
+    assert records[0]["query_id"] == body["query_id"]
+    assert records[0]["validation"]["passed"] is True
 
 
 def test_preview_endpoint_returns_loss_ratio_sql_and_provenance() -> None:
@@ -17,6 +50,7 @@ def test_preview_endpoint_returns_loss_ratio_sql_and_provenance() -> None:
     body = response.json()
 
     assert response.status_code == 200
+    assert body["query_id"].startswith("q_")
     assert body["metric_id"] == "loss_ratio"
     assert "%(start_date)s" in body["sql"]
     assert "Comprehensive" not in body["sql"]

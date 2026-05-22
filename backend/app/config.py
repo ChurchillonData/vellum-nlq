@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     active_catalogue: str = "health-uk"
     catalogue_root: Path = Path(__file__).resolve().parents[1] / "catalogues"
     database_url: str = "postgresql+psycopg://vellum_admin:vellum_admin@localhost:5432/vellum"
+    audit_log_path: Path = Path(__file__).resolve().parents[1] / ".local" / "audit-log.jsonl"
     openai_model: str = "gpt-5.4-mini"
 
 

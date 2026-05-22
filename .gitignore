@@ -9,5 +9,6 @@ htmlcov/
 *.egg-info/
 .env
 backend/.env
+backend/.local/
 frontend/node_modules/
 dist/

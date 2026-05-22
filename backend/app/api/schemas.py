@@ -60,6 +60,7 @@ class SqlGuardResponse(BaseModel):
 class QueryPreviewResponse(BaseModel):
     """Previewed SQL and the provenance used to build it."""
 
+    query_id: str
     metric_id: str
     sql: str
     parameters: dict[str, Any]
@@ -67,10 +68,15 @@ class QueryPreviewResponse(BaseModel):
     validation: SqlGuardResponse
 
     @classmethod
-    def from_build_result(cls, result: QueryBuildResult) -> "QueryPreviewResponse":
+    def from_build_result(
+        cls,
+        result: QueryBuildResult,
+        query_id: str,
+    ) -> "QueryPreviewResponse":
         """Convert internal build output into the HTTP response shape."""
         provenance = result.provenance
         return cls(
+            query_id=query_id,
             metric_id=provenance.metric_id,
             sql=result.query.sql,
             parameters=result.query.parameters,

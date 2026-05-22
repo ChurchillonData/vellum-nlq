@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from app.analytics.build import build_query
 from app.api.schemas import QueryPreviewRequest, QueryPreviewResponse
+from app.audit.logger import JsonlAuditLogger, build_preview_audit_event
 from app.config import get_settings
 from app.semantic.catalogue import CatalogueError, load_catalogue
 from app.semantic.resolver import ResolutionError
@@ -23,4 +24,10 @@ def preview_query(request: QueryPreviewRequest) -> QueryPreviewResponse:
     except CatalogueError as error:
         raise HTTPException(status_code=500, detail=str(error)) from error
 
-    return QueryPreviewResponse.from_build_result(build_result)
+    audit_event = build_preview_audit_event(request, build_result)
+    JsonlAuditLogger(settings.audit_log_path).record(audit_event)
+
+    return QueryPreviewResponse.from_build_result(
+        build_result,
+        query_id=audit_event.query_id,
+    )

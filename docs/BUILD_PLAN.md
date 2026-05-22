@@ -54,6 +54,8 @@ Current first slice:
   non-SELECT statements, and system schema references.
 - The guard now checks physical tables, columns, functions, and joins against
   the active semantic catalogue for the generated `loss_ratio` path.
+- Successful preview requests now create a local JSONL audit event with a
+  query ID, SQL, parameters, request payload, and validation outcome.
 
 ## Phase 4: OpenAI Intent Layer
 
