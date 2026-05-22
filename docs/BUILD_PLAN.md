@@ -26,9 +26,16 @@ Exit criteria:
 
 ## Phase 2: Deterministic Analytics Path
 
+Status: in progress
+
 - Resolve a small set of catalogue-backed analytics requests without an LLM.
 - Build logical plans and parameterised SQL for the first metrics.
 - Return SQL provenance alongside query results.
+
+Current first slice:
+
+- Structured `loss_ratio` request resolves through the catalogue into a logical
+  plan, parameterised SQL, and provenance without database execution.
 
 ## Phase 3: Safety And Audit
 
