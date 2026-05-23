@@ -51,6 +51,8 @@ Current first slice:
   clarification, or blocked state from one endpoint.
 - `GET /ask/examples` exposes nine golden demo questions, and tests run each
   example through `/ask` to protect answer, clarification, and blocked states.
+- `docs/api-contract.md` documents the current backend API surface for frontend
+  integration and reviewer walkthroughs.
 
 ## Phase 3: Safety And Audit
 

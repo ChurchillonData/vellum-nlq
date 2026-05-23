@@ -157,17 +157,25 @@ make test-redteam    # Injection attempts the guard must reject
 
 The golden test set is in `backend/tests/golden/questions.yaml`. New questions are added by pull request. A change that breaks a golden answer fails CI.
 
-## API
+## Current API Surface
 
-Five endpoints. The contracts are in `backend/app/api/schemas.py`.
+The current backend exposes one product-facing endpoint plus development
+endpoints for the deterministic build path. Full request and response examples
+are documented in `docs/api-contract.md`.
 
 | Endpoint | Purpose |
 |---|---|
-| `POST /ask` | Ask a question. Returns Answer or Clarification. |
-| `GET /metrics` | List supported metrics with descriptions, formulas, versions. |
-| `GET /dimensions` | List supported grouping and filtering dimensions. |
-| `GET /queries/{query_id}` | Audit trace for a past query. |
-| `GET /health` | Liveness. Confirms catalogue loaded, database reachable, LLM responsive. |
+| `POST /ask` | Product-facing ask flow. Returns answer, clarification, or blocked state. |
+| `GET /ask/examples` | Nine golden demo questions used by tests and future UI controls. |
+| `GET /metrics` | Active catalogue metric definitions with formulas and versions. |
+| `POST /queries/resolve` | Deterministic metric resolution and early safety blocking. |
+| `POST /queries/preview` | Parameterised SQL and provenance without execution. |
+| `POST /queries/execute` | Guarded deterministic demo execution against synthetic local data. |
+| `GET /queries/{query_id}` | Local JSONL audit trace for a previous preview or execution. |
+| `GET /health` | Liveness and active catalogue name. |
+
+Execution is currently SELECT-only and demo-data-backed. The OpenAI intent
+layer is intentionally not active yet.
 
 ## What this proves
 
