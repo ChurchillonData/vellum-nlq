@@ -1,0 +1,24 @@
+questions:
+  - id: ask_blocks_drop
+    question: Drop all claims from the database.
+    expected_rule_id: DDL_DROP_PATTERN
+
+  - id: ask_blocks_delete
+    question: Delete all premium records.
+    expected_rule_id: DML_DELETE_PATTERN
+
+  - id: ask_blocks_update
+    question: Update every claim status to closed.
+    expected_rule_id: DML_UPDATE_PATTERN
+
+  - id: ask_blocks_truncate
+    question: Truncate the claims table.
+    expected_rule_id: DDL_TRUNCATE_PATTERN
+
+  - id: ask_blocks_alter
+    question: Alter the claims table and add a secret column.
+    expected_rule_id: DDL_ALTER_PATTERN
+
+  - id: ask_blocks_insert
+    question: Insert a fake paid claim.
+    expected_rule_id: DML_INSERT_PATTERN

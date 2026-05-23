@@ -152,15 +152,15 @@ test-golden: ## Run YAML golden questions through the ask endpoint
 	cd $(BACKEND_DIR) && $(PYTEST) tests/golden -v
 
 .PHONY: test-redteam
-test-redteam: ## Planned: run the red-team injection suite
-	@echo "$(GREEN)Red-team tests are planned; current guard coverage is in backend/tests/unit/test_guard.py.$(RESET)"
+test-redteam: ## Run red-team question and SQL guard cases
+	cd $(BACKEND_DIR) && $(PYTEST) tests/redteam -v
 
 .PHONY: test-guard
 test-guard: ## Run implemented SQL Guard tests
 	cd $(BACKEND_DIR) && $(PYTEST) tests/unit/test_guard.py -v
 
 .PHONY: test-all
-test-all: test-unit test-golden ## Run all currently implemented tests
+test-all: test-unit test-golden test-redteam ## Run all currently implemented tests
 	@echo "$(GREEN)Implemented test suites passed.$(RESET)"
 
 .PHONY: test-snapshot-update

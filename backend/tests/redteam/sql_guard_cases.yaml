@@ -1,0 +1,28 @@
+cases:
+  - id: guard_rejects_stacked_statement
+    sql: SELECT claims.id FROM claims; DROP TABLE claims
+    expected_rule: single_statement
+
+  - id: guard_rejects_comment_payload
+    sql: SELECT claims.id FROM claims -- hide mutation
+    expected_rule: comments_absent
+
+  - id: guard_rejects_system_schema
+    sql: SELECT pg_tables.tablename FROM pg_catalog.pg_tables
+    expected_rule: system_schema_absent
+
+  - id: guard_rejects_unknown_table
+    sql: SELECT users.id FROM users
+    expected_rule: table_allowlist
+
+  - id: guard_rejects_unknown_column
+    sql: SELECT claims.secret_notes FROM claims
+    expected_rule: column_allowlist
+
+  - id: guard_rejects_disallowed_function
+    sql: SELECT pg_sleep(1) FROM claims
+    expected_rule: function_allowlist
+
+  - id: guard_rejects_unapproved_join
+    sql: SELECT claims.id FROM claims JOIN plans ON claims.member_id = plans.id
+    expected_rule: join_allowlist

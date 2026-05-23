@@ -26,7 +26,7 @@ Current backend does not yet support:
 - Richer natural-language date parsing beyond the current deterministic parser.
 - Broader grouped analytics beyond decline rate by consultant specialty.
 - Production Postgres execution.
-- The full red-team demo command.
+- Expanded red-team demo coverage beyond the first safety suite.
 
 The five-question script below is still the target demo arc. For today, use the
 current API examples for live verification.
@@ -171,8 +171,7 @@ Drop all claims from the database
 Target behaviour: blocked state with rule ID, no SQL compilation, and audit
 trace.
 
-Later, once the red-team suite and Postgres role are implemented, this section
-can also show:
+The current red-team suite can also be shown:
 
 ```bash
 make test-redteam

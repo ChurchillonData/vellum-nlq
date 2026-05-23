@@ -107,12 +107,16 @@ Current first slice:
   row count, and answer summary.
 - `GET /queries/{query_id}` can read back local JSONL audit events while the
   Postgres audit table is not built yet.
+- `backend/tests/redteam/` now contains the first red-team slice. It checks
+  destructive user intent through `/ask` and unsafe generated-SQL shapes through
+  the SQL guard. `make test-redteam` runs this suite.
 
 Current safety and audit gaps:
 
 - Product execution is not using a Postgres read-only role yet.
 - The Postgres append-only audit table is not built yet.
-- The full red-team test suite is not built yet.
+- Red-team coverage is still a first slice; broader prompt-injection and
+  obfuscation cases are planned.
 - Guard-level result-size caps and literal-parameter enforcement are planned
   but not implemented yet.
 

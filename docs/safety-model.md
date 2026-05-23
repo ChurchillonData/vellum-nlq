@@ -15,12 +15,14 @@ Current build:
 - Tables, columns, functions, and join paths are checked against the active
   semantic catalogue.
 - Successful previews and local demo executions write local JSONL audit events.
+- The first red-team suite covers destructive user intent and unsafe SQL guard
+  cases.
 
 Not built yet:
 
 - Postgres read-only execution for product requests.
 - Append-only Postgres audit table.
-- Full red-team test suite.
+- Expanded red-team coverage for prompt injection and obfuscated attacks.
 - Result row caps enforced by the guard.
 - Parameter literal enforcement in the guard.
 
@@ -94,7 +96,7 @@ The full target system will add:
 - A Postgres role with SELECT-only permissions.
 - Database-level statement timeout.
 - Append-only audit table.
-- Red-team tests for injection and schema-exfiltration attempts.
+- Expanded red-team tests for injection and schema-exfiltration attempts.
 - Integration tests against seeded Postgres data.
 - Result-size limits.
 - Clear operational review of rejected queries.
@@ -109,6 +111,13 @@ Run the unit tests:
 ```bash
 cd backend
 python -m pytest tests/unit -q
+```
+
+Run the current red-team suite:
+
+```bash
+cd backend
+python -m pytest tests/redteam -q
 ```
 
 Try a blocked request through the API:
@@ -129,7 +138,8 @@ Honest scope limits:
 2. The current demo execution path is SQLite-backed, not Postgres-backed.
 3. The current audit log is local JSONL, not a database-enforced append-only
    table.
-4. The full red-team suite is not implemented yet.
+4. Red-team coverage is still a first slice and does not yet include
+   obfuscated or encoded prompt-injection attempts.
 5. Rate limiting and side-channel inference controls are not implemented yet.
 
 These gaps are build-plan items, not hidden assumptions.

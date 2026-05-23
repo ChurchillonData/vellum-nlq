@@ -37,6 +37,7 @@ Implemented today:
 - Local JSONL audit events for successful previews and demo executions.
 - Fifteen `/ask/examples` items covered by unit tests.
 - YAML golden question suite covering the core demo contract.
+- First red-team suite for destructive questions and unsafe SQL guard cases.
 
 Planned next:
 
@@ -139,6 +140,7 @@ vellum-nlq/
 |   |   `-- health-uk/
 |   |-- seeds/
 |   `-- tests/
+|       |-- redteam/
 |       |-- golden/
 |       `-- unit/
 `-- Makefile
@@ -183,7 +185,7 @@ The current allowlisted functions are deliberately small: `CAST`, `COUNT`,
 `NULLIF`, and `SUM`.
 
 Planned safety work includes Postgres read-only role enforcement, a persisted
-append-only audit table, red-team tests, and result-size controls.
+append-only audit table, expanded red-team coverage, and result-size controls.
 
 Read `docs/safety-model.md` for the current safety boundary and target model.
 
@@ -203,16 +205,24 @@ cd backend
 python -m pytest tests/golden -q
 ```
 
+Red-team safety test:
+
+```bash
+cd backend
+python -m pytest tests/redteam -q
+```
+
 Or from the repo root:
 
 ```bash
 make test-unit
 make test-golden
+make test-redteam
 ```
 
 The current suite covers catalogue loading, deterministic resolution, planning,
 SQL generation, SQL guard checks, demo execution, audit lookup, `/ask`
-examples, and the YAML golden question contract.
+examples, the YAML golden question contract, and the first red-team suite.
 
 ## Current API Surface
 
