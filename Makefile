@@ -52,8 +52,7 @@ up: ## Start the target Docker stack when configured
 .PHONY: up-detached
 up-detached: ## Start the target Docker stack in the background
 	$(COMPOSE) up --build -d
-	@echo "$(GREEN)Backend:$(RESET)  http://localhost:8000"
-	@echo "$(GREEN)Docs:$(RESET)     http://localhost:8000/docs"
+	@echo "$(GREEN)Postgres:$(RESET) localhost:5432 / database vellum"
 
 .PHONY: down
 down: ## Stop and remove containers
@@ -104,8 +103,12 @@ seed-data: ## Generate synthetic development data
 	@echo "$(GREEN)Synthetic development data generated.$(RESET)"
 
 .PHONY: db-shell
-db-shell: ## Open a psql shell against the development database
-	$(COMPOSE) exec postgres psql -U vellum_reader -d vellum
+db-shell: ## Open a psql shell with the read-only application role
+	$(COMPOSE) exec postgres psql -U vellum_readonly -d vellum
+
+.PHONY: db-shell-seed
+db-shell-seed: ## Open a psql shell with the seed-data role
+	$(COMPOSE) exec postgres psql -U vellum_seeder -d vellum
 
 .PHONY: db-shell-admin
 db-shell-admin: ## Open a psql shell with admin privileges

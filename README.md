@@ -19,7 +19,8 @@ regulated domain where wrong numbers cause real harm.
 ## Current Build
 
 The current backend is a governed demo slice. It does not call OpenAI by
-default and does not execute against Postgres yet.
+default. Local Postgres schema, roles, migrations, and seeding are available,
+but product query execution still uses the in-memory demo executor.
 
 Implemented today:
 
@@ -40,6 +41,8 @@ Implemented today:
 - SQL generation and guard validation for generated SELECT statements.
 - Catalogue-backed table, column, function, and join-path validation.
 - In-memory SQLite demo execution seeded from synthetic data.
+- Local Postgres Docker setup with admin, seeder, and read-only roles.
+- Alembic migration and seed command for deterministic synthetic data.
 - Local JSONL audit events for all `/ask` outcomes, successful previews, and
   demo executions.
 - Seventeen `/ask/examples` items covered by unit tests.
@@ -63,7 +66,8 @@ If you have five minutes, read these files in this order.
    guard use.
 3. `backend/app/sql/guard.py` - the SQL validation boundary.
 4. `backend/app/ask/examples.py` - the current demo examples used by tests.
-5. `docs/DECISIONS.md` - the architectural decisions and what was rejected.
+5. `docs/local-postgres.md` - how the local database foundation works.
+6. `docs/DECISIONS.md` - the architectural decisions and what was rejected.
 
 That tour shows what the current backend can answer, what it refuses, and why.
 
@@ -152,8 +156,8 @@ vellum-nlq/
 `-- Makefile
 ```
 
-Frontend, integration tests, red-team tests, and production Postgres execution
-are planned phases, not finished implementation.
+Frontend, integration tests, append-only Postgres audit, and production
+Postgres execution are planned phases, not finished implementation.
 
 ## The Catalogue
 
@@ -190,8 +194,8 @@ The current SQL guard checks:
 The current allowlisted functions are deliberately small: `CAST`, `COUNT`,
 `NULLIF`, and `SUM`.
 
-Planned safety work includes Postgres read-only role enforcement, a persisted
-append-only audit table, expanded red-team coverage, and result-size controls.
+Planned safety work includes Postgres read-only execution enforcement, a
+persisted append-only audit table, and expanded red-team coverage.
 
 Read `docs/safety-model.md` for the current safety boundary and target model.
 

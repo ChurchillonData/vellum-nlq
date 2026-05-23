@@ -6,7 +6,7 @@ honest while the code catches up with that target.
 
 ## Phase 1: Foundation
 
-Status: in progress
+Status: complete for local development
 
 - Establish the repository layout and backend package.
 - Add the Postgres schema, first migration, and local database container setup.
@@ -17,10 +17,23 @@ Status: in progress
 - Keep the OpenAI provider boundary visible in configuration without calling an
   LLM yet.
 
+Current foundation:
+
+- `docker-compose.yml` starts a local Postgres 16 database.
+- Local roles are separated into `vellum_admin`, `vellum_seeder`, and
+  `vellum_readonly`.
+- Alembic migration `0001` creates the first claims analytics schema, indexes,
+  and local role grants.
+- `backend/seeds/generate.py` loads deterministic synthetic data through the
+  seeder role.
+- `make seed` starts Postgres, runs migrations, loads data, and validates the
+  catalogue.
+- `docs/local-postgres.md` documents the local database workflow.
+
 Exit criteria:
 
 - `backend` unit tests pass.
-- Alembic can render the first migration SQL.
+- Alembic can run the first migration.
 - The first metric definition loads from YAML.
 - The backend can report that it is alive and name the active catalogue.
 

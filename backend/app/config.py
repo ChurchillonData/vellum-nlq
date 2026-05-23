@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     active_catalogue: str = "health-uk"
     catalogue_root: Path = Path(__file__).resolve().parents[1] / "catalogues"
     database_url: str = "postgresql+psycopg://vellum_admin:vellum_admin@localhost:5432/vellum"
+    seed_database_url: str = "postgresql+psycopg://vellum_seeder:vellum_seeder@localhost:5432/vellum"
+    readonly_database_url: str = "postgresql+psycopg://vellum_readonly:vellum_readonly@localhost:5432/vellum"
     audit_log_path: Path = Path(__file__).resolve().parents[1] / ".local" / "audit-log.jsonl"
     demo_member_count: int = 2_000
     demo_month_count: int = 18

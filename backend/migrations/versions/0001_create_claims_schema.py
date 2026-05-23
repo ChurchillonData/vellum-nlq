@@ -97,6 +97,8 @@ def upgrade() -> None:
         sa.Column("reason_code", sa.String(length=80), nullable=False),
         sa.Column("reason_text", sa.Text(), nullable=False),
     )
+    _create_indexes()
+    _grant_local_role_permissions()
 
 
 def downgrade() -> None:
@@ -111,3 +113,41 @@ def downgrade() -> None:
     op.drop_table("providers")
     op.drop_table("members")
     op.drop_table("plans")
+
+
+def _create_indexes() -> None:
+    """Create indexes used by the deterministic analytics paths."""
+    op.create_index("ix_members_plan_id", "members", ["plan_id"])
+    op.create_index("ix_claims_member_id", "claims", ["member_id"])
+    op.create_index("ix_claims_incurred_date", "claims", ["incurred_date"])
+    op.create_index("ix_claim_lines_claim_id", "claim_lines", ["claim_id"])
+    op.create_index("ix_claim_lines_provider_id", "claim_lines", ["provider_id"])
+    op.create_index("ix_claim_lines_paid_date", "claim_lines", ["paid_date"])
+    op.create_index("ix_claim_lines_service_date", "claim_lines", ["service_date"])
+    op.create_index("ix_enrolment_months_member_id", "enrolment_months", ["member_id"])
+    op.create_index("ix_enrolment_months_coverage_month", "enrolment_months", ["coverage_month"])
+    op.create_index("ix_premium_member_id", "premium", ["member_id"])
+    op.create_index("ix_premium_coverage_month", "premium", ["coverage_month"])
+
+
+def _grant_local_role_permissions() -> None:
+    """Grant local development roles the minimum permissions they need."""
+    op.execute(
+        """
+        DO
+        $$
+        BEGIN
+            IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'vellum_readonly') THEN
+                GRANT USAGE ON SCHEMA public TO vellum_readonly;
+                GRANT SELECT ON ALL TABLES IN SCHEMA public TO vellum_readonly;
+            END IF;
+
+            IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'vellum_seeder') THEN
+                GRANT USAGE ON SCHEMA public TO vellum_seeder;
+                GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public
+                    TO vellum_seeder;
+            END IF;
+        END
+        $$;
+        """
+    )
