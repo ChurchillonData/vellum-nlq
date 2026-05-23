@@ -18,6 +18,8 @@ Current build:
   parameters.
 - Grouped SQL must include an approved row limit. The current grouped cap is 50
   rows.
+- OpenAI, when enabled, only proposes structured intent. It does not generate
+  SQL or execute queries.
 - Every `/ask` outcome writes a local JSONL audit event, including blocked,
   clarification, date-range-required, out-of-scope, and answer states.
 - Successful previews and local demo executions also write local JSONL audit
@@ -37,8 +39,8 @@ Vellum-NLQ is a governed analytics reader. It supports SELECT-only analytics
 queries. It is not a database administration tool and it is not allowed to run
 mutable commands.
 
-This is a deliberate product decision. The LLM, when introduced, will not be
-the database driver. It will be one layer inside a governed workflow:
+This is a deliberate product decision. The LLM is not the database driver. It is
+one layer inside a governed workflow:
 
 1. The resolver interprets intent.
 2. The catalogue decides what is answerable.

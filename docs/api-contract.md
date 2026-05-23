@@ -1,7 +1,8 @@
 # API Contract
 
 This document describes the API surface that exists in the current phased build.
-The OpenAI intent layer and production Postgres execution path are not active yet.
+The OpenAI intent provider boundary is available behind configuration. Production
+Postgres execution is not active yet.
 
 Base URL for local development:
 
@@ -18,6 +19,11 @@ supported date ranges, plan-tier filters, and the first supported grouping from
 the question when possible, blocks unsafe intent when needed, asks for
 clarification when the metric is ambiguous, and executes the deterministic demo
 path when a supported metric is resolved.
+
+When `VELLUM_INTENT_PROVIDER=openai`, OpenAI may propose structured intent
+fields. It does not generate SQL. The proposed intent still passes through the
+catalogue, deterministic planner, SQL generator, SQL guard, demo execution, and
+audit path.
 
 Request:
 

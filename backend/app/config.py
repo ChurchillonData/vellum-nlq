@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     audit_log_path: Path = Path(__file__).resolve().parents[1] / ".local" / "audit-log.jsonl"
     demo_member_count: int = 2_000
     demo_month_count: int = 18
+    intent_provider: str = "deterministic"
+    openai_api_key: str | None = None
     openai_model: str = "gpt-5.4-mini"
 
 

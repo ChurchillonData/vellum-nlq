@@ -48,7 +48,7 @@ If a decision is not listed here, it was either obvious or unimportant.
 
 ## ADR-003: A read-only database role as a second safety layer
 
-**Status:** Accepted, planned
+**Status:** Accepted, first slice implemented
 
 **Context.** The SQL guard could be wrong. A new SQLGlot release could introduce a parser bug. The catalogue could contain a typo. The application could be tricked. Defence in depth requires that the database itself refuse to accept anything destructive.
 
@@ -114,15 +114,18 @@ read-only role is a target production control.
 
 **Context.** The intent interpreter calls an LLM with structured output. Vellum-NLQ needs the model to propose typed analytics intent while the catalogue and deterministic planner remain the authority for what can execute.
 
-**Decision.** Use the OpenAI API as the default provider and use structured outputs for intent extraction. Wrap the call behind an `LLMProvider` protocol so swapping providers later is a contained change.
+**Decision.** Use the OpenAI API as the configured provider and use structured outputs for intent extraction. Wrap the call behind an `IntentProvider` protocol so swapping providers later is a contained change.
 
-**Current implementation.** The backend currently uses a deterministic resolver
-and does not call OpenAI. The provider adapter belongs to the next intent-layer
-phase.
+**Current implementation.** The backend uses a deterministic provider by
+default, has a fake provider for tests, and includes an OpenAI provider behind
+`VELLUM_INTENT_PROVIDER=openai`. The provider returns structured intent only.
+It cannot return SQL through the intent schema, and provider output still passes
+through catalogue resolution, deterministic planning, SQL guard validation,
+execution, and audit.
 
 **Consequences.**
-- The intent interpreter has one source of LLM-specific code, in `intent/providers/openai.py`.
-- Tests use a `FakeProvider` that returns canned `AnalyticsRequest` objects. No LLM is called in unit tests.
+- The intent interpreter has one source of LLM-specific code, in `app/intent/openai_provider.py`.
+- Tests use a `FakeIntentProvider` that returns canned `IntentResult` objects. No LLM is called in unit tests.
 - The CI path stays deterministic because unit and core integration tests never require a live OpenAI call.
 
 **Rejected alternatives.**

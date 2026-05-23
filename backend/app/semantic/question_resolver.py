@@ -40,6 +40,7 @@ def resolve_question(
     question: str,
     start_date: date | None,
     end_date: date | None,
+    metric_id: str | None = None,
     plan_tier: str | None = None,
     group_by: tuple[str, ...] = (),
 ) -> QuestionResolution:
@@ -65,6 +66,17 @@ def resolve_question(
             resolved_request=None,
             message="Request is outside the current analytics scope.",
             scope=scope,
+        )
+
+    if metric_id is not None:
+        return _resolve_provider_metric(
+            catalogue,
+            question=question,
+            metric_id=metric_id,
+            start_date=start_date,
+            end_date=end_date,
+            plan_tier=plan_tier,
+            group_by=group_by,
         )
 
     candidates = _rank_candidates(catalogue, question, tokens)
@@ -118,6 +130,60 @@ def resolve_question(
         candidates=tuple(candidates),
         resolved_request=None,
         message="Multiple catalogue metrics may answer this question.",
+    )
+
+
+def _resolve_provider_metric(
+    catalogue: Catalogue,
+    question: str,
+    metric_id: str,
+    start_date: date | None,
+    end_date: date | None,
+    plan_tier: str | None,
+    group_by: tuple[str, ...],
+) -> QuestionResolution:
+    metric = catalogue.metrics.get(metric_id)
+    if metric is None:
+        return QuestionResolution(
+            status="unresolved",
+            question=question,
+            candidates=(),
+            resolved_request=None,
+            message=f"No catalogue metric matched provider intent: {metric_id}.",
+        )
+
+    candidate = MetricCandidate(
+        metric_id=metric.id,
+        label=metric.label,
+        description=metric.description,
+        confidence=0.90,
+        reason="intent provider matched metric",
+    )
+
+    if start_date is None or end_date is None:
+        return QuestionResolution(
+            status="date_range_required",
+            question=question,
+            candidates=(candidate,),
+            resolved_request=None,
+            message="A supported date range is required before planning SQL.",
+        )
+
+    if start_date > end_date:
+        raise ValueError("start_date must be on or before end_date")
+
+    return QuestionResolution(
+        status="resolved",
+        question=question,
+        candidates=(candidate,),
+        resolved_request=AnalyticsRequest(
+            metric_id=metric.id,
+            start_date=start_date,
+            end_date=end_date,
+            plan_tier=plan_tier,
+            group_by=group_by,
+        ),
+        message=f"Resolved to metric: {metric.id}.",
     )
 
 

@@ -107,6 +107,7 @@ def build_ask_audit_event(
         status=result.status,
         request={
             "question": request.question,
+            "metric_id": request.metric_id,
             "start_date": request.start_date,
             "end_date": request.end_date,
             "plan_tier": request.plan_tier,

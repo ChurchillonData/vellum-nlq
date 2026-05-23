@@ -25,6 +25,7 @@ from app.audit.logger import (
 )
 from app.config import get_settings
 from app.execution.demo import execute_demo_query
+from app.intent.factory import build_intent_provider
 from app.semantic.catalogue import CatalogueError, load_catalogue
 from app.semantic.question_resolver import resolve_question
 from app.semantic.resolver import ResolutionError
@@ -74,13 +75,20 @@ def ask(request: AskApiRequest) -> AskResponse:
 
     try:
         catalogue = _load_active_catalogue()
+        intent = build_intent_provider(settings).extract_intent(
+            catalogue,
+            request.question,
+        )
         parsed_fields = parse_ask_fields(request.question)
         ask_request = AskServiceRequest(
             question=request.question,
-            start_date=request.start_date or parsed_fields.start_date,
-            end_date=request.end_date or parsed_fields.end_date,
-            plan_tier=request.plan_tier or parsed_fields.plan_tier,
-            group_by=request.group_by or parsed_fields.group_by,
+            metric_id=intent.metric_id,
+            start_date=(
+                request.start_date or intent.start_date or parsed_fields.start_date
+            ),
+            end_date=request.end_date or intent.end_date or parsed_fields.end_date,
+            plan_tier=request.plan_tier or intent.plan_tier or parsed_fields.plan_tier,
+            group_by=request.group_by or intent.group_by or parsed_fields.group_by,
         )
         result = answer_question(
             catalogue,

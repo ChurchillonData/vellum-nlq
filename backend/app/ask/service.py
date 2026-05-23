@@ -13,6 +13,7 @@ class AskRequest:
     """Question and filters submitted from the ask workspace."""
 
     question: str
+    metric_id: str | None
     start_date: date | None
     end_date: date | None
     plan_tier: str | None
@@ -39,6 +40,7 @@ def answer_question(
     resolution = resolve_question(
         catalogue,
         question=request.question,
+        metric_id=request.metric_id,
         start_date=request.start_date,
         end_date=request.end_date,
         plan_tier=request.plan_tier,

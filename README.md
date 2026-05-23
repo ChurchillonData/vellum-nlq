@@ -18,8 +18,8 @@ regulated domain where wrong numbers cause real harm.
 
 ## Current Build
 
-The current backend is a deterministic demo slice. It does not call OpenAI yet
-and does not execute against Postgres yet.
+The current backend is a governed demo slice. It does not call OpenAI by
+default and does not execute against Postgres yet.
 
 Implemented today:
 
@@ -30,6 +30,9 @@ Implemented today:
 - Grouped `decline_rate` by consultant specialty.
 - Result-size controls for grouped outputs, with guarded row limits surfaced in
   provenance and audit records.
+- OpenAI intent-provider boundary behind configuration. OpenAI may propose
+  structured intent, but Vellum still owns catalogue resolution, SQL generation,
+  guard validation, execution, and audit.
 - Narrow natural-language parsing for quarter phrases, ISO date ranges, and
   demo plan tiers on `POST /ask`.
 - Ambiguity, out-of-scope, and destructive-intent responses for controlled demo
@@ -45,7 +48,6 @@ Implemented today:
 
 Planned next:
 
-- OpenAI structured intent extraction behind a narrow provider interface.
 - Richer natural-language date and filter parsing.
 - Postgres read-only execution and append-only audit table.
 - Expanded red-team coverage for obfuscated and prompt-injection-style attacks.

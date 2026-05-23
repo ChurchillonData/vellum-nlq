@@ -69,6 +69,7 @@ def test_jsonl_audit_logger_finds_event_by_query_id(tmp_path, health_uk_catalogu
 def test_build_ask_audit_event_records_blocked_state(health_uk_catalogue) -> None:
     request = AskRequest(
         question="Drop all claims from the database",
+        metric_id=None,
         start_date=None,
         end_date=None,
         plan_tier=None,

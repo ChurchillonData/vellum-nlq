@@ -129,9 +129,31 @@ Current safety and audit gaps:
 
 ## Phase 4: OpenAI Intent Layer
 
+Status: in progress
+
 - Use the OpenAI API for structured intent extraction.
 - Keep provider code behind a narrow interface and use fakes in tests.
 - Return clarifications for ambiguous and out-of-scope questions.
+
+Current first slice:
+
+- `IntentProvider` now separates natural-language intent extraction from SQL
+  generation.
+- The default deterministic provider preserves the current parser behaviour.
+- The OpenAI provider is available behind `VELLUM_INTENT_PROVIDER=openai` and
+  returns structured intent only: metric, date range, plan tier, grouping, and
+  confidence.
+- Unit tests use a fake provider to prove provider output still flows through
+  catalogue resolution, deterministic planning, SQL guard validation, local demo
+  execution, and audit.
+- Unsafe user intent is still blocked before provider metric intent can run.
+
+Current gaps:
+
+- No live OpenAI integration test is run in CI.
+- Provider fallback and retry policy are intentionally minimal.
+- The structured intent schema is narrow and covers only the current demo
+  fields.
 
 ## Phase 5: Frontend And Demo
 

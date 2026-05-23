@@ -1,8 +1,12 @@
 import json
+from datetime import date
 
 from fastapi.testclient import TestClient
 
 from app.config import get_settings
+from app.intent.factory import set_intent_provider_override
+from app.intent.fake import FakeIntentProvider
+from app.intent.models import IntentResult
 from app.main import app
 
 
@@ -111,6 +115,97 @@ def test_ask_endpoint_infers_decline_rate_grouping(tmp_path) -> None:
         "grain": "consultant_specialty",
         "max_rows": 50,
     }
+
+
+def test_ask_endpoint_uses_provider_intent_without_provider_sql(tmp_path) -> None:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    original_member_count = settings.demo_member_count
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+    settings.demo_member_count = 120
+    set_intent_provider_override(
+        FakeIntentProvider(
+            IntentResult(
+                metric_id="claim_severity",
+                start_date=date(2026, 1, 1),
+                end_date=date(2026, 3, 31),
+                plan_tier="Comprehensive",
+                confidence=0.91,
+                source="fake",
+            )
+        )
+    )
+
+    try:
+        response = TestClient(app).post(
+            "/ask",
+            json={"question": "How expensive were closed claims?"},
+        )
+    finally:
+        set_intent_provider_override(None)
+        settings.audit_log_path = original_path
+        settings.demo_member_count = original_member_count
+
+    body = response.json()
+    records = [
+        json.loads(line)
+        for line in (tmp_path / "audit-log.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+
+    assert response.status_code == 200
+    assert body["status"] == "answer"
+    assert body["resolved_request"]["metric_id"] == "claim_severity"
+    assert body["answer"]["metric_id"] == "claim_severity"
+    assert "claim_severity" in body["answer"]["sql"]
+    assert body["answer"]["validation"]["passed"] is True
+    assert records[0]["request"]["metric_id"] == "claim_severity"
+
+
+def test_ask_endpoint_rejects_provider_metric_outside_catalogue(tmp_path) -> None:
+    response, records = _post_ask_with_audit(
+        tmp_path,
+        {"question": "How expensive were closed claims?"},
+        provider=FakeIntentProvider(
+            IntentResult(
+                metric_id="not_a_catalogue_metric",
+                start_date=date(2026, 1, 1),
+                end_date=date(2026, 3, 31),
+                source="fake",
+            )
+        ),
+    )
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["status"] == "unresolved"
+    assert body["answer"] is None
+    assert body["resolved_request"] is None
+    assert records[0]["status"] == "unresolved"
+    assert records[0]["sql"] is None
+
+
+def test_ask_endpoint_blocks_unsafe_question_before_provider_intent(tmp_path) -> None:
+    response, records = _post_ask_with_audit(
+        tmp_path,
+        {"question": "Drop all claims from the database"},
+        provider=FakeIntentProvider(
+            IntentResult(
+                metric_id="loss_ratio",
+                start_date=date(2026, 1, 1),
+                end_date=date(2026, 3, 31),
+                source="fake",
+            )
+        ),
+    )
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["status"] == "blocked"
+    assert body["safety"]["rule_id"] == "DDL_DROP_PATTERN"
+    assert records[0]["status"] == "blocked"
+    assert records[0]["sql"] is None
 
 
 def test_ask_endpoint_requires_date_range_for_answerable_question(tmp_path) -> None:
@@ -289,10 +384,12 @@ def test_ask_audit_record_can_be_loaded_by_query_id(tmp_path) -> None:
 def _post_ask_with_audit(
     tmp_path,
     payload: dict[str, object],
+    provider: object | None = None,
 ) -> tuple[object, list[dict[str, object]]]:
     settings = get_settings()
     original_path = settings.audit_log_path
     settings.audit_log_path = tmp_path / "audit-log.jsonl"
+    set_intent_provider_override(provider)
 
     try:
         response = TestClient(app).post("/ask", json=payload)
@@ -301,6 +398,7 @@ def _post_ask_with_audit(
             for line in settings.audit_log_path.read_text(encoding="utf-8").splitlines()
         ]
     finally:
+        set_intent_provider_override(None)
         settings.audit_log_path = original_path
 
     return response, records
