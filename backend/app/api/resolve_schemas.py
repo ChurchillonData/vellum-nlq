@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.analytics.models import AnalyticsRequest
 from app.semantic.question_resolver import MetricCandidate, QuestionResolution
+from app.semantic.safety import SafetyFinding
 
 
 class QueryResolveRequest(BaseModel):
@@ -44,6 +45,23 @@ class MetricCandidateResponse(BaseModel):
         )
 
 
+class SafetyFindingResponse(BaseModel):
+    """Safety finding returned when a question is blocked."""
+
+    rule_id: str
+    severity: str
+    reason: str
+
+    @classmethod
+    def from_finding(cls, finding: SafetyFinding) -> "SafetyFindingResponse":
+        """Convert a safety finding into API JSON."""
+        return cls(
+            rule_id=finding.rule_id,
+            severity=finding.severity,
+            reason=finding.reason,
+        )
+
+
 class QueryResolveResponse(BaseModel):
     """Metric resolution state for the ask workspace."""
 
@@ -52,6 +70,7 @@ class QueryResolveResponse(BaseModel):
     message: str
     candidates: list[MetricCandidateResponse]
     resolved_request: AnalyticsRequest | None
+    safety: SafetyFindingResponse | None
 
     @classmethod
     def from_resolution(cls, result: QuestionResolution) -> "QueryResolveResponse":
@@ -65,5 +84,9 @@ class QueryResolveResponse(BaseModel):
                 for candidate in result.candidates
             ],
             resolved_request=result.resolved_request,
+            safety=(
+                SafetyFindingResponse.from_finding(result.safety)
+                if result.safety is not None
+                else None
+            ),
         )
-

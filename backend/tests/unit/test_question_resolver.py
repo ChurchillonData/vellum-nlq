@@ -53,3 +53,20 @@ def test_question_resolver_returns_unresolved_for_unknown_question(
     assert result.candidates == ()
     assert result.resolved_request is None
 
+
+def test_question_resolver_blocks_destructive_database_intent(
+    health_uk_catalogue,
+) -> None:
+    result = resolve_question(
+        health_uk_catalogue,
+        question="Drop all claims from the database",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+    )
+
+    assert result.status == "blocked"
+    assert result.candidates == ()
+    assert result.resolved_request is None
+    assert result.safety is not None
+    assert result.safety.rule_id == "DDL_DROP_PATTERN"
+    assert result.safety.severity == "critical"

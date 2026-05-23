@@ -61,3 +61,25 @@ def test_resolve_endpoint_rejects_reverse_date_range() -> None:
 
     assert response.status_code == 422
 
+
+def test_resolve_endpoint_blocks_destructive_database_intent() -> None:
+    response = TestClient(app).post(
+        "/queries/resolve",
+        json={
+            "question": "Drop all claims from the database",
+            "start_date": "2026-01-01",
+            "end_date": "2026-03-31",
+        },
+    )
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["status"] == "blocked"
+    assert body["candidates"] == []
+    assert body["resolved_request"] is None
+    assert body["safety"] == {
+        "rule_id": "DDL_DROP_PATTERN",
+        "severity": "critical",
+        "reason": "Question contains destructive DROP intent.",
+    }

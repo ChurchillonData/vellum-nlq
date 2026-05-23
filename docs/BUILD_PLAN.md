@@ -45,6 +45,8 @@ Current first slice:
   SQL, parameters, validation, and provenance.
 - `POST /queries/resolve` deterministically maps simple questions to catalogue
   metrics or returns clarification candidates without calling an LLM.
+- The resolve path blocks destructive database intent before planning or SQL
+  generation, returning a safety rule ID for the UI rejection state.
 
 ## Phase 3: Safety And Audit
 
@@ -61,6 +63,8 @@ Current first slice:
   non-SELECT statements, and system schema references.
 - The guard now checks physical tables, columns, functions, and joins against
   the active semantic catalogue for the generated `loss_ratio` path.
+- User questions with destructive database intent are blocked before SQL
+  planning, while generated SQL is still guarded before execution.
 - Successful preview requests now create a local JSONL audit event with a
   query ID, SQL, parameters, request payload, and validation outcome.
 - Successful local demo executions now write audit events with execution mode,
