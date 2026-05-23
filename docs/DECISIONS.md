@@ -48,11 +48,15 @@ If a decision is not listed here, it was either obvious or unimportant.
 
 ## ADR-003: A read-only database role as a second safety layer
 
-**Status:** Accepted
+**Status:** Accepted, planned
 
 **Context.** The SQL guard could be wrong. A new SQLGlot release could introduce a parser bug. The catalogue could contain a typo. The application could be tricked. Defence in depth requires that the database itself refuse to accept anything destructive.
 
 **Decision.** The application connects to Postgres using a role with SELECT privileges only on the application schema, and no privileges on any other schema. The role has a fifteen-second `statement_timeout` and a per-connection `work_mem` cap.
+
+**Current implementation.** The SQL guard and SELECT-only product boundary are
+implemented. Product execution still uses local demo data, so the Postgres
+read-only role is a target production control.
 
 **Consequences.**
 - If the guard ever lets a destructive statement through, the database rejects it with a permissions error.
@@ -106,11 +110,15 @@ If a decision is not listed here, it was either obvious or unimportant.
 
 ## ADR-006: OpenAI as the LLM provider, behind a provider adapter
 
-**Status:** Accepted
+**Status:** Accepted, planned
 
 **Context.** The intent interpreter calls an LLM with structured output. Vellum-NLQ needs the model to propose typed analytics intent while the catalogue and deterministic planner remain the authority for what can execute.
 
 **Decision.** Use the OpenAI API as the default provider and use structured outputs for intent extraction. Wrap the call behind an `LLMProvider` protocol so swapping providers later is a contained change.
+
+**Current implementation.** The backend currently uses a deterministic resolver
+and does not call OpenAI. The provider adapter belongs to the next intent-layer
+phase.
 
 **Consequences.**
 - The intent interpreter has one source of LLM-specific code, in `intent/providers/openai.py`.
@@ -125,11 +133,15 @@ If a decision is not listed here, it was either obvious or unimportant.
 
 ## ADR-007: Postgres only, not SQLite or DuckDB
 
-**Status:** Accepted
+**Status:** Accepted, target
 
 **Context.** Tests run against a real database. The choice was Postgres in Docker, SQLite for tests with Postgres in production, or DuckDB.
 
 **Decision.** Postgres for both tests and production. The test container is started by docker-compose and torn down on completion.
+
+**Current implementation.** Deterministic demo execution uses in-memory SQLite
+to keep the first backend slice fast and self-contained. Postgres execution and
+integration tests are still planned.
 
 **Consequences.**
 - The test suite needs Docker to run. CI uses the github-actions Docker runner.
@@ -181,11 +193,15 @@ If a decision is not listed here, it was either obvious or unimportant.
 
 ## ADR-010: Synthetic seed data, not real claims data
 
-**Status:** Accepted
+**Status:** Accepted, target scale
 
 **Context.** Real claims data is regulated and cannot be shipped in a public repo. The choice was synthetic data, anonymised real data, or no seed data.
 
 **Decision.** A synthetic data generator that produces realistic UK PMI claims for two hundred thousand members across eighteen months. Distributions are calibrated to public ABI and PRA aggregate statistics for the UK PMI market.
+
+**Current implementation.** The current generator supports a smaller
+development slice for deterministic backend tests. The large portfolio demo
+dataset is still planned.
 
 **Consequences.**
 - The repo is self-contained. Anyone can clone and run.
@@ -208,7 +224,7 @@ If a decision is not listed here, it was either obvious or unimportant.
 **Decision.** A YAML file of approved question-and-answer pairs. CI runs every question against the seeded database on every pull request. The test asserts on the type of response (answer or clarification), the metric used, the dimensions, the row count, and an approximate value with a tolerance.
 
 **Current implementation.** The YAML golden suite is not built yet. The current
-backend protects twelve demo examples through `GET /ask/examples` and
+backend protects thirteen demo examples through `GET /ask/examples` and
 `backend/tests/unit/test_ask_api.py`.
 
 **Consequences.**
@@ -224,11 +240,14 @@ backend protects twelve demo examples through `GET /ask/examples` and
 
 ## ADR-012: The frontend is small but real
 
-**Status:** Accepted
+**Status:** Accepted, planned
 
 **Context.** The temptation in a backend-heavy project is to skip the frontend or use a Streamlit demo. The audience for this repo includes hiring reviewers who will spend ninety seconds clicking around before reading any code.
 
 **Decision.** A small React + Vite + TypeScript app with Tailwind. Chat panel on the left, answer card with result table on the right, transparency panel that shows the SQL and metric definition for every answer. No more.
+
+**Current implementation.** Frontend mockups are stored under
+`design-mockups/frontend`; the React app has not been scaffolded yet.
 
 **Consequences.**
 - Reviewers see the transparency panel without being asked to look for it.

@@ -12,13 +12,16 @@ Current backend supports:
 - Ambiguity response for broad claims questions.
 - Out-of-scope response for forecasting questions.
 - Safety rejection for destructive database requests.
+- Narrow natural-language parsing for quarters, ISO date ranges, and demo plan
+  tiers.
+- A date-range-required state when the metric is clear but the period is not.
 - Provenance payloads with SQL, parameters, validation, and query IDs.
 
 Current backend does not yet support:
 
 - The React frontend.
 - OpenAI intent extraction.
-- Natural-language date parsing.
+- Richer natural-language date parsing beyond the current deterministic parser.
 - Grouped decline-rate questions.
 - Production Postgres execution.
 - The full red-team demo command.
@@ -49,17 +52,15 @@ Useful endpoints:
 - `POST /queries/preview`
 - `POST /queries/execute`
 
-The current `/ask` request still needs structured dates and optional filters in
-the payload. Natural-language date parsing is planned.
+The current `/ask` endpoint can infer supported quarter phrases, ISO date
+ranges, and demo plan tiers. Explicit structured dates and filters are still
+accepted and take priority over inferred values.
 
 Example happy path:
 
 ```json
 {
-  "question": "What was loss ratio for the Comprehensive plan tier in Q1 2026?",
-  "start_date": "2026-01-01",
-  "end_date": "2026-03-31",
-  "plan_tier": "Comprehensive"
+  "question": "What was loss ratio for the Comprehensive plan tier in Q1 2026?"
 }
 ```
 

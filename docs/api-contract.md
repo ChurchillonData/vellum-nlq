@@ -163,7 +163,7 @@ Out-of-scope response:
 
 ### GET `/ask/examples`
 
-Returns the twelve golden demo questions used by tests and future frontend demo
+Returns the thirteen golden demo questions used by tests and future frontend demo
 controls. Each example has an expected ask state.
 
 ```json

@@ -49,8 +49,9 @@ Current first slice:
   generation, returning a safety rule ID for the UI rejection state.
 - `POST /ask` now orchestrates the first product-facing flow: answer,
   clarification, or blocked state from one endpoint.
-- `GET /ask/examples` exposes twelve golden demo questions, and tests run each
-  example through `/ask` to protect answer, clarification, and blocked states.
+- `GET /ask/examples` exposes thirteen golden demo questions, and tests run each
+  example through `/ask` to protect answer, date-range-required,
+  clarification, blocked, and out-of-scope states.
 - `docs/api-contract.md` documents the current backend API surface for frontend
   integration and reviewer walkthroughs.
 - `paid_claims` now has a deterministic catalogue-backed path through

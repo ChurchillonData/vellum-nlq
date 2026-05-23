@@ -10,8 +10,8 @@ class AskExample:
     label: str
     question: str
     expected_status: str
-    start_date: date
-    end_date: date
+    start_date: date | None = None
+    end_date: date | None = None
     plan_tier: str | None = None
 
 
@@ -42,6 +42,12 @@ GOLDEN_ASK_EXAMPLES = (
         start_date=date(2026, 1, 1),
         end_date=date(2026, 3, 31),
         plan_tier="Comprehensive",
+    ),
+    AskExample(
+        id="date_required_loss_ratio",
+        label="Date range required",
+        question="What was loss ratio for the Comprehensive plan tier?",
+        expected_status="date_range_required",
     ),
     AskExample(
         id="clarify_claims_numbers",

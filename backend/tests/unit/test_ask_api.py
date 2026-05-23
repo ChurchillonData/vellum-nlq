@@ -103,15 +103,16 @@ def test_ask_endpoint_blocks_unsafe_question_without_dates() -> None:
     assert body["safety"]["rule_id"] == "DDL_DROP_PATTERN"
 
 
-def test_ask_examples_endpoint_returns_three_examples_per_state() -> None:
+def test_ask_examples_endpoint_returns_examples_per_state() -> None:
     response = TestClient(app).get("/ask/examples")
 
     body = response.json()
     statuses = [example["expected_status"] for example in body["examples"]]
 
     assert response.status_code == 200
-    assert len(body["examples"]) == 12
+    assert len(body["examples"]) == 13
     assert statuses.count("answer") == 3
+    assert statuses.count("date_range_required") == 1
     assert statuses.count("clarification_required") == 3
     assert statuses.count("blocked") == 3
     assert statuses.count("out_of_scope") == 3
