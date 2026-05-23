@@ -13,8 +13,8 @@ class AskRequest:
     """Question and filters submitted from the ask workspace."""
 
     question: str
-    start_date: date
-    end_date: date
+    start_date: date | None
+    end_date: date | None
     plan_tier: str | None
 
 

@@ -26,6 +26,8 @@ Implemented today:
 - FastAPI backend with product-facing `/ask` and development query endpoints.
 - Catalogue-backed deterministic paths for `loss_ratio`, `paid_claims`, and
   `claim_frequency`.
+- Narrow natural-language parsing for quarter phrases, ISO date ranges, and
+  demo plan tiers on `POST /ask`.
 - Ambiguity, out-of-scope, and destructive-intent responses for controlled demo
   questions.
 - SQL generation and guard validation for generated SELECT statements.
@@ -37,7 +39,7 @@ Implemented today:
 Planned next:
 
 - OpenAI structured intent extraction behind a narrow provider interface.
-- Natural-language date and filter parsing.
+- Richer natural-language date and filter parsing.
 - Postgres read-only execution and append-only audit table.
 - Red-team test suite and YAML golden question set.
 - Frontend implementation using the uploaded UI mockups.

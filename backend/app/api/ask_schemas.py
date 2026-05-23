@@ -1,13 +1,33 @@
-from pydantic import BaseModel
+from datetime import date
 
-from app.api.resolve_schemas import QueryResolveRequest, QueryResolveResponse
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from app.api.resolve_schemas import QueryResolveResponse
 from app.api.schemas import QueryExecuteResponse
 from app.ask.examples import AskExample
 from app.ask.service import AskResult
 
 
-class AskRequest(QueryResolveRequest):
+class AskRequest(BaseModel):
     """Question submitted to the product-facing ask endpoint."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    question: str = Field(min_length=1)
+    start_date: date | None = None
+    end_date: date | None = None
+    plan_tier: str | None = Field(default=None, min_length=1)
+
+    @model_validator(mode="after")
+    def validate_date_range(self) -> "AskRequest":
+        """Validate explicit dates while allowing the question parser to infer them."""
+        if (
+            self.start_date is not None
+            and self.end_date is not None
+            and self.start_date > self.end_date
+        ):
+            raise ValueError("start_date must be on or before end_date")
+        return self
 
 
 class AskResponse(QueryResolveResponse):

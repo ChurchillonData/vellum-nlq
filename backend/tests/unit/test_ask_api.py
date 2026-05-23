@@ -44,6 +44,65 @@ def test_ask_endpoint_returns_answer_state(tmp_path) -> None:
     assert records[0]["query_id"] == body["answer"]["query_id"]
 
 
+def test_ask_endpoint_infers_supported_filters_from_question(tmp_path) -> None:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    original_member_count = settings.demo_member_count
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+    settings.demo_member_count = 120
+
+    try:
+        response = TestClient(app).post(
+            "/ask",
+            json={
+                "question": (
+                    "What was loss ratio for the Comprehensive plan tier in Q1 2026?"
+                ),
+            },
+        )
+    finally:
+        settings.audit_log_path = original_path
+        settings.demo_member_count = original_member_count
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["status"] == "answer"
+    assert body["resolved_request"]["metric_id"] == "loss_ratio"
+    assert body["resolved_request"]["start_date"] == "2026-01-01"
+    assert body["resolved_request"]["end_date"] == "2026-03-31"
+    assert body["resolved_request"]["plan_tier"] == "Comprehensive"
+    assert body["answer"]["parameters"]["plan_tier"] == "Comprehensive"
+
+
+def test_ask_endpoint_requires_date_range_for_answerable_question() -> None:
+    response = TestClient(app).post(
+        "/ask",
+        json={"question": "What was loss ratio for the Comprehensive plan tier?"},
+    )
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["status"] == "date_range_required"
+    assert body["answer"] is None
+    assert body["resolved_request"] is None
+    assert "date range" in body["message"]
+
+
+def test_ask_endpoint_blocks_unsafe_question_without_dates() -> None:
+    response = TestClient(app).post(
+        "/ask",
+        json={"question": "Drop all claims from the database"},
+    )
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["status"] == "blocked"
+    assert body["safety"]["rule_id"] == "DDL_DROP_PATTERN"
+
+
 def test_ask_examples_endpoint_returns_three_examples_per_state() -> None:
     response = TestClient(app).get("/ask/examples")
 

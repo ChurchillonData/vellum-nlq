@@ -60,10 +60,14 @@ Current first slice:
   questions, matching the canonical demo script's forecast refusal state.
 - `claim_frequency` now completes the first executable clarification trio:
   `loss_ratio`, `paid_claims`, and `claim_frequency`.
+- `POST /ask` now infers supported date ranges and plan-tier filters from the
+  question for the product endpoint. It handles quarter phrases such as
+  `Q1 2026`, ISO date ranges, and the current demo plan tiers without OpenAI.
 
 Current backend gaps before calling this phase complete:
 
-- Natural-language date and filter parsing is not implemented yet.
+- Natural-language parsing is intentionally narrow: quarter phrases, ISO date
+  ranges, and plan tiers are supported; richer date language is still planned.
 - Grouped and dimensioned analytics are not implemented yet.
 - Catalogue metrics `incurred_claims` and `claim_severity` are defined but not
   executable yet.

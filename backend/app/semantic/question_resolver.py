@@ -38,8 +38,8 @@ class QuestionResolution:
 def resolve_question(
     catalogue: Catalogue,
     question: str,
-    start_date: date,
-    end_date: date,
+    start_date: date | None,
+    end_date: date | None,
     plan_tier: str | None = None,
 ) -> QuestionResolution:
     """Resolve a simple question into one metric or a clarification prompt."""
@@ -85,6 +85,18 @@ def resolve_question(
         len(candidates) > 1 and candidates[1].confidence >= 0.70
     )
     if top_candidate.confidence >= 0.70 and not has_competing_strong_match:
+        if start_date is None or end_date is None:
+            return QuestionResolution(
+                status="date_range_required",
+                question=question,
+                candidates=tuple(candidates),
+                resolved_request=None,
+                message="A supported date range is required before planning SQL.",
+            )
+
+        if start_date > end_date:
+            raise ValueError("start_date must be on or before end_date")
+
         return QuestionResolution(
             status="resolved",
             question=question,

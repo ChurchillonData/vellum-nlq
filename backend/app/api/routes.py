@@ -14,6 +14,7 @@ from app.api.schemas import (
 )
 from app.api.resolve_schemas import QueryResolveRequest, QueryResolveResponse
 from app.ask.examples import GOLDEN_ASK_EXAMPLES
+from app.ask.parser import parse_ask_fields
 from app.ask.service import AskRequest as AskServiceRequest
 from app.ask.service import answer_question
 from app.audit.logger import (
@@ -72,13 +73,14 @@ def ask(request: AskApiRequest) -> AskResponse:
 
     try:
         catalogue = _load_active_catalogue()
+        parsed_fields = parse_ask_fields(request.question)
         result = answer_question(
             catalogue,
             AskServiceRequest(
                 question=request.question,
-                start_date=request.start_date,
-                end_date=request.end_date,
-                plan_tier=request.plan_tier,
+                start_date=request.start_date or parsed_fields.start_date,
+                end_date=request.end_date or parsed_fields.end_date,
+                plan_tier=request.plan_tier or parsed_fields.plan_tier,
             ),
             member_count=settings.demo_member_count,
             month_count=settings.demo_month_count,

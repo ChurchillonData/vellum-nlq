@@ -13,27 +13,36 @@ http://localhost:8000
 
 ### POST `/ask`
 
-Runs the first product-facing ask flow. The endpoint resolves a question, blocks
-unsafe intent when needed, asks for clarification when the metric is ambiguous,
-and executes the deterministic demo path when a supported metric is resolved.
+Runs the first product-facing ask flow. The endpoint resolves a question, infers
+supported date ranges and plan-tier filters from the question when possible,
+blocks unsafe intent when needed, asks for clarification when the metric is
+ambiguous, and executes the deterministic demo path when a supported metric is
+resolved.
 
 Request:
 
 ```json
 {
-  "question": "What was incurred loss ratio in Q1?",
-  "start_date": "2026-01-01",
-  "end_date": "2026-03-31",
-  "plan_tier": "Comprehensive"
+  "question": "What was loss ratio for the Comprehensive plan tier in Q1 2026?"
 }
 ```
+
+Explicit `start_date`, `end_date`, and `plan_tier` fields are still accepted.
+When provided, explicit fields win over inferred values.
+
+Supported inference in this phase:
+
+- `Q1 2026`, `Q2 2026`, `Q3 2026`, `Q4 2026`
+- `2026 Q1`, `2026 Q2`, `2026 Q3`, `2026 Q4`
+- two ISO dates such as `2026-01-01` and `2026-03-31`
+- plan tiers: `Essential`, `Comprehensive`, `Executive`
 
 Answer response, trimmed to the fields most relevant to the UI:
 
 ```json
 {
   "status": "answer",
-  "question": "What was incurred loss ratio in Q1?",
+  "question": "What was loss ratio for the Comprehensive plan tier in Q1 2026?",
   "message": "Resolved to metric: loss_ratio.",
   "resolved_request": {
     "metric_id": "loss_ratio",
@@ -63,6 +72,19 @@ Answer response, trimmed to the fields most relevant to the UI:
       }
     ]
   }
+}
+```
+
+If a question resolves to a supported metric but no date range is provided or
+inferred, the endpoint returns a date-range prompt:
+
+```json
+{
+  "status": "date_range_required",
+  "question": "What was loss ratio for the Comprehensive plan tier?",
+  "message": "A supported date range is required before planning SQL.",
+  "resolved_request": null,
+  "answer": null
 }
 ```
 
