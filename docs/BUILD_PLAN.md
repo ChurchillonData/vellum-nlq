@@ -43,6 +43,8 @@ Current first slice:
 - `POST /queries/execute` runs the guarded `loss_ratio` path against an
   in-memory synthetic demo dataset and returns result rows, an answer summary,
   SQL, parameters, validation, and provenance.
+- `POST /queries/resolve` deterministically maps simple questions to catalogue
+  metrics or returns clarification candidates without calling an LLM.
 
 ## Phase 3: Safety And Audit
 

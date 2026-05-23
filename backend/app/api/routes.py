@@ -9,6 +9,7 @@ from app.api.schemas import (
     QueryPreviewRequest,
     QueryPreviewResponse,
 )
+from app.api.resolve_schemas import QueryResolveRequest, QueryResolveResponse
 from app.audit.logger import (
     JsonlAuditLogger,
     build_execution_audit_event,
@@ -17,6 +18,7 @@ from app.audit.logger import (
 from app.config import get_settings
 from app.execution.demo import execute_demo_query
 from app.semantic.catalogue import CatalogueError, load_catalogue
+from app.semantic.question_resolver import resolve_question
 from app.semantic.resolver import ResolutionError
 
 
@@ -44,6 +46,20 @@ def list_metrics() -> MetricsResponse:
             for metric in sorted(catalogue.metrics.values(), key=lambda item: item.id)
         ],
     )
+
+
+@router.post("/queries/resolve", response_model=QueryResolveResponse)
+def resolve_query(request: QueryResolveRequest) -> QueryResolveResponse:
+    """Resolve a simple question into a metric or clarification candidates."""
+    catalogue = _load_active_catalogue()
+    result = resolve_question(
+        catalogue,
+        question=request.question,
+        start_date=request.start_date,
+        end_date=request.end_date,
+        plan_tier=request.plan_tier,
+    )
+    return QueryResolveResponse.from_resolution(result)
 
 
 @router.post("/queries/preview", response_model=QueryPreviewResponse)
