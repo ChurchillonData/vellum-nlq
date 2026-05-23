@@ -3,6 +3,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from app.analytics.models import AnalyticsRequest, QueryBuildResult
+from app.execution.demo import DemoExecutionResult
 from app.semantic.models import MetricSpec
 from app.sql.guard import SqlGuardResult
 
@@ -63,6 +64,10 @@ class MetricsResponse(BaseModel):
 
 class QueryPreviewRequest(AnalyticsRequest):
     """Structured request body for deterministic SQL preview."""
+
+
+class QueryExecuteRequest(AnalyticsRequest):
+    """Structured request body for local demo query execution."""
 
 
 class ResultShapeResponse(BaseModel):
@@ -149,4 +154,46 @@ class QueryPreviewResponse(BaseModel):
                 ),
             ),
             validation=SqlGuardResponse.from_guard_result(result.validation),
+        )
+
+
+class DemoDatasetResponse(BaseModel):
+    """Description of the local demo dataset used for execution."""
+
+    name: str
+    member_count: int
+    claim_count: int
+    premium_row_count: int
+
+
+class QueryExecuteResponse(QueryPreviewResponse):
+    """Executed demo query, result rows, and provenance."""
+
+    answer: str
+    rows: list[dict[str, Any]]
+    row_count: int
+    execution_mode: str
+    dataset: DemoDatasetResponse
+
+    @classmethod
+    def from_execution_result(
+        cls,
+        build_result: QueryBuildResult,
+        execution_result: DemoExecutionResult,
+        query_id: str,
+    ) -> "QueryExecuteResponse":
+        """Convert executed query output into the HTTP response shape."""
+        preview = QueryPreviewResponse.from_build_result(build_result, query_id)
+        return cls(
+            **preview.model_dump(),
+            answer=execution_result.answer,
+            rows=execution_result.rows,
+            row_count=execution_result.row_count,
+            execution_mode="local_demo",
+            dataset=DemoDatasetResponse(
+                name=execution_result.dataset.name,
+                member_count=execution_result.dataset.member_count,
+                claim_count=execution_result.dataset.claim_count,
+                premium_row_count=execution_result.dataset.premium_row_count,
+            ),
         )

@@ -40,6 +40,9 @@ Current first slice:
   final `/ask` flow is ready.
 - `GET /metrics` returns active catalogue metric definitions for the future
   Catalogue Explorer frontend.
+- `POST /queries/execute` runs the guarded `loss_ratio` path against an
+  in-memory synthetic demo dataset and returns result rows, an answer summary,
+  SQL, parameters, validation, and provenance.
 
 ## Phase 3: Safety And Audit
 
@@ -58,6 +61,8 @@ Current first slice:
   the active semantic catalogue for the generated `loss_ratio` path.
 - Successful preview requests now create a local JSONL audit event with a
   query ID, SQL, parameters, request payload, and validation outcome.
+- Successful local demo executions now write audit events with execution mode,
+  row count, and answer summary.
 - `GET /queries/{query_id}` can read back local JSONL audit events while the
   Postgres audit table is not built yet.
 

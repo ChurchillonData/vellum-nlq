@@ -1,0 +1,88 @@
+import json
+
+from fastapi.testclient import TestClient
+
+from app.config import get_settings
+from app.main import app
+
+
+def test_execute_endpoint_runs_loss_ratio_against_demo_data(tmp_path) -> None:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    original_member_count = settings.demo_member_count
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+    settings.demo_member_count = 120
+
+    try:
+        response = TestClient(app).post(
+            "/queries/execute",
+            json={
+                "metric_id": "loss_ratio",
+                "start_date": "2026-01-01",
+                "end_date": "2026-03-31",
+                "plan_tier": "Comprehensive",
+            },
+        )
+    finally:
+        settings.audit_log_path = original_path
+        settings.demo_member_count = original_member_count
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["query_id"].startswith("q_")
+    assert body["execution_mode"] == "local_demo"
+    assert body["metric_id"] == "loss_ratio"
+    assert body["row_count"] == 1
+    assert body["rows"][0]["loss_ratio"] > 0
+    assert body["dataset"]["member_count"] == 120
+    assert body["validation"]["passed"] is True
+    assert "Comprehensive plan tier loss ratio" in body["answer"]
+
+
+def test_execute_endpoint_writes_execution_audit_event(tmp_path) -> None:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    original_member_count = settings.demo_member_count
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+    settings.demo_member_count = 120
+
+    try:
+        response = TestClient(app).post(
+            "/queries/execute",
+            json={
+                "metric_id": "loss_ratio",
+                "start_date": "2026-01-01",
+                "end_date": "2026-03-31",
+                "plan_tier": "Comprehensive",
+            },
+        )
+    finally:
+        settings.audit_log_path = original_path
+        settings.demo_member_count = original_member_count
+
+    records = [
+        json.loads(line)
+        for line in (tmp_path / "audit-log.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+
+    assert response.status_code == 200
+    assert records[0]["query_id"] == response.json()["query_id"]
+    assert records[0]["event_type"] == "query_execute"
+    assert records[0]["execution"]["mode"] == "local_demo"
+    assert records[0]["execution"]["row_count"] == 1
+
+
+def test_execute_endpoint_reports_unknown_metric() -> None:
+    response = TestClient(app).post(
+        "/queries/execute",
+        json={
+            "metric_id": "not_a_metric",
+            "start_date": "2026-01-01",
+            "end_date": "2026-03-31",
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "unknown metric: not_a_metric"}
+

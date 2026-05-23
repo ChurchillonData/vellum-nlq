@@ -61,7 +61,7 @@ def build_seed_data(
             )
 
         if member_index % 4 == 0:
-            incurred_month = coverage_months[member_index % len(coverage_months)]
+            incurred_month = coverage_months[(member_index + 8) % len(coverage_months)]
             _append_claim_rows(data, member_id, member_index, incurred_month, claim_number=1)
 
         if member_index % 15 == 0:
@@ -254,4 +254,3 @@ def _add_months(value: date, offset: int) -> date:
 def _row_id(*parts: object) -> UUID:
     stable_key = ":".join(str(part) for part in parts)
     return uuid5(NAMESPACE_URL, f"vellum:{stable_key}")
-

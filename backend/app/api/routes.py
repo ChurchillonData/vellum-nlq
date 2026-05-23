@@ -4,11 +4,18 @@ from app.analytics.build import build_query
 from app.api.schemas import (
     MetricResponse,
     MetricsResponse,
+    QueryExecuteRequest,
+    QueryExecuteResponse,
     QueryPreviewRequest,
     QueryPreviewResponse,
 )
-from app.audit.logger import JsonlAuditLogger, build_preview_audit_event
+from app.audit.logger import (
+    JsonlAuditLogger,
+    build_execution_audit_event,
+    build_preview_audit_event,
+)
 from app.config import get_settings
+from app.execution.demo import execute_demo_query
 from app.semantic.catalogue import CatalogueError, load_catalogue
 from app.semantic.resolver import ResolutionError
 
@@ -55,6 +62,39 @@ def preview_query(request: QueryPreviewRequest) -> QueryPreviewResponse:
 
     return QueryPreviewResponse.from_build_result(
         build_result,
+        query_id=audit_event.query_id,
+    )
+
+
+@router.post("/queries/execute", response_model=QueryExecuteResponse)
+def execute_query(request: QueryExecuteRequest) -> QueryExecuteResponse:
+    """Execute one guarded deterministic query against local demo data."""
+    settings = get_settings()
+
+    try:
+        catalogue = _load_active_catalogue()
+        build_result = build_query(catalogue, request)
+        execution_result = execute_demo_query(
+            build_result,
+            member_count=settings.demo_member_count,
+            month_count=settings.demo_month_count,
+        )
+    except ResolutionError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+    audit_event = build_execution_audit_event(
+        request,
+        build_result,
+        row_count=execution_result.row_count,
+        answer=execution_result.answer,
+    )
+    JsonlAuditLogger(settings.audit_log_path).record(audit_event)
+
+    return QueryExecuteResponse.from_execution_result(
+        build_result,
+        execution_result,
         query_id=audit_event.query_id,
     )
 

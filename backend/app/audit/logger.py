@@ -4,8 +4,7 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 from uuid import uuid4
 
-from app.analytics.models import QueryBuildResult
-from app.api.schemas import QueryPreviewRequest
+from app.analytics.models import AnalyticsRequest, QueryBuildResult
 
 
 @dataclass(frozen=True)
@@ -21,6 +20,7 @@ class AuditEvent:
     parameters: dict[str, object]
     provenance: dict[str, object]
     validation: dict[str, object]
+    execution: dict[str, object] | None = None
 
 
 class JsonlAuditLogger:
@@ -51,13 +51,37 @@ class JsonlAuditLogger:
 
 
 def build_preview_audit_event(
-    request: QueryPreviewRequest,
+    request: AnalyticsRequest,
     result: QueryBuildResult,
 ) -> AuditEvent:
     """Create an audit event for a successful deterministic query preview."""
+    return _build_audit_event(request, result, event_type="query_preview")
+
+
+def build_execution_audit_event(
+    request: AnalyticsRequest,
+    result: QueryBuildResult,
+    row_count: int,
+    answer: str,
+) -> AuditEvent:
+    """Create an audit event for a successful local demo execution."""
+    return _build_audit_event(
+        request,
+        result,
+        event_type="query_execute",
+        execution={"mode": "local_demo", "row_count": row_count, "answer": answer},
+    )
+
+
+def _build_audit_event(
+    request: AnalyticsRequest,
+    result: QueryBuildResult,
+    event_type: str,
+    execution: dict[str, object] | None = None,
+) -> AuditEvent:
     return AuditEvent(
         query_id=f"q_{uuid4().hex}",
-        event_type="query_preview",
+        event_type=event_type,
         created_at=datetime.now(UTC),
         request=request.model_dump(),
         metric_id=result.provenance.metric_id,
@@ -82,6 +106,7 @@ def build_preview_audit_event(
                 for item in result.validation.rejections
             ],
         },
+        execution=execution,
     )
 
 
