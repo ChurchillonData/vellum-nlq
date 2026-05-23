@@ -49,7 +49,7 @@ Current first slice:
   generation, returning a safety rule ID for the UI rejection state.
 - `POST /ask` now orchestrates the first product-facing flow: answer,
   clarification, or blocked state from one endpoint.
-- `GET /ask/examples` exposes fourteen golden demo questions, and tests run each
+- `GET /ask/examples` exposes fifteen golden demo questions, and tests run each
   example through `/ask` to protect answer, date-range-required,
   clarification, blocked, and out-of-scope states.
 - `docs/api-contract.md` documents the current backend API surface for frontend
@@ -67,16 +67,20 @@ Current first slice:
 - `decline_rate` now has an ungrouped deterministic path through catalogue
   resolution, planning, guarded SQL generation, local demo execution, and ask
   examples. Grouping by consultant specialty is the next slice.
+- `decline_rate by consultant specialty` is now supported as the first grouped
+  analytics path, using `providers.specialty` through the approved
+  `claim_lines -> providers` join.
 
 Current backend gaps before calling this phase complete:
 
 - Natural-language parsing is intentionally narrow: quarter phrases, ISO date
   ranges, and plan tiers are supported; richer date language is still planned.
-- Grouped and dimensioned analytics are not implemented yet.
+- Grouped analytics are currently limited to `decline_rate` by
+  `consultant_specialty`; broader dimension support is still planned.
 - Catalogue metrics `incurred_claims` and `claim_severity` are defined but not
   executable yet.
-- The canonical demo's `decline_rate by consultant specialty` question is not
-  supported yet because grouped dimensions are the next slice.
+- Additional grouped metrics and dimensions beyond consultant specialty are
+  still planned.
 
 ## Phase 3: Safety And Audit
 

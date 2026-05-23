@@ -75,6 +75,40 @@ def test_ask_endpoint_infers_supported_filters_from_question(tmp_path) -> None:
     assert body["answer"]["parameters"]["plan_tier"] == "Comprehensive"
 
 
+def test_ask_endpoint_infers_decline_rate_grouping(tmp_path) -> None:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    original_member_count = settings.demo_member_count
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+    settings.demo_member_count = 120
+
+    try:
+        response = TestClient(app).post(
+            "/ask",
+            json={
+                "question": (
+                    "What was decline rate by consultant specialty for the "
+                    "Comprehensive plan tier in Q1 2026?"
+                ),
+            },
+        )
+    finally:
+        settings.audit_log_path = original_path
+        settings.demo_member_count = original_member_count
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["status"] == "answer"
+    assert body["resolved_request"]["metric_id"] == "decline_rate"
+    assert body["resolved_request"]["group_by"] == ["consultant_specialty"]
+    assert body["answer"]["row_count"] >= 1
+    assert body["answer"]["provenance"]["result_shape"] == {
+        "columns": ["consultant_specialty", "decline_rate"],
+        "grain": "consultant_specialty",
+    }
+
+
 def test_ask_endpoint_requires_date_range_for_answerable_question() -> None:
     response = TestClient(app).post(
         "/ask",
@@ -110,8 +144,8 @@ def test_ask_examples_endpoint_returns_examples_per_state() -> None:
     statuses = [example["expected_status"] for example in body["examples"]]
 
     assert response.status_code == 200
-    assert len(body["examples"]) == 14
-    assert statuses.count("answer") == 4
+    assert len(body["examples"]) == 15
+    assert statuses.count("answer") == 5
     assert statuses.count("date_range_required") == 1
     assert statuses.count("clarification_required") == 3
     assert statuses.count("blocked") == 3

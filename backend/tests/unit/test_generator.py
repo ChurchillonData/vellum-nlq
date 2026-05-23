@@ -125,3 +125,34 @@ def test_decline_rate_query_is_parameterised_and_has_provenance(
     )
     assert result.provenance.result_shape.columns == ("decline_rate",)
     assert result.validation.passed is True
+
+
+def test_decline_rate_query_groups_by_consultant_specialty(
+    health_uk_catalogue,
+) -> None:
+    request = AnalyticsRequest(
+        metric_id="decline_rate",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+        group_by=("consultant_specialty",),
+    )
+
+    result = build_query(health_uk_catalogue, request)
+
+    assert "providers.specialty AS consultant_specialty" in result.query.sql
+    assert "GROUP BY providers.specialty" in result.query.sql
+    assert "ORDER BY CAST(sum" in result.query.sql
+    assert result.query.sql.endswith("DESC")
+    assert result.provenance.tables_used == (
+        "claim_lines",
+        "claims",
+        "members",
+        "plans",
+        "providers",
+    )
+    assert result.provenance.result_shape.columns == (
+        "consultant_specialty",
+        "decline_rate",
+    )
+    assert result.provenance.result_shape.grain == "consultant_specialty"
+    assert result.validation.passed is True

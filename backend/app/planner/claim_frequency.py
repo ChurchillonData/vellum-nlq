@@ -28,9 +28,9 @@ def build_claim_frequency_plan(
         start_date=request.start_date,
         end_date=request.end_date,
         plan_tier=request.plan_tier,
+        group_by=request.group_by,
         tables=("claims", "enrolment_months", "members", "plans"),
         joins=joins,
         filters=tuple(filters),
         result_shape=ResultShape(columns=("claim_frequency",), grain="single_metric"),
     )
-

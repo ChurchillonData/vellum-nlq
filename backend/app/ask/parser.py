@@ -17,16 +17,19 @@ class ParsedAskFields:
     start_date: date | None = None
     end_date: date | None = None
     plan_tier: str | None = None
+    group_by: tuple[str, ...] = ()
 
 
 def parse_ask_fields(question: str) -> ParsedAskFields:
     """Infer supported dates and filters from an ask question."""
     start_date, end_date = _parse_date_range(question)
     plan_tier = _parse_plan_tier(question)
+    group_by = _parse_group_by(question)
     return ParsedAskFields(
         start_date=start_date,
         end_date=end_date,
         plan_tier=plan_tier,
+        group_by=group_by,
     )
 
 
@@ -82,3 +85,16 @@ def _parse_plan_tier(question: str) -> str | None:
         if re.search(rf"\b{token}\b", normalized):
             return label
     return None
+
+
+def _parse_group_by(question: str) -> tuple[str, ...]:
+    normalized = question.casefold()
+    specialty_patterns = (
+        r"\bby\s+consultant\s+specialty\b",
+        r"\bby\s+specialty\b",
+        r"\bper\s+consultant\s+specialty\b",
+        r"\bper\s+specialty\b",
+    )
+    if any(re.search(pattern, normalized) for pattern in specialty_patterns):
+        return ("consultant_specialty",)
+    return ()

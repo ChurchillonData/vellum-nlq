@@ -10,6 +10,7 @@ Current backend supports:
 - Happy-path answer for `loss_ratio`.
 - Happy-path answers for `paid_claims`, `claim_frequency`, and ungrouped
   `decline_rate`.
+- Grouped decline-rate answer by consultant specialty.
 - Ambiguity response for broad claims questions.
 - Out-of-scope response for forecasting questions.
 - Safety rejection for destructive database requests.
@@ -23,7 +24,7 @@ Current backend does not yet support:
 - The React frontend.
 - OpenAI intent extraction.
 - Richer natural-language date parsing beyond the current deterministic parser.
-- Grouped decline-rate questions.
+- Broader grouped analytics beyond decline rate by consultant specialty.
 - Production Postgres execution.
 - The full red-team demo command.
 

@@ -35,6 +35,14 @@ def _create_demo_tables(connection: sqlite3.Connection) -> None:
             enrolled_to TEXT
         );
 
+        CREATE TABLE providers (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            specialty TEXT NOT NULL,
+            network_status TEXT NOT NULL,
+            region TEXT NOT NULL
+        );
+
         CREATE TABLE claims (
             id TEXT PRIMARY KEY,
             member_id TEXT NOT NULL,
@@ -77,6 +85,19 @@ def _insert_demo_rows(connection: sqlite3.Connection, seed_data: SeedData) -> No
         VALUES (:id, :plan_code, :plan_tier)
         """,
         [_clean_row(row, ("id", "plan_code", "plan_tier")) for row in seed_data.plans],
+    )
+    connection.executemany(
+        """
+        INSERT INTO providers (id, name, specialty, network_status, region)
+        VALUES (:id, :name, :specialty, :network_status, :region)
+        """,
+        [
+            _clean_row(
+                row,
+                ("id", "name", "specialty", "network_status", "region"),
+            )
+            for row in seed_data.providers
+        ],
     )
     connection.executemany(
         """

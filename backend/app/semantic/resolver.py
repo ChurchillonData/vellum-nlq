@@ -18,6 +18,8 @@ def resolve_request(catalogue: Catalogue, request: AnalyticsRequest) -> Resolved
     if metric.id not in SUPPORTED_METRICS:
         raise ResolutionError(f"metric is not implemented yet: {metric.id}")
 
+    _validate_group_by(metric, request.group_by)
+
     if metric.id == "loss_ratio":
         _validate_loss_ratio_metric(metric)
     if metric.id == "paid_claims":
@@ -68,3 +70,14 @@ def _validate_decline_rate_metric(metric: MetricSpec) -> None:
 
     if set(metric.required_tables) != {"claim_lines"}:
         raise ResolutionError("decline_rate requires claim_lines")
+
+
+def _validate_group_by(metric: MetricSpec, group_by: tuple[str, ...]) -> None:
+    if not group_by:
+        return
+
+    if metric.id == "decline_rate" and group_by == ("consultant_specialty",):
+        return
+
+    group_list = ", ".join(group_by)
+    raise ResolutionError(f"grouping is not supported for {metric.id}: {group_list}")

@@ -16,6 +16,7 @@ class AskRequest:
     start_date: date | None
     end_date: date | None
     plan_tier: str | None
+    group_by: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -41,6 +42,7 @@ def answer_question(
         start_date=request.start_date,
         end_date=request.end_date,
         plan_tier=request.plan_tier,
+        group_by=request.group_by,
     )
 
     if resolution.status != "resolved" or resolution.resolved_request is None:

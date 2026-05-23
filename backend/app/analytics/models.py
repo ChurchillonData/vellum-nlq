@@ -16,6 +16,7 @@ class AnalyticsRequest(BaseModel):
     start_date: date
     end_date: date
     plan_tier: str | None = Field(default=None, min_length=1)
+    group_by: tuple[str, ...] = Field(default_factory=tuple)
 
     @model_validator(mode="after")
     def validate_date_range(self) -> "AnalyticsRequest":
@@ -48,6 +49,7 @@ class LogicalPlan:
     start_date: date
     end_date: date
     plan_tier: str | None
+    group_by: tuple[str, ...]
     tables: tuple[str, ...]
     joins: tuple[JoinEdge, ...]
     filters: tuple[str, ...]

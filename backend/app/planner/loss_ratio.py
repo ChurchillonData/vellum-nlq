@@ -25,6 +25,7 @@ def build_loss_ratio_plan(catalogue: Catalogue, resolved: ResolvedRequest) -> Lo
         start_date=request.start_date,
         end_date=request.end_date,
         plan_tier=request.plan_tier,
+        group_by=request.group_by,
         tables=("claims", "members", "plans", "premium"),
         joins=joins,
         filters=tuple(filters),

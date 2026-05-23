@@ -81,6 +81,7 @@ def ask(request: AskApiRequest) -> AskResponse:
                 start_date=request.start_date or parsed_fields.start_date,
                 end_date=request.end_date or parsed_fields.end_date,
                 plan_tier=request.plan_tier or parsed_fields.plan_tier,
+                group_by=request.group_by or parsed_fields.group_by,
             ),
             member_count=settings.demo_member_count,
             month_count=settings.demo_month_count,
@@ -114,6 +115,7 @@ def resolve_query(request: QueryResolveRequest) -> QueryResolveResponse:
         start_date=request.start_date,
         end_date=request.end_date,
         plan_tier=request.plan_tier,
+        group_by=request.group_by,
     )
     return QueryResolveResponse.from_resolution(result)
 

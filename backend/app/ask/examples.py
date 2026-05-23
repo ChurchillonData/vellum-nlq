@@ -13,6 +13,7 @@ class AskExample:
     start_date: date | None = None
     end_date: date | None = None
     plan_tier: str | None = None
+    group_by: tuple[str, ...] = ()
 
 
 GOLDEN_ASK_EXAMPLES = (
@@ -47,6 +48,15 @@ GOLDEN_ASK_EXAMPLES = (
         id="answer_decline_rate_q1",
         label="Decline rate in Q1",
         question="What was decline rate for the Comprehensive plan tier in Q1 2026?",
+        expected_status="answer",
+    ),
+    AskExample(
+        id="answer_decline_rate_by_specialty",
+        label="Decline rate by specialty",
+        question=(
+            "What was decline rate by consultant specialty for the "
+            "Comprehensive plan tier in Q1 2026?"
+        ),
         expected_status="answer",
     ),
     AskExample(

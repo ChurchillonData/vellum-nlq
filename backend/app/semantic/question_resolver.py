@@ -41,6 +41,7 @@ def resolve_question(
     start_date: date | None,
     end_date: date | None,
     plan_tier: str | None = None,
+    group_by: tuple[str, ...] = (),
 ) -> QuestionResolution:
     """Resolve a simple question into one metric or a clarification prompt."""
     tokens = set(_tokenize(question))
@@ -106,6 +107,7 @@ def resolve_question(
                 start_date=start_date,
                 end_date=end_date,
                 plan_tier=plan_tier,
+                group_by=group_by,
             ),
             message=f"Resolved to metric: {top_candidate.metric_id}.",
         )

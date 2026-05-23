@@ -23,6 +23,7 @@ def test_resolve_endpoint_returns_metric_for_specific_question() -> None:
         "start_date": "2026-01-01",
         "end_date": "2026-03-31",
         "plan_tier": "Comprehensive",
+        "group_by": [],
     }
     assert body["candidates"][0]["metric_id"] == "loss_ratio"
 

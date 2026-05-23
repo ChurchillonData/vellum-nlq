@@ -119,6 +119,9 @@ def _run_decline_rate_query(
     build_result: QueryBuildResult,
 ) -> list[dict[str, object]]:
     parameters = build_result.query.parameters
-    sql = decline_rate_sql(has_plan_tier=bool(parameters.get("plan_tier")))
+    sql = decline_rate_sql(
+        has_plan_tier=bool(parameters.get("plan_tier")),
+        group_by=build_result.plan.group_by,
+    )
     rows = connection.execute(sql, to_sqlite_parameters(parameters)).fetchall()
     return [dict(row) for row in rows]

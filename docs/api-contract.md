@@ -14,10 +14,10 @@ http://localhost:8000
 ### POST `/ask`
 
 Runs the first product-facing ask flow. The endpoint resolves a question, infers
-supported date ranges and plan-tier filters from the question when possible,
-blocks unsafe intent when needed, asks for clarification when the metric is
-ambiguous, and executes the deterministic demo path when a supported metric is
-resolved.
+supported date ranges, plan-tier filters, and the first supported grouping from
+the question when possible, blocks unsafe intent when needed, asks for
+clarification when the metric is ambiguous, and executes the deterministic demo
+path when a supported metric is resolved.
 
 Request:
 
@@ -27,8 +27,8 @@ Request:
 }
 ```
 
-Explicit `start_date`, `end_date`, and `plan_tier` fields are still accepted.
-When provided, explicit fields win over inferred values.
+Explicit `start_date`, `end_date`, `plan_tier`, and `group_by` fields are still
+accepted. When provided, explicit fields win over inferred values.
 
 Supported inference in this phase:
 
@@ -36,6 +36,7 @@ Supported inference in this phase:
 - `2026 Q1`, `2026 Q2`, `2026 Q3`, `2026 Q4`
 - two ISO dates such as `2026-01-01` and `2026-03-31`
 - plan tiers: `Essential`, `Comprehensive`, `Executive`
+- grouping phrase: `by consultant specialty`
 
 Answer response, trimmed to the fields most relevant to the UI:
 
@@ -163,7 +164,7 @@ Out-of-scope response:
 
 ### GET `/ask/examples`
 
-Returns the fourteen golden demo questions used by tests and future frontend demo
+Returns the fifteen golden demo questions used by tests and future frontend demo
 controls. Each example has an expected ask state.
 
 ```json
@@ -249,7 +250,19 @@ Request:
   "metric_id": "loss_ratio",
   "start_date": "2026-01-01",
   "end_date": "2026-03-31",
-  "plan_tier": "Comprehensive"
+  "plan_tier": "Comprehensive",
+  "group_by": []
+}
+```
+
+Current grouped request:
+
+```json
+{
+  "metric_id": "decline_rate",
+  "start_date": "2026-01-01",
+  "end_date": "2026-03-31",
+  "group_by": ["consultant_specialty"]
 }
 ```
 
@@ -285,6 +298,21 @@ Supported deterministic metrics in this phase:
 - `paid_claims`
 - `claim_frequency`
 - `decline_rate`
+
+Current grouped deterministic path:
+
+- `decline_rate` by `consultant_specialty`
+
+Grouped rows are shaped as:
+
+```json
+[
+  {
+    "consultant_specialty": "Cardiology",
+    "decline_rate": 0.125
+  }
+]
+```
 
 ### GET `/queries/{query_id}`
 

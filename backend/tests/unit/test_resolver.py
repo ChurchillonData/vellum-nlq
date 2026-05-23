@@ -63,6 +63,33 @@ def test_resolver_returns_decline_rate_metric(health_uk_catalogue) -> None:
     assert resolved.metric.time_anchor == "claim_lines.service_date"
 
 
+def test_resolver_accepts_decline_rate_consultant_specialty_grouping(
+    health_uk_catalogue,
+) -> None:
+    request = AnalyticsRequest(
+        metric_id="decline_rate",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+        group_by=("consultant_specialty",),
+    )
+
+    resolved = resolve_request(health_uk_catalogue, request)
+
+    assert resolved.request.group_by == ("consultant_specialty",)
+
+
+def test_resolver_rejects_unsupported_grouping(health_uk_catalogue) -> None:
+    request = AnalyticsRequest(
+        metric_id="loss_ratio",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+        group_by=("consultant_specialty",),
+    )
+
+    with pytest.raises(ResolutionError, match="grouping is not supported"):
+        resolve_request(health_uk_catalogue, request)
+
+
 def test_resolver_rejects_unknown_metric(health_uk_catalogue) -> None:
     request = AnalyticsRequest(
         metric_id="unknown_metric",

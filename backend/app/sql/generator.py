@@ -2,7 +2,15 @@ from sqlalchemy import Date, Integer, Numeric, String, bindparam, cast, func, se
 from sqlalchemy.dialects import postgresql
 
 from app.analytics.models import GeneratedQuery, LogicalPlan
-from app.db.schema import claim_lines, claims, enrolment_months, members, plans, premium
+from app.db.schema import (
+    claim_lines,
+    claims,
+    enrolment_months,
+    members,
+    plans,
+    premium,
+    providers,
+)
 
 
 def generate_loss_ratio_query(plan: LogicalPlan) -> GeneratedQuery:
@@ -152,6 +160,9 @@ def generate_decline_rate_query(plan: LogicalPlan) -> GeneratedQuery:
         .join(members, claims.c.member_id == members.c.id)
         .join(plans, members.c.plan_id == plans.c.id)
     )
+    if plan.group_by == ("consultant_specialty",):
+        source = source.join(providers, claim_lines.c.provider_id == providers.c.id)
+
     filters = [claim_lines.c.service_date.between(start_date, end_date)]
 
     if plan.plan_tier:
@@ -159,16 +170,24 @@ def generate_decline_rate_query(plan: LogicalPlan) -> GeneratedQuery:
         filters.append(plans.c.plan_tier == plan_tier)
 
     declined_line_flag = cast(claim_lines.c.declined_amount > 0, Integer())
-    statement = (
-        select(
-            (
-                cast(func.sum(declined_line_flag), Numeric(12, 6))
-                / func.nullif(func.count(claim_lines.c.id), 0)
-            ).label("decline_rate")
+    decline_rate = (
+        cast(func.sum(declined_line_flag), Numeric(12, 6))
+        / func.nullif(func.count(claim_lines.c.id), 0)
+    ).label("decline_rate")
+
+    if plan.group_by == ("consultant_specialty",):
+        statement = (
+            select(
+                providers.c.specialty.label("consultant_specialty"),
+                decline_rate,
+            )
+            .select_from(source)
+            .where(*filters)
+            .group_by(providers.c.specialty)
+            .order_by(decline_rate.element.desc())
         )
-        .select_from(source)
-        .where(*filters)
-    )
+    else:
+        statement = select(decline_rate).select_from(source).where(*filters)
 
     compiled = statement.compile(dialect=postgresql.dialect())
     return GeneratedQuery(sql=str(compiled), parameters=compiled.params)

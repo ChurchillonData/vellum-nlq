@@ -62,6 +62,9 @@ def _build_decline_rate_answer(
     build_result: QueryBuildResult,
     rows: list[dict[str, object]],
 ) -> str:
+    if build_result.plan.group_by == ("consultant_specialty",):
+        return _build_grouped_decline_rate_answer(build_result, rows)
+
     value = rows[0].get("decline_rate") if rows else None
     subject = _subject(build_result, "decline rate")
     period = _period(build_result)
@@ -71,6 +74,25 @@ def _build_decline_rate_answer(
 
     rate = float(value)
     return f"{subject} from {period} was {rate:.3f} ({rate:.1%})."
+
+
+def _build_grouped_decline_rate_answer(
+    build_result: QueryBuildResult,
+    rows: list[dict[str, object]],
+) -> str:
+    subject = _subject(build_result, "decline rate")
+    period = _period(build_result)
+
+    if not rows:
+        return f"{subject} by consultant specialty from {period} returned no rows."
+
+    top_row = rows[0]
+    specialty = top_row.get("consultant_specialty", "Unknown")
+    rate = float(top_row.get("decline_rate") or 0)
+    return (
+        f"{subject} by consultant specialty from {period} was highest for "
+        f"{specialty} at {rate:.3f} ({rate:.1%})."
+    )
 
 
 def _subject(build_result: QueryBuildResult, metric_label: str) -> str:

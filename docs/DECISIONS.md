@@ -224,7 +224,7 @@ dataset is still planned.
 **Decision.** A YAML file of approved question-and-answer pairs. CI runs every question against the seeded database on every pull request. The test asserts on the type of response (answer or clarification), the metric used, the dimensions, the row count, and an approximate value with a tolerance.
 
 **Current implementation.** The YAML golden suite is not built yet. The current
-backend protects fourteen demo examples through `GET /ask/examples` and
+backend protects fifteen demo examples through `GET /ask/examples` and
 `backend/tests/unit/test_ask_api.py`.
 
 **Consequences.**

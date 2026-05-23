@@ -21,6 +21,7 @@ def build_paid_claims_plan(catalogue: Catalogue, resolved: ResolvedRequest) -> L
         start_date=request.start_date,
         end_date=request.end_date,
         plan_tier=request.plan_tier,
+        group_by=request.group_by,
         tables=("claim_lines", "claims", "members", "plans"),
         joins=joins,
         filters=tuple(filters),

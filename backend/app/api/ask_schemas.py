@@ -17,6 +17,7 @@ class AskRequest(BaseModel):
     start_date: date | None = None
     end_date: date | None = None
     plan_tier: str | None = Field(default=None, min_length=1)
+    group_by: tuple[str, ...] = Field(default_factory=tuple)
 
     @model_validator(mode="after")
     def validate_date_range(self) -> "AskRequest":
@@ -78,6 +79,7 @@ class AskExampleResponse(AskRequest):
             start_date=example.start_date,
             end_date=example.end_date,
             plan_tier=example.plan_tier,
+            group_by=example.group_by,
         )
 
 

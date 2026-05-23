@@ -75,9 +75,26 @@ def claim_frequency_sql(has_plan_tier: bool) -> str:
     """
 
 
-def decline_rate_sql(has_plan_tier: bool) -> str:
+def decline_rate_sql(has_plan_tier: bool, group_by: tuple[str, ...] = ()) -> str:
     """Return SQLite SQL for the decline-rate demo query."""
     plan_filter = "AND plans.plan_tier = :plan_tier" if has_plan_tier else ""
+    if group_by == ("consultant_specialty",):
+        return f"""
+            SELECT
+                providers.specialty AS consultant_specialty,
+                SUM(CASE WHEN claim_lines.declined_amount > 0 THEN 1 ELSE 0 END) * 1.0
+                / NULLIF(COUNT(claim_lines.id), 0) AS decline_rate
+            FROM claim_lines
+            JOIN claims ON claim_lines.claim_id = claims.id
+            JOIN members ON claims.member_id = members.id
+            JOIN plans ON members.plan_id = plans.id
+            JOIN providers ON claim_lines.provider_id = providers.id
+            WHERE claim_lines.service_date BETWEEN :start_date AND :end_date
+              {plan_filter}
+            GROUP BY providers.specialty
+            ORDER BY decline_rate DESC
+        """
+
     return f"""
         SELECT
             SUM(CASE WHEN claim_lines.declined_amount > 0 THEN 1 ELSE 0 END) * 1.0

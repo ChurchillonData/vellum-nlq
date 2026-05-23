@@ -25,7 +25,8 @@ Implemented today:
 
 - FastAPI backend with product-facing `/ask` and development query endpoints.
 - Catalogue-backed deterministic paths for `loss_ratio`, `paid_claims`,
-  `claim_frequency`, and ungrouped `decline_rate`.
+  `claim_frequency`, and `decline_rate`.
+- Grouped `decline_rate` by consultant specialty.
 - Narrow natural-language parsing for quarter phrases, ISO date ranges, and
   demo plan tiers on `POST /ask`.
 - Ambiguity, out-of-scope, and destructive-intent responses for controlled demo
