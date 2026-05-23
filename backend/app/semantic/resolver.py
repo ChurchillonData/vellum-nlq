@@ -6,7 +6,7 @@ class ResolutionError(ValueError):
     """Raised when a structured request cannot be resolved yet."""
 
 
-SUPPORTED_METRICS = {"loss_ratio", "paid_claims", "claim_frequency"}
+SUPPORTED_METRICS = {"loss_ratio", "paid_claims", "claim_frequency", "decline_rate"}
 
 
 def resolve_request(catalogue: Catalogue, request: AnalyticsRequest) -> ResolvedRequest:
@@ -24,6 +24,8 @@ def resolve_request(catalogue: Catalogue, request: AnalyticsRequest) -> Resolved
         _validate_paid_claims_metric(metric)
     if metric.id == "claim_frequency":
         _validate_claim_frequency_metric(metric)
+    if metric.id == "decline_rate":
+        _validate_decline_rate_metric(metric)
 
     return ResolvedRequest(request=request, metric=metric)
 
@@ -56,3 +58,13 @@ def _validate_claim_frequency_metric(metric: MetricSpec) -> None:
 
     if set(metric.required_tables) != {"claims", "enrolment_months"}:
         raise ResolutionError("claim_frequency requires claims and enrolment_months")
+
+
+def _validate_decline_rate_metric(metric: MetricSpec) -> None:
+    if metric.time_anchor != "claim_lines.service_date":
+        raise ResolutionError(
+            f"decline_rate expects claim_lines.service_date, found {metric.time_anchor}"
+        )
+
+    if set(metric.required_tables) != {"claim_lines"}:
+        raise ResolutionError("decline_rate requires claim_lines")

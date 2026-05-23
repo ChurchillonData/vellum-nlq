@@ -49,7 +49,7 @@ Current first slice:
   generation, returning a safety rule ID for the UI rejection state.
 - `POST /ask` now orchestrates the first product-facing flow: answer,
   clarification, or blocked state from one endpoint.
-- `GET /ask/examples` exposes thirteen golden demo questions, and tests run each
+- `GET /ask/examples` exposes fourteen golden demo questions, and tests run each
   example through `/ask` to protect answer, date-range-required,
   clarification, blocked, and out-of-scope states.
 - `docs/api-contract.md` documents the current backend API surface for frontend
@@ -64,6 +64,9 @@ Current first slice:
 - `POST /ask` now infers supported date ranges and plan-tier filters from the
   question for the product endpoint. It handles quarter phrases such as
   `Q1 2026`, ISO date ranges, and the current demo plan tiers without OpenAI.
+- `decline_rate` now has an ungrouped deterministic path through catalogue
+  resolution, planning, guarded SQL generation, local demo execution, and ask
+  examples. Grouping by consultant specialty is the next slice.
 
 Current backend gaps before calling this phase complete:
 
@@ -73,7 +76,7 @@ Current backend gaps before calling this phase complete:
 - Catalogue metrics `incurred_claims` and `claim_severity` are defined but not
   executable yet.
 - The canonical demo's `decline_rate by consultant specialty` question is not
-  supported yet because `decline_rate` and grouping are future work.
+  supported yet because grouped dimensions are the next slice.
 
 ## Phase 3: Safety And Audit
 

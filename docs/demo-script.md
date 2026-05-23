@@ -8,7 +8,8 @@ target portfolio demo and the current backend demo boundary.
 Current backend supports:
 
 - Happy-path answer for `loss_ratio`.
-- Happy-path answers for `paid_claims` and `claim_frequency`.
+- Happy-path answers for `paid_claims`, `claim_frequency`, and ungrouped
+  `decline_rate`.
 - Ambiguity response for broad claims questions.
 - Out-of-scope response for forecasting questions.
 - Safety rejection for destructive database requests.

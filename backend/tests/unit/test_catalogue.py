@@ -24,6 +24,7 @@ def test_health_uk_catalogue_loads_first_metric() -> None:
     assert set(catalogue.metrics) == {
         "claim_frequency",
         "claim_severity",
+        "decline_rate",
         "incurred_claims",
         "loss_ratio",
         "paid_claims",

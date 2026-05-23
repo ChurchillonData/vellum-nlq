@@ -15,6 +15,7 @@ def test_metrics_endpoint_returns_active_catalogue_metrics() -> None:
     assert metric_ids == [
         "claim_frequency",
         "claim_severity",
+        "decline_rate",
         "incurred_claims",
         "loss_ratio",
         "paid_claims",

@@ -44,6 +44,12 @@ GOLDEN_ASK_EXAMPLES = (
         plan_tier="Comprehensive",
     ),
     AskExample(
+        id="answer_decline_rate_q1",
+        label="Decline rate in Q1",
+        question="What was decline rate for the Comprehensive plan tier in Q1 2026?",
+        expected_status="answer",
+    ),
+    AskExample(
         id="date_required_loss_ratio",
         label="Date range required",
         question="What was loss ratio for the Comprehensive plan tier?",

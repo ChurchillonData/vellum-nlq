@@ -1,0 +1,21 @@
+id: decline_rate
+label: Decline rate
+description: >
+  Share of claim lines with a declined amount in the selected service period.
+formula:
+  numerator: COUNT(claim_lines.id WHERE claim_lines.declined_amount > 0)
+  denominator: COUNT(claim_lines.id)
+  expression: SUM(CASE WHEN claim_lines.declined_amount > 0 THEN 1 ELSE 0 END) / NULLIF(COUNT(claim_lines.id), 0)
+required_tables:
+  - claim_lines
+time_anchor: claim_lines.service_date
+currency: null
+filters_default: []
+synonyms:
+  - decline rate
+  - claim decline rate
+  - claims declined
+  - denied claims
+owner: claims
+version: 0.1.0
+last_reviewed: "2026-05-23"

@@ -24,8 +24,8 @@ and does not execute against Postgres yet.
 Implemented today:
 
 - FastAPI backend with product-facing `/ask` and development query endpoints.
-- Catalogue-backed deterministic paths for `loss_ratio`, `paid_claims`, and
-  `claim_frequency`.
+- Catalogue-backed deterministic paths for `loss_ratio`, `paid_claims`,
+  `claim_frequency`, and ungrouped `decline_rate`.
 - Narrow natural-language parsing for quarter phrases, ISO date ranges, and
   demo plan tiers on `POST /ask`.
 - Ambiguity, out-of-scope, and destructive-intent responses for controlled demo
@@ -154,6 +154,7 @@ Vellum-NLQ is multi-catalogue by design. The current build includes the
 | `loss_ratio` | Yes | Yes |
 | `paid_claims` | Yes | Yes |
 | `claim_frequency` | Yes | Yes |
+| `decline_rate` | Yes | Yes |
 | `incurred_claims` | Yes | No |
 | `claim_severity` | Yes | No |
 

@@ -92,3 +92,36 @@ def test_claim_frequency_query_is_parameterised_and_has_provenance(
     )
     assert result.provenance.result_shape.columns == ("claim_frequency",)
     assert result.validation.passed is True
+
+
+def test_decline_rate_query_is_parameterised_and_has_provenance(
+    health_uk_catalogue,
+) -> None:
+    request = AnalyticsRequest(
+        metric_id="decline_rate",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+        plan_tier="Comprehensive",
+    )
+
+    result = build_query(health_uk_catalogue, request)
+
+    assert "claim_lines.declined_amount" in result.query.sql
+    assert "claim_lines.service_date" in result.query.sql
+    assert "%(start_date)s" in result.query.sql
+    assert "%(plan_tier)s" in result.query.sql
+    assert "Comprehensive" not in result.query.sql
+    assert result.query.parameters["start_date"] == date(2026, 1, 1)
+    assert result.query.parameters["end_date"] == date(2026, 3, 31)
+    assert result.query.parameters["plan_tier"] == "Comprehensive"
+
+    assert result.provenance.metric_id == "decline_rate"
+    assert result.provenance.time_anchor == "claim_lines.service_date"
+    assert result.provenance.tables_used == (
+        "claim_lines",
+        "claims",
+        "members",
+        "plans",
+    )
+    assert result.provenance.result_shape.columns == ("decline_rate",)
+    assert result.validation.passed is True

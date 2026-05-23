@@ -1,4 +1,4 @@
-from sqlalchemy import Date, String, bindparam, func, select, true
+from sqlalchemy import Date, Integer, Numeric, String, bindparam, cast, func, select, true
 from sqlalchemy.dialects import postgresql
 
 from app.analytics.models import GeneratedQuery, LogicalPlan
@@ -137,6 +137,38 @@ def generate_claim_frequency_query(plan: LogicalPlan) -> GeneratedQuery:
             / func.nullif(member_months.c.member_months, 0)
         ).label("claim_frequency")
     ).select_from(claim_counts.join(member_months, true()))
+
+    compiled = statement.compile(dialect=postgresql.dialect())
+    return GeneratedQuery(sql=str(compiled), parameters=compiled.params)
+
+
+def generate_decline_rate_query(plan: LogicalPlan) -> GeneratedQuery:
+    """Generate parameterised SQL for a planned decline-rate request."""
+    start_date = bindparam("start_date", plan.start_date, type_=Date())
+    end_date = bindparam("end_date", plan.end_date, type_=Date())
+
+    source = (
+        claim_lines.join(claims, claim_lines.c.claim_id == claims.c.id)
+        .join(members, claims.c.member_id == members.c.id)
+        .join(plans, members.c.plan_id == plans.c.id)
+    )
+    filters = [claim_lines.c.service_date.between(start_date, end_date)]
+
+    if plan.plan_tier:
+        plan_tier = bindparam("plan_tier", plan.plan_tier, type_=String())
+        filters.append(plans.c.plan_tier == plan_tier)
+
+    declined_line_flag = cast(claim_lines.c.declined_amount > 0, Integer())
+    statement = (
+        select(
+            (
+                cast(func.sum(declined_line_flag), Numeric(12, 6))
+                / func.nullif(func.count(claim_lines.c.id), 0)
+            ).label("decline_rate")
+        )
+        .select_from(source)
+        .where(*filters)
+    )
 
     compiled = statement.compile(dialect=postgresql.dialect())
     return GeneratedQuery(sql=str(compiled), parameters=compiled.params)

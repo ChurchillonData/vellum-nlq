@@ -8,6 +8,8 @@ def build_demo_answer(
     """Build a concise answer for one executed demo query."""
     if build_result.provenance.metric_id == "claim_frequency":
         return _build_claim_frequency_answer(build_result, rows)
+    if build_result.provenance.metric_id == "decline_rate":
+        return _build_decline_rate_answer(build_result, rows)
     if build_result.provenance.metric_id == "paid_claims":
         return _build_paid_claims_answer(build_result, rows)
     return _build_loss_ratio_answer(build_result, rows)
@@ -56,6 +58,21 @@ def _build_claim_frequency_answer(
     return f"{subject} from {period} was {float(value):.2f} per 1,000 member months."
 
 
+def _build_decline_rate_answer(
+    build_result: QueryBuildResult,
+    rows: list[dict[str, object]],
+) -> str:
+    value = rows[0].get("decline_rate") if rows else None
+    subject = _subject(build_result, "decline rate")
+    period = _period(build_result)
+
+    if value is None:
+        return f"{subject} from {period} could not be calculated."
+
+    rate = float(value)
+    return f"{subject} from {period} was {rate:.3f} ({rate:.1%})."
+
+
 def _subject(build_result: QueryBuildResult, metric_label: str) -> str:
     plan_tier = build_result.plan.plan_tier
     if plan_tier:
@@ -68,4 +85,3 @@ def _period(build_result: QueryBuildResult) -> str:
         f"{build_result.plan.start_date.isoformat()} "
         f"to {build_result.plan.end_date.isoformat()}"
     )
-

@@ -49,6 +49,20 @@ def test_resolver_returns_claim_frequency_metric(health_uk_catalogue) -> None:
     assert resolved.metric.time_anchor == "claims.incurred_date"
 
 
+def test_resolver_returns_decline_rate_metric(health_uk_catalogue) -> None:
+    request = AnalyticsRequest(
+        metric_id="decline_rate",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+        plan_tier="Comprehensive",
+    )
+
+    resolved = resolve_request(health_uk_catalogue, request)
+
+    assert resolved.metric.id == "decline_rate"
+    assert resolved.metric.time_anchor == "claim_lines.service_date"
+
+
 def test_resolver_rejects_unknown_metric(health_uk_catalogue) -> None:
     request = AnalyticsRequest(
         metric_id="unknown_metric",

@@ -74,3 +74,18 @@ def claim_frequency_sql(has_plan_tier: bool) -> str:
         JOIN member_months ON 1 = 1
     """
 
+
+def decline_rate_sql(has_plan_tier: bool) -> str:
+    """Return SQLite SQL for the decline-rate demo query."""
+    plan_filter = "AND plans.plan_tier = :plan_tier" if has_plan_tier else ""
+    return f"""
+        SELECT
+            SUM(CASE WHEN claim_lines.declined_amount > 0 THEN 1 ELSE 0 END) * 1.0
+            / NULLIF(COUNT(claim_lines.id), 0) AS decline_rate
+        FROM claim_lines
+        JOIN claims ON claim_lines.claim_id = claims.id
+        JOIN members ON claims.member_id = members.id
+        JOIN plans ON members.plan_id = plans.id
+        WHERE claim_lines.service_date BETWEEN :start_date AND :end_date
+          {plan_filter}
+    """

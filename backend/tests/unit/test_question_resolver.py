@@ -49,6 +49,22 @@ def test_question_resolver_resolves_direct_claim_frequency_question(
     assert result.resolved_request.metric_id == "claim_frequency"
 
 
+def test_question_resolver_resolves_direct_decline_rate_question(
+    health_uk_catalogue,
+) -> None:
+    result = resolve_question(
+        health_uk_catalogue,
+        question="Show decline rate for Q1",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+        plan_tier="Comprehensive",
+    )
+
+    assert result.status == "resolved"
+    assert result.resolved_request is not None
+    assert result.resolved_request.metric_id == "decline_rate"
+
+
 def test_question_resolver_returns_clarification_for_claims_numbers(
     health_uk_catalogue,
 ) -> None:

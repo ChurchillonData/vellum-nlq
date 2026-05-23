@@ -46,8 +46,11 @@ def _create_demo_tables(connection: sqlite3.Connection) -> None:
         CREATE TABLE claim_lines (
             id TEXT PRIMARY KEY,
             claim_id TEXT NOT NULL,
+            provider_id TEXT NOT NULL,
+            service_date TEXT NOT NULL,
             paid_date TEXT,
-            net_paid_amount REAL NOT NULL
+            net_paid_amount REAL NOT NULL,
+            declined_amount REAL NOT NULL
         );
 
         CREATE TABLE enrolment_months (
@@ -112,11 +115,28 @@ def _insert_demo_rows(connection: sqlite3.Connection, seed_data: SeedData) -> No
     )
     connection.executemany(
         """
-        INSERT INTO claim_lines (id, claim_id, paid_date, net_paid_amount)
-        VALUES (:id, :claim_id, :paid_date, :net_paid_amount)
+        INSERT INTO claim_lines (
+            id, claim_id, provider_id, service_date, paid_date, net_paid_amount,
+            declined_amount
+        )
+        VALUES (
+            :id, :claim_id, :provider_id, :service_date, :paid_date,
+            :net_paid_amount, :declined_amount
+        )
         """,
         [
-            _clean_row(row, ("id", "claim_id", "paid_date", "net_paid_amount"))
+            _clean_row(
+                row,
+                (
+                    "id",
+                    "claim_id",
+                    "provider_id",
+                    "service_date",
+                    "paid_date",
+                    "net_paid_amount",
+                    "declined_amount",
+                ),
+            )
             for row in seed_data.claim_lines
         ],
     )

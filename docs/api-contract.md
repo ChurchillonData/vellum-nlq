@@ -163,7 +163,7 @@ Out-of-scope response:
 
 ### GET `/ask/examples`
 
-Returns the thirteen golden demo questions used by tests and future frontend demo
+Returns the fourteen golden demo questions used by tests and future frontend demo
 controls. Each example has an expected ask state.
 
 ```json
@@ -284,6 +284,7 @@ Supported deterministic metrics in this phase:
 - `loss_ratio`
 - `paid_claims`
 - `claim_frequency`
+- `decline_rate`
 
 ### GET `/queries/{query_id}`
 
