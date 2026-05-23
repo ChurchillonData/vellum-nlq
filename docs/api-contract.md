@@ -345,8 +345,9 @@ Grouped rows are shaped as:
 
 ### GET `/queries/{query_id}`
 
-Reads one local JSONL audit event by query ID. This includes ask outcomes,
-preview requests, and execution requests.
+Reads one audit event by query ID. This includes ask outcomes, preview
+requests, and execution requests. The default development store is JSONL;
+`VELLUM_AUDIT_BACKEND=postgres` reads from the Postgres audit table.
 
 ```json
 {
@@ -401,9 +402,12 @@ paths.
 
 ## Audit Notes
 
-Every `/ask` response writes a local JSONL audit event, including answer,
-clarification, blocked, date-range-required, and out-of-scope states. Successful
-preview and execution requests are also audited. The audit record includes the
-request payload, status, query ID, SQL and provenance when generated, validation
-outcome when available, and execution summary when applicable. This is a
-development audit store until the Postgres audit table is built.
+Every `/ask` response writes an audit event, including answer, clarification,
+blocked, date-range-required, and out-of-scope states. Successful preview and
+execution requests are also audited. The audit record includes the request
+payload, status, query ID, SQL and provenance when generated, validation outcome
+when available, and execution summary when applicable.
+
+By default, audit records are written to local JSONL for no-Docker development.
+When `VELLUM_AUDIT_BACKEND=postgres` is set, records are written to the
+append-only `audit_events` table using `VELLUM_AUDIT_DATABASE_URL`.

@@ -24,13 +24,14 @@ Current build:
   clarification, date-range-required, out-of-scope, and answer states.
 - Successful previews and local demo executions also write local JSONL audit
   events.
+- `VELLUM_AUDIT_BACKEND=postgres` writes the same event shape to an
+  append-only `audit_events` table.
 - The first red-team suite covers destructive user intent and unsafe SQL guard
   cases.
 
 Not built yet:
 
-- Postgres read-only execution for product requests.
-- Append-only Postgres audit table.
+- Live Postgres integration tests for execution and audit.
 - Expanded red-team coverage for prompt injection and obfuscated attacks.
 
 ## Product Boundary
@@ -86,7 +87,7 @@ small test and a clear reason.
 
 ## Layer 3: Audit Trail
 
-The current build writes local JSONL audit events for every `/ask` outcome.
+The current build writes audit events for every `/ask` outcome.
 That means answer, clarification, blocked, date-range-required, and out-of-scope
 states all receive a query ID and can be loaded through the audit lookup
 endpoint. Successful preview and demo execution requests are also audited.
@@ -96,11 +97,10 @@ parameters, provenance, and validation result. For blocked, clarification, and
 out-of-scope states, the event records the status and the relevant safety,
 candidate, or scope payload instead of pretending SQL exists.
 
-This is useful for the demo backend and for development. It is not the final
-audit design.
-
-The target production design keeps this same product behaviour but moves the
-store to an append-only Postgres audit table.
+The default store is local JSONL so the backend runs without Docker. When
+`VELLUM_AUDIT_BACKEND=postgres` is set, the same records are written to the
+append-only `audit_events` table through a local role with SELECT and INSERT
+grants only.
 
 ## Target Production Controls
 
@@ -108,7 +108,6 @@ The full target system will add:
 
 - A Postgres role with SELECT-only permissions.
 - Database-level statement timeout.
-- Append-only audit table.
 - Expanded red-team tests for injection and schema-exfiltration attempts.
 - Integration tests against seeded Postgres data.
 - Broader result-size policies as more grouped dimensions are added.
@@ -149,10 +148,8 @@ Honest scope limits:
 
 1. A compromised catalogue YAML file can widen the allowlist.
 2. Live Postgres integration tests are not implemented yet.
-3. The current audit log is local JSONL, not a database-enforced append-only
-   table.
-4. Red-team coverage is still a first slice and does not yet include
+3. Red-team coverage is still a first slice and does not yet include
    obfuscated or encoded prompt-injection attempts.
-5. Rate limiting and side-channel inference controls are not implemented yet.
+4. Rate limiting and side-channel inference controls are not implemented yet.
 
 These gaps are build-plan items, not hidden assumptions.

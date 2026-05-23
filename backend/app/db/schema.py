@@ -11,7 +11,7 @@ from sqlalchemy import (
     Text,
     func,
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 
 metadata = MetaData()
@@ -120,3 +120,12 @@ declines = Table(
     Column("reason_text", Text, nullable=False),
 )
 
+audit_events = Table(
+    "audit_events",
+    metadata,
+    Column("id", UUID(as_uuid=True), primary_key=True),
+    Column("query_id", String(80), nullable=False, unique=True),
+    Column("event_type", String(80), nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+    Column("payload", JSONB, nullable=False),
+)

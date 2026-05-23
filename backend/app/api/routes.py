@@ -18,11 +18,11 @@ from app.ask.parser import parse_ask_fields
 from app.ask.service import AskRequest as AskServiceRequest
 from app.ask.service import answer_question
 from app.audit.logger import (
-    JsonlAuditLogger,
     build_ask_audit_event,
     build_execution_audit_event,
     build_preview_audit_event,
 )
+from app.audit.store import build_audit_store
 from app.config import get_settings
 from app.execution.factory import execute_query as execute_configured_query
 from app.intent.factory import build_intent_provider
@@ -101,7 +101,7 @@ def ask(request: AskApiRequest) -> AskResponse:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
     audit_event = build_ask_audit_event(ask_request, result)
-    JsonlAuditLogger(settings.audit_log_path).record(audit_event)
+    build_audit_store(settings).record(audit_event)
 
     return AskResponse.from_ask_result(result, query_id=audit_event.query_id)
 
@@ -133,7 +133,7 @@ def preview_query(request: QueryPreviewRequest) -> QueryPreviewResponse:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
     audit_event = build_preview_audit_event(request, build_result)
-    JsonlAuditLogger(settings.audit_log_path).record(audit_event)
+    build_audit_store(settings).record(audit_event)
 
     return QueryPreviewResponse.from_build_result(
         build_result,
@@ -162,7 +162,7 @@ def execute_query(request: QueryExecuteRequest) -> QueryExecuteResponse:
         answer=execution_result.answer,
         mode=execution_result.mode,
     )
-    JsonlAuditLogger(settings.audit_log_path).record(audit_event)
+    build_audit_store(settings).record(audit_event)
 
     return QueryExecuteResponse.from_execution_result(
         build_result,
@@ -175,7 +175,7 @@ def execute_query(request: QueryExecuteRequest) -> QueryExecuteResponse:
 def get_query(query_id: str) -> dict[str, object]:
     """Return one development audit trace by query ID."""
     settings = get_settings()
-    event = JsonlAuditLogger(settings.audit_log_path).find_by_query_id(query_id)
+    event = build_audit_store(settings).find_by_query_id(query_id)
     if event is None:
         raise HTTPException(status_code=404, detail=f"query not found: {query_id}")
 

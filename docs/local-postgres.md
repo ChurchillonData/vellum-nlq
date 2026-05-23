@@ -5,11 +5,12 @@ hosting is added.
 
 ## Roles
 
-The local Docker database creates three roles:
+The local Docker database creates four roles:
 
 - `vellum_admin`: owns setup and runs Alembic migrations.
 - `vellum_seeder`: loads synthetic development data.
-- `vellum_readonly`: future application execution role with SELECT-only access.
+- `vellum_readonly`: application execution role with SELECT-only access.
+- `vellum_auditor`: writes and reads audit events with no update/delete grants.
 
 `vellum_readonly` also has local database defaults for `statement_timeout` and
 `work_mem`.
@@ -43,16 +44,18 @@ The backend has separate URLs for each database responsibility:
 ```text
 VELLUM_DATABASE_URL          # admin / migrations
 VELLUM_SEED_DATABASE_URL     # synthetic seed loading
-VELLUM_READONLY_DATABASE_URL # future guarded query execution
+VELLUM_READONLY_DATABASE_URL # guarded query execution
+VELLUM_AUDIT_DATABASE_URL    # append-only audit storage
 ```
 
 Local defaults are defined in `backend/app/config.py`.
 
 ## Current Boundary
 
-The local Postgres schema, roles, migrations, seed path, and guarded Postgres
-executor are now in place. The API still defaults to the in-memory demo executor
-so the project runs without Docker.
+The local Postgres schema, roles, migrations, seed path, guarded Postgres
+executor, and append-only audit table are now in place. The API still defaults
+to the in-memory demo executor and JSONL audit store so the project runs without
+Docker.
 
 To execute guarded generated SQL against local Postgres, set:
 
@@ -63,4 +66,11 @@ VELLUM_EXECUTION_BACKEND=postgres
 The Postgres execution path uses `VELLUM_READONLY_DATABASE_URL`, refuses SQL
 that failed guard validation, and passes generated parameters as bound values.
 
-The next backend storage slice is the append-only Postgres audit table.
+To store audit events in Postgres, set:
+
+```text
+VELLUM_AUDIT_BACKEND=postgres
+```
+
+That path uses `VELLUM_AUDIT_DATABASE_URL` and writes to `audit_events` through
+the `vellum_auditor` role. The local grant is SELECT and INSERT only.

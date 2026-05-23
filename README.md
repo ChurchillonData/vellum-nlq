@@ -48,6 +48,7 @@ Implemented today:
   read-only URL when enabled.
 - Local JSONL audit events for all `/ask` outcomes, successful previews, and
   demo executions.
+- Append-only Postgres audit table behind `VELLUM_AUDIT_BACKEND=postgres`.
 - Seventeen `/ask/examples` items covered by unit tests.
 - YAML golden question suite covering the core demo contract.
 - First red-team suite for destructive questions and unsafe SQL guard cases.
@@ -55,7 +56,6 @@ Implemented today:
 Planned next:
 
 - Richer natural-language date and filter parsing.
-- Append-only Postgres audit table.
 - Expanded red-team coverage for obfuscated and prompt-injection-style attacks.
 - Frontend implementation using the uploaded UI mockups.
 
@@ -159,8 +159,8 @@ vellum-nlq/
 `-- Makefile
 ```
 
-Frontend, integration tests, append-only Postgres audit, and production
-deployment are planned phases, not finished implementation.
+Frontend, integration tests, and production deployment are planned phases, not
+finished implementation.
 
 ## The Catalogue
 
@@ -197,8 +197,8 @@ The current SQL guard checks:
 The current allowlisted functions are deliberately small: `CAST`, `COUNT`,
 `NULLIF`, and `SUM`.
 
-Planned safety work includes a persisted append-only audit table and expanded
-red-team coverage.
+Planned safety work includes expanded red-team coverage and live Postgres
+integration tests.
 
 Read `docs/safety-model.md` for the current safety boundary and target model.
 
@@ -250,7 +250,7 @@ Full request and response examples are documented in `docs/api-contract.md`.
 | `POST /queries/resolve` | Deterministic metric resolution and early safety blocking. |
 | `POST /queries/preview` | Parameterised SQL and provenance without execution. |
 | `POST /queries/execute` | Guarded deterministic demo execution against synthetic local data. |
-| `GET /queries/{query_id}` | Local JSONL audit trace for a previous ask, preview, or execution. |
+| `GET /queries/{query_id}` | Audit trace for a previous ask, preview, or execution. |
 | `GET /health` | Liveness and active catalogue name. |
 
 ## What This Proves

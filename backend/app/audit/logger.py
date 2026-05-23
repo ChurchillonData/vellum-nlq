@@ -1,7 +1,5 @@
-import json
 from dataclasses import asdict, dataclass
-from datetime import UTC, date, datetime
-from pathlib import Path
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from app.analytics.models import AnalyticsRequest, QueryBuildResult
@@ -45,31 +43,9 @@ class AskAuditEvent:
     execution: dict[str, object] | None = None
 
 
-class JsonlAuditLogger:
-    """Write audit events to a local JSON Lines file for development."""
-
-    def __init__(self, path: Path) -> None:
-        self.path = path
-
-    def record(self, event: AuditEvent | AskAuditEvent) -> None:
-        """Append one event to the JSONL audit log."""
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        with self.path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(asdict(event), default=_json_default))
-            handle.write("\n")
-
-    def find_by_query_id(self, query_id: str) -> dict[str, object] | None:
-        """Return one audit event by query ID from the local JSONL log."""
-        if not self.path.exists():
-            return None
-
-        with self.path.open(encoding="utf-8") as handle:
-            for line in handle:
-                event = json.loads(line)
-                if event.get("query_id") == query_id:
-                    return event
-
-        return None
+def audit_event_to_record(event: AuditEvent | AskAuditEvent) -> dict[str, object]:
+    """Convert an audit dataclass into a plain record."""
+    return asdict(event)
 
 
 def build_preview_audit_event(
@@ -233,9 +209,3 @@ def _validation_payload(result: QueryBuildResult) -> dict[str, object]:
             for item in result.validation.rejections
         ],
     }
-
-
-def _json_default(value: object) -> str:
-    if isinstance(value, date | datetime):
-        return value.isoformat()
-    return str(value)

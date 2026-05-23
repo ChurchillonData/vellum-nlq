@@ -21,7 +21,7 @@ Current foundation:
 
 - `docker-compose.yml` starts a local Postgres 16 database.
 - Local roles are separated into `vellum_admin`, `vellum_seeder`, and
-  `vellum_readonly`.
+  `vellum_readonly`; the audit slice also adds `vellum_auditor`.
 - Alembic migration `0001` creates the first claims analytics schema, indexes,
   and local role grants.
 - `backend/seeds/generate.py` loads deterministic synthetic data through the
@@ -123,17 +123,20 @@ Current first slice:
   ID, including answer, clarification, blocked, date-range-required, and
   out-of-scope states.
 - `GET /queries/{query_id}` can read back local JSONL audit events while the
-  Postgres audit table is not built yet.
+  default audit backend is JSONL.
 - `backend/tests/redteam/` now contains the first red-team slice. It checks
   destructive user intent through `/ask` and unsafe generated-SQL shapes through
   the SQL guard. `make test-redteam` runs this suite.
 - The SQL guard now rejects embedded string/date literals and uncontrolled
   grouped result sets. Grouped generated SQL must carry an approved result
   limit, currently capped at 50 rows.
+- `VELLUM_AUDIT_BACKEND=postgres` stores audit events in the append-only
+  `audit_events` table through the `vellum_auditor` role.
+- Alembic migration `0002` creates the audit table, audit indexes, and
+  SELECT/INSERT-only local audit grants.
 
 Current safety and audit gaps:
 
-- The Postgres append-only audit table is not built yet.
 - Red-team coverage is still a first slice; broader prompt-injection and
   obfuscation cases are planned.
 - Broader result-size policies for future dimensions are planned as grouped
@@ -159,7 +162,6 @@ Current gaps:
 
 - Live Postgres integration tests are not implemented yet because Docker is not
   available in the current execution environment.
-- Append-only Postgres audit is still the next backend storage slice.
 
 ## Phase 4: OpenAI Intent Layer
 
