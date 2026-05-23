@@ -56,6 +56,8 @@ Current first slice:
 - `paid_claims` now has a deterministic catalogue-backed path through
   resolution, planning, SQL generation, guard validation, demo execution, and
   golden ask examples.
+- The ask flow now returns `out_of_scope` for forecasting and prediction
+  questions, matching the canonical demo script's forecast refusal state.
 
 ## Phase 3: Safety And Audit
 

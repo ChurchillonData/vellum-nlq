@@ -91,4 +91,28 @@ GOLDEN_ASK_EXAMPLES = (
         start_date=date(2026, 1, 1),
         end_date=date(2026, 3, 31),
     ),
+    AskExample(
+        id="out_of_scope_loss_ratio_forecast",
+        label="Out-of-scope forecast",
+        question="What will loss ratio be next quarter?",
+        expected_status="out_of_scope",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+    ),
+    AskExample(
+        id="out_of_scope_claims_prediction",
+        label="Out-of-scope claims prediction",
+        question="Predict paid claims for Q2.",
+        expected_status="out_of_scope",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+    ),
+    AskExample(
+        id="out_of_scope_future_projection",
+        label="Out-of-scope future projection",
+        question="Forecast claim frequency next month.",
+        expected_status="out_of_scope",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+    ),
 )

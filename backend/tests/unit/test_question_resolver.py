@@ -68,6 +68,23 @@ def test_question_resolver_returns_unresolved_for_unknown_question(
     assert result.resolved_request is None
 
 
+def test_question_resolver_returns_out_of_scope_for_forecast(
+    health_uk_catalogue,
+) -> None:
+    result = resolve_question(
+        health_uk_catalogue,
+        question="What will loss ratio be next quarter?",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+    )
+
+    assert result.status == "out_of_scope"
+    assert result.candidates == ()
+    assert result.resolved_request is None
+    assert result.scope is not None
+    assert result.scope.reason_id == "forecasting_not_supported"
+
+
 def test_question_resolver_blocks_destructive_database_intent(
     health_uk_catalogue,
 ) -> None:

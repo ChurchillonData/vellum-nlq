@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.analytics.models import AnalyticsRequest
 from app.semantic.question_resolver import MetricCandidate, QuestionResolution
+from app.semantic.scope import ScopeFinding
 from app.semantic.safety import SafetyFinding
 
 
@@ -62,6 +63,18 @@ class SafetyFindingResponse(BaseModel):
         )
 
 
+class ScopeFindingResponse(BaseModel):
+    """Scope finding returned when a question is not supported."""
+
+    reason_id: str
+    reason: str
+
+    @classmethod
+    def from_finding(cls, finding: ScopeFinding) -> "ScopeFindingResponse":
+        """Convert a scope finding into API JSON."""
+        return cls(reason_id=finding.reason_id, reason=finding.reason)
+
+
 class QueryResolveResponse(BaseModel):
     """Metric resolution state for the ask workspace."""
 
@@ -71,6 +84,7 @@ class QueryResolveResponse(BaseModel):
     candidates: list[MetricCandidateResponse]
     resolved_request: AnalyticsRequest | None
     safety: SafetyFindingResponse | None
+    scope: ScopeFindingResponse | None
 
     @classmethod
     def from_resolution(cls, result: QuestionResolution) -> "QueryResolveResponse":
@@ -87,6 +101,11 @@ class QueryResolveResponse(BaseModel):
             safety=(
                 SafetyFindingResponse.from_finding(result.safety)
                 if result.safety is not None
+                else None
+            ),
+            scope=(
+                ScopeFindingResponse.from_finding(result.scope)
+                if result.scope is not None
                 else None
             ),
         )

@@ -4,6 +4,7 @@ from datetime import date
 
 from app.analytics.models import AnalyticsRequest
 from app.semantic.models import Catalogue, MetricSpec
+from app.semantic.scope import ScopeFinding, classify_question_scope
 from app.semantic.safety import SafetyFinding, classify_question_safety
 
 
@@ -31,6 +32,7 @@ class QuestionResolution:
     resolved_request: AnalyticsRequest | None
     message: str
     safety: SafetyFinding | None = None
+    scope: ScopeFinding | None = None
 
 
 def resolve_question(
@@ -51,6 +53,17 @@ def resolve_question(
             resolved_request=None,
             message="Request refused. Destructive database operations are not allowed.",
             safety=safety,
+        )
+
+    scope = classify_question_scope(tokens)
+    if scope is not None:
+        return QuestionResolution(
+            status="out_of_scope",
+            question=question,
+            candidates=(),
+            resolved_request=None,
+            message="Request is outside the current analytics scope.",
+            scope=scope,
         )
 
     candidates = _rank_candidates(catalogue, question, tokens)

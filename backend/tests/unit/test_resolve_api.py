@@ -83,3 +83,25 @@ def test_resolve_endpoint_blocks_destructive_database_intent() -> None:
         "severity": "critical",
         "reason": "Question contains destructive DROP intent.",
     }
+
+
+def test_resolve_endpoint_returns_out_of_scope_for_forecast() -> None:
+    response = TestClient(app).post(
+        "/queries/resolve",
+        json={
+            "question": "What will loss ratio be next quarter?",
+            "start_date": "2026-01-01",
+            "end_date": "2026-03-31",
+        },
+    )
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["status"] == "out_of_scope"
+    assert body["candidates"] == []
+    assert body["resolved_request"] is None
+    assert body["scope"] == {
+        "reason_id": "forecasting_not_supported",
+        "reason": "Forecasting questions are outside the current analytics scope.",
+    }

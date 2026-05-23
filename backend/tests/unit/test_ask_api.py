@@ -51,10 +51,11 @@ def test_ask_examples_endpoint_returns_three_examples_per_state() -> None:
     statuses = [example["expected_status"] for example in body["examples"]]
 
     assert response.status_code == 200
-    assert len(body["examples"]) == 9
+    assert len(body["examples"]) == 12
     assert statuses.count("answer") == 3
     assert statuses.count("clarification_required") == 3
     assert statuses.count("blocked") == 3
+    assert statuses.count("out_of_scope") == 3
 
 
 def test_every_golden_ask_example_returns_expected_state(tmp_path) -> None:
@@ -128,3 +129,23 @@ def test_ask_endpoint_returns_blocked_state() -> None:
     assert body["candidates"] == []
     assert body["resolved_request"] is None
     assert body["safety"]["rule_id"] == "DDL_DROP_PATTERN"
+
+
+def test_ask_endpoint_returns_out_of_scope_state() -> None:
+    response = TestClient(app).post(
+        "/ask",
+        json={
+            "question": "What will loss ratio be next quarter?",
+            "start_date": "2026-01-01",
+            "end_date": "2026-03-31",
+        },
+    )
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["status"] == "out_of_scope"
+    assert body["answer"] is None
+    assert body["candidates"] == []
+    assert body["resolved_request"] is None
+    assert body["scope"]["reason_id"] == "forecasting_not_supported"

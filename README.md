@@ -166,7 +166,7 @@ are documented in `docs/api-contract.md`.
 | Endpoint | Purpose |
 |---|---|
 | `POST /ask` | Product-facing ask flow. Returns answer, clarification, or blocked state. |
-| `GET /ask/examples` | Nine golden demo questions used by tests and future UI controls. |
+| `GET /ask/examples` | Twelve golden demo questions used by tests and future UI controls. |
 | `GET /metrics` | Active catalogue metric definitions with formulas and versions. |
 | `POST /queries/resolve` | Deterministic metric resolution and early safety blocking. |
 | `POST /queries/preview` | Parameterised SQL and provenance without execution. |

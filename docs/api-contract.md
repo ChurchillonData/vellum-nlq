@@ -50,6 +50,7 @@ Answer response, trimmed to the fields most relevant to the UI:
     }
   ],
   "safety": null,
+  "scope": null,
   "answer": {
     "query_id": "q_<uuid>",
     "metric_id": "loss_ratio",
@@ -74,6 +75,7 @@ Clarification response, trimmed to the fields most relevant to the UI:
   "message": "Multiple catalogue metrics may answer this question.",
   "resolved_request": null,
   "safety": null,
+  "scope": null,
   "answer": null,
   "candidates": [
     {
@@ -108,6 +110,7 @@ Blocked response:
   "resolved_request": null,
   "candidates": [],
   "answer": null,
+  "scope": null,
   "safety": {
     "rule_id": "DDL_DROP_PATTERN",
     "severity": "critical",
@@ -116,11 +119,29 @@ Blocked response:
 }
 ```
 
+Out-of-scope response:
+
+```json
+{
+  "status": "out_of_scope",
+  "question": "What will loss ratio be next quarter?",
+  "message": "Request is outside the current analytics scope.",
+  "resolved_request": null,
+  "candidates": [],
+  "answer": null,
+  "safety": null,
+  "scope": {
+    "reason_id": "forecasting_not_supported",
+    "reason": "Forecasting questions are outside the current analytics scope."
+  }
+}
+```
+
 ## Demo Examples
 
 ### GET `/ask/examples`
 
-Returns the nine golden demo questions used by tests and future frontend demo
+Returns the twelve golden demo questions used by tests and future frontend demo
 controls. Each example has an expected ask state.
 
 ```json
