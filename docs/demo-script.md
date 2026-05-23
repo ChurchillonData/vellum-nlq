@@ -8,8 +8,8 @@ target portfolio demo and the current backend demo boundary.
 Current backend supports:
 
 - Happy-path answer for `loss_ratio`.
-- Happy-path answers for `paid_claims`, `claim_frequency`, and ungrouped
-  `decline_rate`.
+- Happy-path answers for `paid_claims`, `claim_frequency`, `incurred_claims`,
+  `claim_severity`, and ungrouped `decline_rate`.
 - Grouped decline-rate answer by consultant specialty.
 - Ambiguity response for broad claims questions.
 - Out-of-scope response for forecasting questions.
@@ -135,9 +135,8 @@ Ask:
 Decline rate by consultant specialty for the last six months
 ```
 
-Target behaviour: grouped result table sorted by decline rate, with catalogue
-join provenance. This requires the future `decline_rate` metric and dimension
-planning work.
+Current behaviour: grouped result table sorted by decline rate, with catalogue
+join provenance and a guarded 50-row result limit.
 
 ### Question 3: Ambiguity
 

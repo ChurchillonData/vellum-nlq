@@ -38,6 +38,7 @@ def test_jsonl_audit_logger_records_preview_event(tmp_path, health_uk_catalogue)
     assert record["provenance"]["result_shape"] == {
         "columns": ["loss_ratio"],
         "grain": "single_metric",
+        "max_rows": 1,
     }
     assert record["validation"]["passed"] is True
     assert "join_allowlist" in record["validation"]["rules_checked"]

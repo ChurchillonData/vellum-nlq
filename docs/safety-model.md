@@ -14,6 +14,10 @@ Current build:
   references are rejected.
 - Tables, columns, functions, and join paths are checked against the active
   semantic catalogue.
+- Embedded string and date literals are rejected so request values stay bound as
+  parameters.
+- Grouped SQL must include an approved row limit. The current grouped cap is 50
+  rows.
 - Every `/ask` outcome writes a local JSONL audit event, including blocked,
   clarification, date-range-required, out-of-scope, and answer states.
 - Successful previews and local demo executions also write local JSONL audit
@@ -26,8 +30,6 @@ Not built yet:
 - Postgres read-only execution for product requests.
 - Append-only Postgres audit table.
 - Expanded red-team coverage for prompt injection and obfuscated attacks.
-- Result row caps enforced by the guard.
-- Parameter literal enforcement in the guard.
 
 ## Product Boundary
 
@@ -66,7 +68,9 @@ current checks are intentionally small and readable:
 6. Referenced tables must be in the catalogue allowlist.
 7. Referenced columns must be in the catalogue allowlist.
 8. Referenced functions must be in the function allowlist.
-9. Join paths must match the catalogue join graph.
+9. String and date values must be supplied as bound parameters.
+10. Join paths must match the catalogue join graph.
+11. Grouped result sets must have an approved row limit.
 
 The current function allowlist is deliberately narrow:
 
@@ -105,7 +109,7 @@ The full target system will add:
 - Append-only audit table.
 - Expanded red-team tests for injection and schema-exfiltration attempts.
 - Integration tests against seeded Postgres data.
-- Result-size limits.
+- Broader result-size policies as more grouped dimensions are added.
 - Clear operational review of rejected queries.
 
 These are documented as roadmap items so the safety story stays honest while

@@ -26,6 +26,24 @@ questions:
       result_columns:
         - claim_frequency
 
+  - id: answer_incurred_claims_q1
+    question: Show incurred claims for the Comprehensive plan tier in Q1 2026.
+    expects:
+      status: answer
+      metric_id: incurred_claims
+      row_count: 1
+      result_columns:
+        - incurred_claims
+
+  - id: answer_claim_severity_q1
+    question: Show claim severity for the Comprehensive plan tier in Q1 2026.
+    expects:
+      status: answer
+      metric_id: claim_severity
+      row_count: 1
+      result_columns:
+        - claim_severity
+
   - id: answer_decline_rate_q1
     question: What was decline rate for the Comprehensive plan tier in Q1 2026?
     expects:

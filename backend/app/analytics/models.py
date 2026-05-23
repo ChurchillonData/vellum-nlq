@@ -39,6 +39,7 @@ class ResultShape:
 
     columns: tuple[str, ...]
     grain: str
+    max_rows: int = 1
 
 
 @dataclass(frozen=True)

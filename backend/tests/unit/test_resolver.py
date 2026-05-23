@@ -63,6 +63,34 @@ def test_resolver_returns_decline_rate_metric(health_uk_catalogue) -> None:
     assert resolved.metric.time_anchor == "claim_lines.service_date"
 
 
+def test_resolver_returns_incurred_claims_metric(health_uk_catalogue) -> None:
+    request = AnalyticsRequest(
+        metric_id="incurred_claims",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+        plan_tier="Comprehensive",
+    )
+
+    resolved = resolve_request(health_uk_catalogue, request)
+
+    assert resolved.metric.id == "incurred_claims"
+    assert resolved.metric.time_anchor == "claims.incurred_date"
+
+
+def test_resolver_returns_claim_severity_metric(health_uk_catalogue) -> None:
+    request = AnalyticsRequest(
+        metric_id="claim_severity",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+        plan_tier="Comprehensive",
+    )
+
+    resolved = resolve_request(health_uk_catalogue, request)
+
+    assert resolved.metric.id == "claim_severity"
+    assert resolved.metric.time_anchor == "claim_lines.paid_date"
+
+
 def test_resolver_accepts_decline_rate_consultant_specialty_grouping(
     health_uk_catalogue,
 ) -> None:

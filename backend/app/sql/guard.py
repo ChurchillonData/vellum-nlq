@@ -33,7 +33,14 @@ class SqlGuardResult:
     rejections: tuple[SqlGuardRejection, ...] = ()
 
 
-def validate_sql(sql: str, catalogue: Catalogue) -> SqlGuardResult:
+MAX_GROUPED_RESULT_ROWS = 50
+
+
+def validate_sql(
+    sql: str,
+    catalogue: Catalogue,
+    parameters: dict[str, object] | None = None,
+) -> SqlGuardResult:
     """Validate generated SQL against safety and catalogue rules."""
     rules_checked: list[str] = []
 
@@ -110,6 +117,15 @@ def validate_sql(sql: str, catalogue: Catalogue) -> SqlGuardResult:
             f"{', '.join(function_names)}.",
         )
 
+    rules_checked.append("parameter_literal_enforcement")
+    literal_rejection = _literal_rejection(statement)
+    if literal_rejection:
+        return _rejected(
+            rules_checked,
+            "parameter_literal_enforcement",
+            literal_rejection,
+        )
+
     rules_checked.append("join_allowlist")
     join_rejection = validate_physical_joins(
         statement,
@@ -119,11 +135,64 @@ def validate_sql(sql: str, catalogue: Catalogue) -> SqlGuardResult:
     if join_rejection:
         return _rejected(rules_checked, "join_allowlist", join_rejection)
 
+    rules_checked.append("result_size_control")
+    result_size_rejection = _result_size_rejection(statement, parameters or {})
+    if result_size_rejection:
+        return _rejected(
+            rules_checked,
+            "result_size_control",
+            result_size_rejection,
+        )
+
     return SqlGuardResult(passed=True, rules_checked=tuple(rules_checked))
 
 
 def _contains_comment(sql: str) -> bool:
     return "--" in sql or "/*" in sql or "*/" in sql
+
+
+def _literal_rejection(statement: exp.Expression) -> str | None:
+    for literal in statement.find_all(exp.Literal):
+        if literal.is_string:
+            return "String and date values must be supplied as bound parameters."
+    return None
+
+
+def _result_size_rejection(
+    statement: exp.Expression,
+    parameters: dict[str, object],
+) -> str | None:
+    if statement.args.get("group") is None:
+        return None
+
+    limit = statement.args.get("limit")
+    if limit is None:
+        return "Grouped result sets must include an explicit row limit."
+
+    limit_value = _limit_value(limit, parameters)
+    if limit_value is None:
+        return "Grouped result limit must be a known integer value."
+    if limit_value > MAX_GROUPED_RESULT_ROWS:
+        return (
+            "Grouped result limit exceeds the maximum allowed rows: "
+            f"{MAX_GROUPED_RESULT_ROWS}."
+        )
+
+    return None
+
+
+def _limit_value(
+    limit: exp.Expression,
+    parameters: dict[str, object],
+) -> int | None:
+    expression = limit.expression
+    if isinstance(expression, exp.Literal) and not expression.is_string:
+        return int(expression.this)
+    if isinstance(expression, exp.Placeholder):
+        parameter_name = expression.this.name
+        value = parameters.get(parameter_name)
+        return int(value) if isinstance(value, int) else None
+    return None
 
 
 def _rejected(

@@ -26,7 +26,9 @@ def test_guard_accepts_generated_loss_ratio_sql(health_uk_catalogue) -> None:
         "table_allowlist",
         "column_allowlist",
         "function_allowlist",
+        "parameter_literal_enforcement",
         "join_allowlist",
+        "result_size_control",
     )
 
 
@@ -94,3 +96,40 @@ def test_guard_rejects_unapproved_physical_join(health_uk_catalogue) -> None:
 
     assert result.passed is False
     assert result.rejections[0].rule == "join_allowlist"
+
+
+def test_guard_rejects_embedded_string_literals(health_uk_catalogue) -> None:
+    result = validate_sql(
+        "SELECT claims.id FROM claims WHERE claims.status = 'closed'",
+        health_uk_catalogue,
+    )
+
+    assert result.passed is False
+    assert result.rejections[0].rule == "parameter_literal_enforcement"
+
+
+def test_guard_rejects_grouped_query_without_limit(health_uk_catalogue) -> None:
+    result = validate_sql(
+        "SELECT providers.specialty, COUNT(claim_lines.id) "
+        "FROM claim_lines "
+        "JOIN providers ON claim_lines.provider_id = providers.id "
+        "GROUP BY providers.specialty",
+        health_uk_catalogue,
+    )
+
+    assert result.passed is False
+    assert result.rejections[0].rule == "result_size_control"
+
+
+def test_guard_rejects_grouped_query_limit_over_cap(health_uk_catalogue) -> None:
+    result = validate_sql(
+        "SELECT providers.specialty, COUNT(claim_lines.id) "
+        "FROM claim_lines "
+        "JOIN providers ON claim_lines.provider_id = providers.id "
+        "GROUP BY providers.specialty "
+        "LIMIT 500",
+        health_uk_catalogue,
+    )
+
+    assert result.passed is False
+    assert result.rejections[0].rule == "result_size_control"

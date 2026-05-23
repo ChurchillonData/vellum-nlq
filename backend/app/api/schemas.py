@@ -75,6 +75,7 @@ class ResultShapeResponse(BaseModel):
 
     columns: list[str]
     grain: str
+    max_rows: int
 
 
 class QueryProvenanceResponse(BaseModel):
@@ -151,6 +152,7 @@ class QueryPreviewResponse(BaseModel):
                 result_shape=ResultShapeResponse(
                     columns=list(provenance.result_shape.columns),
                     grain=provenance.result_shape.grain,
+                    max_rows=provenance.result_shape.max_rows,
                 ),
             ),
             validation=SqlGuardResponse.from_guard_result(result.validation),

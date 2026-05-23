@@ -26,3 +26,15 @@ cases:
   - id: guard_rejects_unapproved_join
     sql: SELECT claims.id FROM claims JOIN plans ON claims.member_id = plans.id
     expected_rule: join_allowlist
+
+  - id: guard_rejects_embedded_string_literal
+    sql: SELECT claims.id FROM claims WHERE claims.status = 'closed'
+    expected_rule: parameter_literal_enforcement
+
+  - id: guard_rejects_unlimited_grouped_result
+    sql: SELECT providers.specialty, COUNT(claim_lines.id) FROM claim_lines JOIN providers ON claim_lines.provider_id = providers.id GROUP BY providers.specialty
+    expected_rule: result_size_control
+
+  - id: guard_rejects_large_grouped_result_limit
+    sql: SELECT providers.specialty, COUNT(claim_lines.id) FROM claim_lines JOIN providers ON claim_lines.provider_id = providers.id GROUP BY providers.specialty LIMIT 500
+    expected_rule: result_size_control

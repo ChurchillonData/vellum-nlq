@@ -24,9 +24,12 @@ and does not execute against Postgres yet.
 Implemented today:
 
 - FastAPI backend with product-facing `/ask` and development query endpoints.
-- Catalogue-backed deterministic paths for `loss_ratio`, `paid_claims`,
-  `claim_frequency`, and `decline_rate`.
+- Catalogue-backed deterministic paths for all six current metrics:
+  `loss_ratio`, `paid_claims`, `claim_frequency`, `decline_rate`,
+  `incurred_claims`, and `claim_severity`.
 - Grouped `decline_rate` by consultant specialty.
+- Result-size controls for grouped outputs, with guarded row limits surfaced in
+  provenance and audit records.
 - Narrow natural-language parsing for quarter phrases, ISO date ranges, and
   demo plan tiers on `POST /ask`.
 - Ambiguity, out-of-scope, and destructive-intent responses for controlled demo
@@ -36,7 +39,7 @@ Implemented today:
 - In-memory SQLite demo execution seeded from synthetic data.
 - Local JSONL audit events for all `/ask` outcomes, successful previews, and
   demo executions.
-- Fifteen `/ask/examples` items covered by unit tests.
+- Seventeen `/ask/examples` items covered by unit tests.
 - YAML golden question suite covering the core demo contract.
 - First red-team suite for destructive questions and unsafe SQL guard cases.
 
@@ -45,7 +48,7 @@ Planned next:
 - OpenAI structured intent extraction behind a narrow provider interface.
 - Richer natural-language date and filter parsing.
 - Postgres read-only execution and append-only audit table.
-- Red-team test suite.
+- Expanded red-team coverage for obfuscated and prompt-injection-style attacks.
 - Frontend implementation using the uploaded UI mockups.
 
 ## Five-Minute Tour
@@ -161,8 +164,8 @@ Vellum-NLQ is multi-catalogue by design. The current build includes the
 | `paid_claims` | Yes | Yes |
 | `claim_frequency` | Yes | Yes |
 | `decline_rate` | Yes | Yes |
-| `incurred_claims` | Yes | No |
-| `claim_severity` | Yes | No |
+| `incurred_claims` | Yes | Yes |
+| `claim_severity` | Yes | Yes |
 
 Adding a new metric should start with catalogue YAML, tests, and a narrow
 planner/generator path. The codebase intentionally favours small readable files
@@ -233,7 +236,7 @@ Full request and response examples are documented in `docs/api-contract.md`.
 | Endpoint | Purpose |
 |---|---|
 | `POST /ask` | Product-facing ask flow. Returns answer, clarification, blocked, or out-of-scope state. |
-| `GET /ask/examples` | Fifteen demo questions used by tests and future UI controls. |
+| `GET /ask/examples` | Seventeen demo questions used by tests and future UI controls. |
 | `GET /metrics` | Active catalogue metric definitions with formulas and versions. |
 | `POST /queries/resolve` | Deterministic metric resolution and early safety blocking. |
 | `POST /queries/preview` | Parameterised SQL and provenance without execution. |

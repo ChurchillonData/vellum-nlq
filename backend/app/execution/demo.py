@@ -5,7 +5,9 @@ from app.analytics.models import QueryBuildResult
 from app.execution.demo_answers import build_demo_answer
 from app.execution.demo_sql import (
     claim_frequency_sql,
+    claim_severity_sql,
     decline_rate_sql,
+    incurred_claims_sql,
     loss_ratio_sql,
     paid_claims_sql,
 )
@@ -46,6 +48,8 @@ def execute_demo_query(
         "paid_claims",
         "claim_frequency",
         "decline_rate",
+        "incurred_claims",
+        "claim_severity",
     }
     if build_result.provenance.metric_id not in supported_metrics:
         raise ValueError("demo execution does not support this metric yet")
@@ -56,6 +60,7 @@ def execute_demo_query(
         prepare_demo_database(connection, seed_data)
         rows = _run_demo_query(connection, build_result)
 
+    rows = rows[: build_result.provenance.result_shape.max_rows]
     dataset = DemoDatasetSummary(
         name="health-uk synthetic demo",
         member_count=len(seed_data.members),
@@ -81,6 +86,10 @@ def _run_demo_query(
         return _run_decline_rate_query(connection, build_result)
     if build_result.provenance.metric_id == "paid_claims":
         return _run_paid_claims_query(connection, build_result)
+    if build_result.provenance.metric_id == "incurred_claims":
+        return _run_incurred_claims_query(connection, build_result)
+    if build_result.provenance.metric_id == "claim_severity":
+        return _run_claim_severity_query(connection, build_result)
     return _run_loss_ratio_query(connection, build_result)
 
 
@@ -104,12 +113,32 @@ def _run_paid_claims_query(
     return [dict(row) for row in rows]
 
 
+def _run_incurred_claims_query(
+    connection: sqlite3.Connection,
+    build_result: QueryBuildResult,
+) -> list[dict[str, object]]:
+    parameters = build_result.query.parameters
+    sql = incurred_claims_sql(has_plan_tier=bool(parameters.get("plan_tier")))
+    rows = connection.execute(sql, to_sqlite_parameters(parameters)).fetchall()
+    return [dict(row) for row in rows]
+
+
 def _run_claim_frequency_query(
     connection: sqlite3.Connection,
     build_result: QueryBuildResult,
 ) -> list[dict[str, object]]:
     parameters = build_result.query.parameters
     sql = claim_frequency_sql(has_plan_tier=bool(parameters.get("plan_tier")))
+    rows = connection.execute(sql, to_sqlite_parameters(parameters)).fetchall()
+    return [dict(row) for row in rows]
+
+
+def _run_claim_severity_query(
+    connection: sqlite3.Connection,
+    build_result: QueryBuildResult,
+) -> list[dict[str, object]]:
+    parameters = build_result.query.parameters
+    sql = claim_severity_sql(has_plan_tier=bool(parameters.get("plan_tier")))
     rows = connection.execute(sql, to_sqlite_parameters(parameters)).fetchall()
     return [dict(row) for row in rows]
 

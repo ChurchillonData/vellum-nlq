@@ -47,6 +47,20 @@ def paid_claims_sql(has_plan_tier: bool) -> str:
     """
 
 
+def incurred_claims_sql(has_plan_tier: bool) -> str:
+    """Return SQLite SQL for the incurred-claims demo query."""
+    plan_filter = "AND plans.plan_tier = :plan_tier" if has_plan_tier else ""
+    return f"""
+        SELECT SUM(claims.net_incurred_amount) AS incurred_claims
+        FROM claims
+        JOIN members ON claims.member_id = members.id
+        JOIN plans ON members.plan_id = plans.id
+        WHERE claims.incurred_date BETWEEN :start_date AND :end_date
+          AND claims.status != :excluded_status
+          {plan_filter}
+    """
+
+
 def claim_frequency_sql(has_plan_tier: bool) -> str:
     """Return SQLite SQL for the claim-frequency demo query."""
     plan_filter = "AND plans.plan_tier = :plan_tier" if has_plan_tier else ""
@@ -75,6 +89,23 @@ def claim_frequency_sql(has_plan_tier: bool) -> str:
     """
 
 
+def claim_severity_sql(has_plan_tier: bool) -> str:
+    """Return SQLite SQL for the claim-severity demo query."""
+    plan_filter = "AND plans.plan_tier = :plan_tier" if has_plan_tier else ""
+    return f"""
+        SELECT
+            SUM(claim_lines.net_paid_amount)
+            / NULLIF(COUNT(DISTINCT claims.id), 0) AS claim_severity
+        FROM claim_lines
+        JOIN claims ON claim_lines.claim_id = claims.id
+        JOIN members ON claims.member_id = members.id
+        JOIN plans ON members.plan_id = plans.id
+        WHERE claim_lines.paid_date BETWEEN :start_date AND :end_date
+          AND claims.status = :closed_status
+          {plan_filter}
+    """
+
+
 def decline_rate_sql(has_plan_tier: bool, group_by: tuple[str, ...] = ()) -> str:
     """Return SQLite SQL for the decline-rate demo query."""
     plan_filter = "AND plans.plan_tier = :plan_tier" if has_plan_tier else ""
@@ -93,6 +124,7 @@ def decline_rate_sql(has_plan_tier: bool, group_by: tuple[str, ...] = ()) -> str
               {plan_filter}
             GROUP BY providers.specialty
             ORDER BY decline_rate DESC
+            LIMIT :result_limit
         """
 
     return f"""

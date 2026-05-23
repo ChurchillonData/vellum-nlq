@@ -109,6 +109,7 @@ def test_ask_endpoint_infers_decline_rate_grouping(tmp_path) -> None:
     assert body["answer"]["provenance"]["result_shape"] == {
         "columns": ["consultant_specialty", "decline_rate"],
         "grain": "consultant_specialty",
+        "max_rows": 50,
     }
 
 
@@ -154,8 +155,8 @@ def test_ask_examples_endpoint_returns_examples_per_state() -> None:
     statuses = [example["expected_status"] for example in body["examples"]]
 
     assert response.status_code == 200
-    assert len(body["examples"]) == 15
-    assert statuses.count("answer") == 5
+    assert len(body["examples"]) == 17
+    assert statuses.count("answer") == 7
     assert statuses.count("date_range_required") == 1
     assert statuses.count("clarification_required") == 3
     assert statuses.count("blocked") == 3

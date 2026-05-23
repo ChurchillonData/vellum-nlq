@@ -10,6 +10,10 @@ def build_demo_answer(
         return _build_claim_frequency_answer(build_result, rows)
     if build_result.provenance.metric_id == "decline_rate":
         return _build_decline_rate_answer(build_result, rows)
+    if build_result.provenance.metric_id == "incurred_claims":
+        return _build_incurred_claims_answer(build_result, rows)
+    if build_result.provenance.metric_id == "claim_severity":
+        return _build_claim_severity_answer(build_result, rows)
     if build_result.provenance.metric_id == "paid_claims":
         return _build_paid_claims_answer(build_result, rows)
     return _build_loss_ratio_answer(build_result, rows)
@@ -44,6 +48,20 @@ def _build_paid_claims_answer(
     return f"{subject} from {period} were GBP {float(value):,.2f}."
 
 
+def _build_incurred_claims_answer(
+    build_result: QueryBuildResult,
+    rows: list[dict[str, object]],
+) -> str:
+    value = rows[0].get("incurred_claims") if rows else None
+    subject = _subject(build_result, "incurred claims")
+    period = _period(build_result)
+
+    if value is None:
+        return f"{subject} from {period} had no incurred claim amount."
+
+    return f"{subject} from {period} were GBP {float(value):,.2f}."
+
+
 def _build_claim_frequency_answer(
     build_result: QueryBuildResult,
     rows: list[dict[str, object]],
@@ -56,6 +74,20 @@ def _build_claim_frequency_answer(
         return f"{subject} from {period} could not be calculated."
 
     return f"{subject} from {period} was {float(value):.2f} per 1,000 member months."
+
+
+def _build_claim_severity_answer(
+    build_result: QueryBuildResult,
+    rows: list[dict[str, object]],
+) -> str:
+    value = rows[0].get("claim_severity") if rows else None
+    subject = _subject(build_result, "claim severity")
+    period = _period(build_result)
+
+    if value is None:
+        return f"{subject} from {period} could not be calculated."
+
+    return f"{subject} from {period} was GBP {float(value):,.2f}."
 
 
 def _build_decline_rate_answer(

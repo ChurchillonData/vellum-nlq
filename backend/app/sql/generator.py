@@ -100,6 +100,34 @@ def generate_paid_claims_query(plan: LogicalPlan) -> GeneratedQuery:
     return GeneratedQuery(sql=str(compiled), parameters=compiled.params)
 
 
+def generate_incurred_claims_query(plan: LogicalPlan) -> GeneratedQuery:
+    """Generate parameterised SQL for a planned incurred-claims request."""
+    start_date = bindparam("start_date", plan.start_date, type_=Date())
+    end_date = bindparam("end_date", plan.end_date, type_=Date())
+    excluded_status = bindparam("excluded_status", "void", type_=String())
+
+    source = claims.join(members, claims.c.member_id == members.c.id).join(
+        plans, members.c.plan_id == plans.c.id
+    )
+    filters = [
+        claims.c.incurred_date.between(start_date, end_date),
+        claims.c.status != excluded_status,
+    ]
+
+    if plan.plan_tier:
+        plan_tier = bindparam("plan_tier", plan.plan_tier, type_=String())
+        filters.append(plans.c.plan_tier == plan_tier)
+
+    statement = (
+        select(func.sum(claims.c.net_incurred_amount).label("incurred_claims"))
+        .select_from(source)
+        .where(*filters)
+    )
+
+    compiled = statement.compile(dialect=postgresql.dialect())
+    return GeneratedQuery(sql=str(compiled), parameters=compiled.params)
+
+
 def generate_claim_frequency_query(plan: LogicalPlan) -> GeneratedQuery:
     """Generate parameterised SQL for a planned claim-frequency request."""
     start_date = bindparam("start_date", plan.start_date, type_=Date())
@@ -150,6 +178,41 @@ def generate_claim_frequency_query(plan: LogicalPlan) -> GeneratedQuery:
     return GeneratedQuery(sql=str(compiled), parameters=compiled.params)
 
 
+def generate_claim_severity_query(plan: LogicalPlan) -> GeneratedQuery:
+    """Generate parameterised SQL for a planned claim-severity request."""
+    start_date = bindparam("start_date", plan.start_date, type_=Date())
+    end_date = bindparam("end_date", plan.end_date, type_=Date())
+    closed_status = bindparam("closed_status", "closed", type_=String())
+
+    source = (
+        claim_lines.join(claims, claim_lines.c.claim_id == claims.c.id)
+        .join(members, claims.c.member_id == members.c.id)
+        .join(plans, members.c.plan_id == plans.c.id)
+    )
+    filters = [
+        claim_lines.c.paid_date.between(start_date, end_date),
+        claims.c.status == closed_status,
+    ]
+
+    if plan.plan_tier:
+        plan_tier = bindparam("plan_tier", plan.plan_tier, type_=String())
+        filters.append(plans.c.plan_tier == plan_tier)
+
+    statement = (
+        select(
+            (
+                func.sum(claim_lines.c.net_paid_amount)
+                / func.nullif(func.count(claims.c.id.distinct()), 0)
+            ).label("claim_severity")
+        )
+        .select_from(source)
+        .where(*filters)
+    )
+
+    compiled = statement.compile(dialect=postgresql.dialect())
+    return GeneratedQuery(sql=str(compiled), parameters=compiled.params)
+
+
 def generate_decline_rate_query(plan: LogicalPlan) -> GeneratedQuery:
     """Generate parameterised SQL for a planned decline-rate request."""
     start_date = bindparam("start_date", plan.start_date, type_=Date())
@@ -185,6 +248,13 @@ def generate_decline_rate_query(plan: LogicalPlan) -> GeneratedQuery:
             .where(*filters)
             .group_by(providers.c.specialty)
             .order_by(decline_rate.element.desc())
+            .limit(
+                bindparam(
+                    "result_limit",
+                    plan.result_shape.max_rows,
+                    type_=Integer(),
+                )
+            )
         )
     else:
         statement = select(decline_rate).select_from(source).where(*filters)

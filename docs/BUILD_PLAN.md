@@ -49,7 +49,7 @@ Current first slice:
   generation, returning a safety rule ID for the UI rejection state.
 - `POST /ask` now orchestrates the first product-facing flow: answer,
   clarification, or blocked state from one endpoint.
-- `GET /ask/examples` exposes fifteen golden demo questions, and tests run each
+- `GET /ask/examples` exposes seventeen golden demo questions, and tests run each
   example through `/ask` to protect answer, date-range-required,
   clarification, blocked, and out-of-scope states.
 - `docs/api-contract.md` documents the current backend API surface for frontend
@@ -72,6 +72,9 @@ Current first slice:
   `claim_lines -> providers` join.
 - `backend/tests/golden/questions.yaml` now defines the first YAML golden
   question contract, and `make test-golden` runs it through `/ask`.
+- `incurred_claims` and `claim_severity` are now executable deterministic
+  metrics through catalogue resolution, planning, guarded SQL generation, local
+  demo execution, ask examples, and golden questions.
 
 Current backend gaps before calling this phase complete:
 
@@ -79,8 +82,6 @@ Current backend gaps before calling this phase complete:
   ranges, and plan tiers are supported; richer date language is still planned.
 - Grouped analytics are currently limited to `decline_rate` by
   `consultant_specialty`; broader dimension support is still planned.
-- Catalogue metrics `incurred_claims` and `claim_severity` are defined but not
-  executable yet.
 - Additional grouped metrics and dimensions beyond consultant specialty are
   still planned.
 
@@ -113,6 +114,9 @@ Current first slice:
 - `backend/tests/redteam/` now contains the first red-team slice. It checks
   destructive user intent through `/ask` and unsafe generated-SQL shapes through
   the SQL guard. `make test-redteam` runs this suite.
+- The SQL guard now rejects embedded string/date literals and uncontrolled
+  grouped result sets. Grouped generated SQL must carry an approved result
+  limit, currently capped at 50 rows.
 
 Current safety and audit gaps:
 
@@ -120,8 +124,8 @@ Current safety and audit gaps:
 - The Postgres append-only audit table is not built yet.
 - Red-team coverage is still a first slice; broader prompt-injection and
   obfuscation cases are planned.
-- Guard-level result-size caps and literal-parameter enforcement are planned
-  but not implemented yet.
+- Broader result-size policies for future dimensions are planned as grouped
+  analytics expands.
 
 ## Phase 4: OpenAI Intent Layer
 

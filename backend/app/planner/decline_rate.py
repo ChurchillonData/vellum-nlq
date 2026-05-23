@@ -24,6 +24,7 @@ def build_decline_rate_plan(catalogue: Catalogue, resolved: ResolvedRequest) -> 
         result_shape = ResultShape(
             columns=("consultant_specialty", "decline_rate"),
             grain="consultant_specialty",
+            max_rows=50,
         )
 
     return LogicalPlan(

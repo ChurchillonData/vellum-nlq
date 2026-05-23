@@ -104,6 +104,7 @@ def test_preview_endpoint_returns_loss_ratio_sql_and_provenance() -> None:
     assert body["provenance"]["result_shape"] == {
         "columns": ["loss_ratio"],
         "grain": "single_metric",
+        "max_rows": 1,
     }
     assert body["validation"]["passed"] is True
     assert "select_only" in body["validation"]["rules_checked"]

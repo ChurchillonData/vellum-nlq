@@ -217,6 +217,7 @@ def _provenance_payload(result: QueryBuildResult) -> dict[str, object]:
         "result_shape": {
             "columns": list(result.provenance.result_shape.columns),
             "grain": result.provenance.result_shape.grain,
+            "max_rows": result.provenance.result_shape.max_rows,
         },
     }
 
