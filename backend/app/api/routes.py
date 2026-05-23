@@ -19,6 +19,7 @@ from app.ask.service import AskRequest as AskServiceRequest
 from app.ask.service import answer_question
 from app.audit.logger import (
     JsonlAuditLogger,
+    build_ask_audit_event,
     build_execution_audit_event,
     build_preview_audit_event,
 )
@@ -74,15 +75,16 @@ def ask(request: AskApiRequest) -> AskResponse:
     try:
         catalogue = _load_active_catalogue()
         parsed_fields = parse_ask_fields(request.question)
+        ask_request = AskServiceRequest(
+            question=request.question,
+            start_date=request.start_date or parsed_fields.start_date,
+            end_date=request.end_date or parsed_fields.end_date,
+            plan_tier=request.plan_tier or parsed_fields.plan_tier,
+            group_by=request.group_by or parsed_fields.group_by,
+        )
         result = answer_question(
             catalogue,
-            AskServiceRequest(
-                question=request.question,
-                start_date=request.start_date or parsed_fields.start_date,
-                end_date=request.end_date or parsed_fields.end_date,
-                plan_tier=request.plan_tier or parsed_fields.plan_tier,
-                group_by=request.group_by or parsed_fields.group_by,
-            ),
+            ask_request,
             member_count=settings.demo_member_count,
             month_count=settings.demo_month_count,
         )
@@ -91,15 +93,7 @@ def ask(request: AskApiRequest) -> AskResponse:
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
-    if result.build_result is None or result.execution_result is None:
-        return AskResponse.from_ask_result(result)
-
-    audit_event = build_execution_audit_event(
-        result.resolution.resolved_request,
-        result.build_result,
-        row_count=result.execution_result.row_count,
-        answer=result.execution_result.answer,
-    )
+    audit_event = build_ask_audit_event(ask_request, result)
     JsonlAuditLogger(settings.audit_log_path).record(audit_event)
 
     return AskResponse.from_ask_result(result, query_id=audit_event.query_id)

@@ -14,7 +14,10 @@ Current build:
   references are rejected.
 - Tables, columns, functions, and join paths are checked against the active
   semantic catalogue.
-- Successful previews and local demo executions write local JSONL audit events.
+- Every `/ask` outcome writes a local JSONL audit event, including blocked,
+  clarification, date-range-required, out-of-scope, and answer states.
+- Successful previews and local demo executions also write local JSONL audit
+  events.
 - The first red-team suite covers destructive user intent and unsafe SQL guard
   cases.
 
@@ -77,17 +80,21 @@ small test and a clear reason.
 
 ## Layer 3: Audit Trail
 
-The current build writes local JSONL audit events for successful preview and
-demo execution requests. The event includes the query ID, request payload, SQL,
-bound parameters, validation result, and, for execution, row count and answer
-summary.
+The current build writes local JSONL audit events for every `/ask` outcome.
+That means answer, clarification, blocked, date-range-required, and out-of-scope
+states all receive a query ID and can be loaded through the audit lookup
+endpoint. Successful preview and demo execution requests are also audited.
+
+For answer, preview, and execution events, the event includes SQL, bound
+parameters, provenance, and validation result. For blocked, clarification, and
+out-of-scope states, the event records the status and the relevant safety,
+candidate, or scope payload instead of pretending SQL exists.
 
 This is useful for the demo backend and for development. It is not the final
 audit design.
 
-The target production design is an append-only Postgres audit table that records
-every request outcome, including blocked, clarification, and out-of-scope
-states.
+The target production design keeps this same product behaviour but moves the
+store to an append-only Postgres audit table.
 
 ## Target Production Controls
 

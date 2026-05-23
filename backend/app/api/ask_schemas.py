@@ -34,6 +34,7 @@ class AskRequest(BaseModel):
 class AskResponse(QueryResolveResponse):
     """Ask endpoint response for answer, clarification, or blocked states."""
 
+    query_id: str
     answer: QueryExecuteResponse | None = None
 
     @classmethod
@@ -43,12 +44,13 @@ class AskResponse(QueryResolveResponse):
         query_id: str | None = None,
     ) -> "AskResponse":
         """Convert an ask orchestration result into API JSON."""
+        if query_id is None:
+            raise ValueError("query_id is required for ask responses")
+
         resolution = QueryResolveResponse.from_resolution(result.resolution)
         answer = None
 
         if result.build_result is not None and result.execution_result is not None:
-            if query_id is None:
-                raise ValueError("query_id is required for answer responses")
             answer = QueryExecuteResponse.from_execution_result(
                 result.build_result,
                 result.execution_result,
@@ -57,6 +59,7 @@ class AskResponse(QueryResolveResponse):
 
         payload = resolution.model_dump()
         payload["status"] = result.status
+        payload["query_id"] = query_id
         payload["answer"] = answer
         return cls(**payload)
 

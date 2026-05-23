@@ -105,6 +105,9 @@ Current first slice:
   query ID, SQL, parameters, request payload, and validation outcome.
 - Successful local demo executions now write audit events with execution mode,
   row count, and answer summary.
+- Every `POST /ask` outcome now writes a local JSONL audit event with a query
+  ID, including answer, clarification, blocked, date-range-required, and
+  out-of-scope states.
 - `GET /queries/{query_id}` can read back local JSONL audit events while the
   Postgres audit table is not built yet.
 - `backend/tests/redteam/` now contains the first red-team slice. It checks

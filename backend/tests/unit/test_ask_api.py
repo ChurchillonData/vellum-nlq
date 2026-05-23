@@ -40,8 +40,11 @@ def test_ask_endpoint_returns_answer_state(tmp_path) -> None:
     assert body["answer"]["row_count"] == 1
     assert body["answer"]["rows"][0]["loss_ratio"] > 0
     assert body["answer"]["validation"]["passed"] is True
-    assert records[0]["event_type"] == "query_execute"
-    assert records[0]["query_id"] == body["answer"]["query_id"]
+    assert body["query_id"].startswith("q_")
+    assert body["answer"]["query_id"] == body["query_id"]
+    assert records[0]["event_type"] == "ask"
+    assert records[0]["status"] == "answer"
+    assert records[0]["query_id"] == body["query_id"]
 
 
 def test_ask_endpoint_infers_supported_filters_from_question(tmp_path) -> None:
@@ -109,10 +112,10 @@ def test_ask_endpoint_infers_decline_rate_grouping(tmp_path) -> None:
     }
 
 
-def test_ask_endpoint_requires_date_range_for_answerable_question() -> None:
-    response = TestClient(app).post(
-        "/ask",
-        json={"question": "What was loss ratio for the Comprehensive plan tier?"},
+def test_ask_endpoint_requires_date_range_for_answerable_question(tmp_path) -> None:
+    response, records = _post_ask_with_audit(
+        tmp_path,
+        {"question": "What was loss ratio for the Comprehensive plan tier?"},
     )
 
     body = response.json()
@@ -122,12 +125,16 @@ def test_ask_endpoint_requires_date_range_for_answerable_question() -> None:
     assert body["answer"] is None
     assert body["resolved_request"] is None
     assert "date range" in body["message"]
+    assert body["query_id"] == records[0]["query_id"]
+    assert records[0]["event_type"] == "ask"
+    assert records[0]["status"] == "date_range_required"
+    assert records[0]["sql"] is None
 
 
-def test_ask_endpoint_blocks_unsafe_question_without_dates() -> None:
-    response = TestClient(app).post(
-        "/ask",
-        json={"question": "Drop all claims from the database"},
+def test_ask_endpoint_blocks_unsafe_question_without_dates(tmp_path) -> None:
+    response, records = _post_ask_with_audit(
+        tmp_path,
+        {"question": "Drop all claims from the database"},
     )
 
     body = response.json()
@@ -135,6 +142,9 @@ def test_ask_endpoint_blocks_unsafe_question_without_dates() -> None:
     assert response.status_code == 200
     assert body["status"] == "blocked"
     assert body["safety"]["rule_id"] == "DDL_DROP_PATTERN"
+    assert body["query_id"] == records[0]["query_id"]
+    assert records[0]["status"] == "blocked"
+    assert records[0]["safety"]["rule_id"] == "DDL_DROP_PATTERN"
 
 
 def test_ask_examples_endpoint_returns_examples_per_state() -> None:
@@ -182,10 +192,10 @@ def test_every_golden_ask_example_returns_expected_state(tmp_path) -> None:
         assert response.json()["status"] == example["expected_status"]
 
 
-def test_ask_endpoint_returns_clarification_state() -> None:
-    response = TestClient(app).post(
-        "/ask",
-        json={
+def test_ask_endpoint_returns_clarification_state(tmp_path) -> None:
+    response, records = _post_ask_with_audit(
+        tmp_path,
+        {
             "question": "How are the claims numbers looking?",
             "start_date": "2026-01-01",
             "end_date": "2026-03-31",
@@ -203,12 +213,16 @@ def test_ask_endpoint_returns_clarification_state() -> None:
         "paid_claims",
         "claim_frequency",
     ]
+    assert body["query_id"] == records[0]["query_id"]
+    assert records[0]["status"] == "clarification_required"
+    assert records[0]["candidates"][0]["metric_id"] == "loss_ratio"
+    assert records[0]["sql"] is None
 
 
-def test_ask_endpoint_returns_blocked_state() -> None:
-    response = TestClient(app).post(
-        "/ask",
-        json={
+def test_ask_endpoint_returns_blocked_state(tmp_path) -> None:
+    response, records = _post_ask_with_audit(
+        tmp_path,
+        {
             "question": "Drop all claims from the database",
             "start_date": "2026-01-01",
             "end_date": "2026-03-31",
@@ -223,12 +237,15 @@ def test_ask_endpoint_returns_blocked_state() -> None:
     assert body["candidates"] == []
     assert body["resolved_request"] is None
     assert body["safety"]["rule_id"] == "DDL_DROP_PATTERN"
+    assert body["query_id"] == records[0]["query_id"]
+    assert records[0]["status"] == "blocked"
+    assert records[0]["safety"]["severity"] == "critical"
 
 
-def test_ask_endpoint_returns_out_of_scope_state() -> None:
-    response = TestClient(app).post(
-        "/ask",
-        json={
+def test_ask_endpoint_returns_out_of_scope_state(tmp_path) -> None:
+    response, records = _post_ask_with_audit(
+        tmp_path,
+        {
             "question": "What will loss ratio be next quarter?",
             "start_date": "2026-01-01",
             "end_date": "2026-03-31",
@@ -243,3 +260,46 @@ def test_ask_endpoint_returns_out_of_scope_state() -> None:
     assert body["candidates"] == []
     assert body["resolved_request"] is None
     assert body["scope"]["reason_id"] == "forecasting_not_supported"
+    assert body["query_id"] == records[0]["query_id"]
+    assert records[0]["status"] == "out_of_scope"
+    assert records[0]["scope"]["reason_id"] == "forecasting_not_supported"
+
+
+def test_ask_audit_record_can_be_loaded_by_query_id(tmp_path) -> None:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+
+    try:
+        response = TestClient(app).post(
+            "/ask",
+            json={"question": "Drop all claims from the database"},
+        )
+        body = response.json()
+        lookup = TestClient(app).get(f"/queries/{body['query_id']}")
+    finally:
+        settings.audit_log_path = original_path
+
+    assert lookup.status_code == 200
+    assert lookup.json()["query_id"] == body["query_id"]
+    assert lookup.json()["status"] == "blocked"
+
+
+def _post_ask_with_audit(
+    tmp_path,
+    payload: dict[str, object],
+) -> tuple[object, list[dict[str, object]]]:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+
+    try:
+        response = TestClient(app).post("/ask", json=payload)
+        records = [
+            json.loads(line)
+            for line in settings.audit_log_path.read_text(encoding="utf-8").splitlines()
+        ]
+    finally:
+        settings.audit_log_path = original_path
+
+    return response, records

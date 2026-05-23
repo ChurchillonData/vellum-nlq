@@ -43,6 +43,7 @@ Answer response, trimmed to the fields most relevant to the UI:
 ```json
 {
   "status": "answer",
+  "query_id": "q_<uuid>",
   "question": "What was loss ratio for the Comprehensive plan tier in Q1 2026?",
   "message": "Resolved to metric: loss_ratio.",
   "resolved_request": {
@@ -62,7 +63,7 @@ Answer response, trimmed to the fields most relevant to the UI:
   "safety": null,
   "scope": null,
   "answer": {
-    "query_id": "q_<uuid>",
+    "query_id": "q_<same uuid>",
     "metric_id": "loss_ratio",
     "answer": "<computed natural-language summary>",
     "row_count": 1,
@@ -82,6 +83,7 @@ inferred, the endpoint returns a date-range prompt:
 ```json
 {
   "status": "date_range_required",
+  "query_id": "q_<uuid>",
   "question": "What was loss ratio for the Comprehensive plan tier?",
   "message": "A supported date range is required before planning SQL.",
   "resolved_request": null,
@@ -94,6 +96,7 @@ Clarification response, trimmed to the fields most relevant to the UI:
 ```json
 {
   "status": "clarification_required",
+  "query_id": "q_<uuid>",
   "question": "How are the claims numbers looking?",
   "message": "Multiple catalogue metrics may answer this question.",
   "resolved_request": null,
@@ -128,6 +131,7 @@ Blocked response:
 ```json
 {
   "status": "blocked",
+  "query_id": "q_<uuid>",
   "question": "Drop all claims from the database.",
   "message": "Request refused. Destructive database operations are not allowed.",
   "resolved_request": null,
@@ -147,6 +151,7 @@ Out-of-scope response:
 ```json
 {
   "status": "out_of_scope",
+  "query_id": "q_<uuid>",
   "question": "What will loss ratio be next quarter?",
   "message": "Request is outside the current analytics scope.",
   "resolved_request": null,
@@ -324,12 +329,14 @@ Grouped rows are shaped as:
 
 ### GET `/queries/{query_id}`
 
-Reads one local JSONL audit event by query ID.
+Reads one local JSONL audit event by query ID. This includes ask outcomes,
+preview requests, and execution requests.
 
 ```json
 {
   "query_id": "q_<uuid>",
-  "event_type": "query_execute",
+  "event_type": "ask",
+  "status": "answer",
   "metric_id": "loss_ratio",
   "sql": "...",
   "parameters": {
@@ -377,7 +384,9 @@ paths.
 
 ## Audit Notes
 
-Successful preview and execution requests write local JSONL audit events. The
-audit record includes request payload, SQL, bound parameters, provenance,
-validation outcome, and execution summary when applicable. This is a development
-audit store until the Postgres audit table is built.
+Every `/ask` response writes a local JSONL audit event, including answer,
+clarification, blocked, date-range-required, and out-of-scope states. Successful
+preview and execution requests are also audited. The audit record includes the
+request payload, status, query ID, SQL and provenance when generated, validation
+outcome when available, and execution summary when applicable. This is a
+development audit store until the Postgres audit table is built.
