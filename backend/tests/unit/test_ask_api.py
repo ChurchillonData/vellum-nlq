@@ -44,6 +44,49 @@ def test_ask_endpoint_returns_answer_state(tmp_path) -> None:
     assert records[0]["query_id"] == body["answer"]["query_id"]
 
 
+def test_ask_examples_endpoint_returns_three_examples_per_state() -> None:
+    response = TestClient(app).get("/ask/examples")
+
+    body = response.json()
+    statuses = [example["expected_status"] for example in body["examples"]]
+
+    assert response.status_code == 200
+    assert len(body["examples"]) == 9
+    assert statuses.count("answer") == 3
+    assert statuses.count("clarification_required") == 3
+    assert statuses.count("blocked") == 3
+
+
+def test_every_golden_ask_example_returns_expected_state(tmp_path) -> None:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    original_member_count = settings.demo_member_count
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+    settings.demo_member_count = 120
+
+    try:
+        examples = TestClient(app).get("/ask/examples").json()["examples"]
+        responses = [
+            TestClient(app).post(
+                "/ask",
+                json={
+                    "question": example["question"],
+                    "start_date": example["start_date"],
+                    "end_date": example["end_date"],
+                    "plan_tier": example["plan_tier"],
+                },
+            )
+            for example in examples
+        ]
+    finally:
+        settings.audit_log_path = original_path
+        settings.demo_member_count = original_member_count
+
+    for example, response in zip(examples, responses, strict=True):
+        assert response.status_code == 200
+        assert response.json()["status"] == example["expected_status"]
+
+
 def test_ask_endpoint_returns_clarification_state() -> None:
     response = TestClient(app).post(
         "/ask",
@@ -85,4 +128,3 @@ def test_ask_endpoint_returns_blocked_state() -> None:
     assert body["candidates"] == []
     assert body["resolved_request"] is None
     assert body["safety"]["rule_id"] == "DDL_DROP_PATTERN"
-

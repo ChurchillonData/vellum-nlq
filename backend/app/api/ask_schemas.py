@@ -1,5 +1,8 @@
+from pydantic import BaseModel
+
 from app.api.resolve_schemas import QueryResolveRequest, QueryResolveResponse
 from app.api.schemas import QueryExecuteResponse
+from app.ask.examples import AskExample
 from app.ask.service import AskResult
 
 
@@ -35,3 +38,30 @@ class AskResponse(QueryResolveResponse):
         payload["status"] = result.status
         payload["answer"] = answer
         return cls(**payload)
+
+
+class AskExampleResponse(AskRequest):
+    """One golden ask example exposed to the frontend and tests."""
+
+    id: str
+    label: str
+    expected_status: str
+
+    @classmethod
+    def from_example(cls, example: AskExample) -> "AskExampleResponse":
+        """Convert an internal golden example into API JSON."""
+        return cls(
+            id=example.id,
+            label=example.label,
+            question=example.question,
+            expected_status=example.expected_status,
+            start_date=example.start_date,
+            end_date=example.end_date,
+            plan_tier=example.plan_tier,
+        )
+
+
+class AskExamplesResponse(BaseModel):
+    """Golden ask examples grouped by expected UI state."""
+
+    examples: list[AskExampleResponse]

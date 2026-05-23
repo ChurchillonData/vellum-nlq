@@ -49,6 +49,8 @@ Current first slice:
   generation, returning a safety rule ID for the UI rejection state.
 - `POST /ask` now orchestrates the first product-facing flow: answer,
   clarification, or blocked state from one endpoint.
+- `GET /ask/examples` exposes nine golden demo questions, and tests run each
+  example through `/ask` to protect answer, clarification, and blocked states.
 
 ## Phase 3: Safety And Audit
 

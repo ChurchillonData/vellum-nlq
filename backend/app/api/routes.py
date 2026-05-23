@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from app.analytics.build import build_query
+from app.api.ask_schemas import AskExampleResponse, AskExamplesResponse
 from app.api.ask_schemas import AskRequest as AskApiRequest
 from app.api.ask_schemas import AskResponse
 from app.api.schemas import (
@@ -12,6 +13,7 @@ from app.api.schemas import (
     QueryPreviewResponse,
 )
 from app.api.resolve_schemas import QueryResolveRequest, QueryResolveResponse
+from app.ask.examples import GOLDEN_ASK_EXAMPLES
 from app.ask.service import AskRequest as AskServiceRequest
 from app.ask.service import answer_question
 from app.audit.logger import (
@@ -49,6 +51,17 @@ def list_metrics() -> MetricsResponse:
             MetricResponse.from_metric(metric)
             for metric in sorted(catalogue.metrics.values(), key=lambda item: item.id)
         ],
+    )
+
+
+@router.get("/ask/examples", response_model=AskExamplesResponse)
+def list_ask_examples() -> AskExamplesResponse:
+    """Return golden ask questions for demos and contract tests."""
+    return AskExamplesResponse(
+        examples=[
+            AskExampleResponse.from_example(example)
+            for example in GOLDEN_ASK_EXAMPLES
+        ]
     )
 
 
