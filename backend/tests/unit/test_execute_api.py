@@ -3,6 +3,7 @@ import json
 from fastapi.testclient import TestClient
 
 from app.config import get_settings
+from app.execution.models import ExecutionDatasetSummary, ExecutionResult
 from app.main import app
 
 
@@ -264,6 +265,59 @@ def test_execute_endpoint_writes_execution_audit_event(tmp_path) -> None:
     assert records[0]["event_type"] == "query_execute"
     assert records[0]["execution"]["mode"] == "local_demo"
     assert records[0]["execution"]["row_count"] == 1
+
+
+def test_execute_endpoint_uses_configured_postgres_backend(monkeypatch, tmp_path) -> None:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    original_backend = settings.execution_backend
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+    settings.execution_backend = "postgres"
+
+    def fake_execute_configured_query(build_result, settings_arg):
+        assert settings_arg.execution_backend == "postgres"
+        return ExecutionResult(
+            rows=[{"paid_claims": 1234.56}],
+            row_count=1,
+            answer="Paid claims from Postgres.",
+            dataset=ExecutionDatasetSummary(
+                name="health-uk postgres",
+                member_count=None,
+                claim_count=None,
+                premium_row_count=None,
+            ),
+            mode="postgres",
+        )
+
+    monkeypatch.setattr(
+        "app.api.routes.execute_configured_query",
+        fake_execute_configured_query,
+    )
+
+    try:
+        response = TestClient(app).post(
+            "/queries/execute",
+            json={
+                "metric_id": "paid_claims",
+                "start_date": "2026-01-01",
+                "end_date": "2026-03-31",
+            },
+        )
+    finally:
+        settings.audit_log_path = original_path
+        settings.execution_backend = original_backend
+
+    body = response.json()
+    records = [
+        json.loads(line)
+        for line in (tmp_path / "audit-log.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+
+    assert response.status_code == 200
+    assert body["execution_mode"] == "postgres"
+    assert body["dataset"]["name"] == "health-uk postgres"
+    assert body["dataset"]["member_count"] is None
+    assert records[0]["execution"]["mode"] == "postgres"
 
 
 def test_execute_endpoint_reports_unknown_metric() -> None:

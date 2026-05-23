@@ -148,7 +148,7 @@ Expected result: a structured blocked response, not generated SQL.
 Honest scope limits:
 
 1. A compromised catalogue YAML file can widen the allowlist.
-2. The current demo execution path is SQLite-backed, not Postgres-backed.
+2. Live Postgres integration tests are not implemented yet.
 3. The current audit log is local JSONL, not a database-enforced append-only
    table.
 4. Red-team coverage is still a first slice and does not yet include

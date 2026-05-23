@@ -3,7 +3,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from app.analytics.models import AnalyticsRequest, QueryBuildResult
-from app.execution.demo import DemoExecutionResult
+from app.execution.models import ExecutionResult
 from app.semantic.models import MetricSpec
 from app.sql.guard import SqlGuardResult
 
@@ -163,9 +163,9 @@ class DemoDatasetResponse(BaseModel):
     """Description of the local demo dataset used for execution."""
 
     name: str
-    member_count: int
-    claim_count: int
-    premium_row_count: int
+    member_count: int | None
+    claim_count: int | None
+    premium_row_count: int | None
 
 
 class QueryExecuteResponse(QueryPreviewResponse):
@@ -181,7 +181,7 @@ class QueryExecuteResponse(QueryPreviewResponse):
     def from_execution_result(
         cls,
         build_result: QueryBuildResult,
-        execution_result: DemoExecutionResult,
+        execution_result: ExecutionResult,
         query_id: str,
     ) -> "QueryExecuteResponse":
         """Convert executed query output into the HTTP response shape."""
@@ -191,7 +191,7 @@ class QueryExecuteResponse(QueryPreviewResponse):
             answer=execution_result.answer,
             rows=execution_result.rows,
             row_count=execution_result.row_count,
-            execution_mode="local_demo",
+            execution_mode=execution_result.mode,
             dataset=DemoDatasetResponse(
                 name=execution_result.dataset.name,
                 member_count=execution_result.dataset.member_count,

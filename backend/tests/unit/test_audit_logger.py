@@ -10,6 +10,7 @@ from app.audit.logger import (
     build_ask_audit_event,
     build_preview_audit_event,
 )
+from app.config import get_settings
 
 
 def test_jsonl_audit_logger_records_preview_event(tmp_path, health_uk_catalogue) -> None:
@@ -77,8 +78,7 @@ def test_build_ask_audit_event_records_blocked_state(health_uk_catalogue) -> Non
     result = answer_question(
         health_uk_catalogue,
         request,
-        member_count=120,
-        month_count=3,
+        settings=get_settings(),
     )
 
     event = build_ask_audit_event(request, result)

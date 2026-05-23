@@ -50,7 +50,17 @@ Local defaults are defined in `backend/app/config.py`.
 
 ## Current Boundary
 
-The local Postgres schema, roles, migrations, and seed path are now in place.
-The product execution endpoint still uses the in-memory SQLite demo executor.
-The next backend build will move guarded generated SQL execution onto the
-`vellum_readonly` Postgres role.
+The local Postgres schema, roles, migrations, seed path, and guarded Postgres
+executor are now in place. The API still defaults to the in-memory demo executor
+so the project runs without Docker.
+
+To execute guarded generated SQL against local Postgres, set:
+
+```text
+VELLUM_EXECUTION_BACKEND=postgres
+```
+
+The Postgres execution path uses `VELLUM_READONLY_DATABASE_URL`, refuses SQL
+that failed guard validation, and passes generated parameters as bound values.
+
+The next backend storage slice is the append-only Postgres audit table.

@@ -19,8 +19,9 @@ regulated domain where wrong numbers cause real harm.
 ## Current Build
 
 The current backend is a governed demo slice. It does not call OpenAI by
-default. Local Postgres schema, roles, migrations, and seeding are available,
-but product query execution still uses the in-memory demo executor.
+default. Local Postgres schema, roles, migrations, seeding, and guarded
+Postgres execution are available. The default execution backend remains the
+in-memory demo executor until `VELLUM_EXECUTION_BACKEND=postgres` is set.
 
 Implemented today:
 
@@ -43,6 +44,8 @@ Implemented today:
 - In-memory SQLite demo execution seeded from synthetic data.
 - Local Postgres Docker setup with admin, seeder, and read-only roles.
 - Alembic migration and seed command for deterministic synthetic data.
+- Configurable execution backend: local demo by default, Postgres through the
+  read-only URL when enabled.
 - Local JSONL audit events for all `/ask` outcomes, successful previews, and
   demo executions.
 - Seventeen `/ask/examples` items covered by unit tests.
@@ -52,7 +55,7 @@ Implemented today:
 Planned next:
 
 - Richer natural-language date and filter parsing.
-- Postgres read-only execution and append-only audit table.
+- Append-only Postgres audit table.
 - Expanded red-team coverage for obfuscated and prompt-injection-style attacks.
 - Frontend implementation using the uploaded UI mockups.
 
@@ -157,7 +160,7 @@ vellum-nlq/
 ```
 
 Frontend, integration tests, append-only Postgres audit, and production
-Postgres execution are planned phases, not finished implementation.
+deployment are planned phases, not finished implementation.
 
 ## The Catalogue
 
@@ -194,8 +197,8 @@ The current SQL guard checks:
 The current allowlisted functions are deliberately small: `CAST`, `COUNT`,
 `NULLIF`, and `SUM`.
 
-Planned safety work includes Postgres read-only execution enforcement, a
-persisted append-only audit table, and expanded red-team coverage.
+Planned safety work includes a persisted append-only audit table and expanded
+red-team coverage.
 
 Read `docs/safety-model.md` for the current safety boundary and target model.
 

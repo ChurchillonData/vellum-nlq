@@ -1,5 +1,4 @@
 import sqlite3
-from dataclasses import dataclass
 
 from app.analytics.models import QueryBuildResult
 from app.execution.demo_answers import build_demo_answer
@@ -11,35 +10,16 @@ from app.execution.demo_sql import (
     loss_ratio_sql,
     paid_claims_sql,
 )
+from app.execution.models import ExecutionDatasetSummary, ExecutionResult
 from app.execution.sqlite_seed import prepare_demo_database, to_sqlite_parameters
 from app.seeds.synthetic import build_seed_data
-
-
-@dataclass(frozen=True)
-class DemoDatasetSummary:
-    """Small description of the seeded demo dataset used for execution."""
-
-    name: str
-    member_count: int
-    claim_count: int
-    premium_row_count: int
-
-
-@dataclass(frozen=True)
-class DemoExecutionResult:
-    """Rows and summary produced by local demo execution."""
-
-    rows: list[dict[str, object]]
-    row_count: int
-    answer: str
-    dataset: DemoDatasetSummary
 
 
 def execute_demo_query(
     build_result: QueryBuildResult,
     member_count: int,
     month_count: int,
-) -> DemoExecutionResult:
+) -> ExecutionResult:
     """Run one guarded query against deterministic in-memory demo data."""
     if not build_result.validation.passed:
         raise ValueError("cannot execute SQL that failed guard validation")
@@ -61,18 +41,19 @@ def execute_demo_query(
         rows = _run_demo_query(connection, build_result)
 
     rows = rows[: build_result.provenance.result_shape.max_rows]
-    dataset = DemoDatasetSummary(
+    dataset = ExecutionDatasetSummary(
         name="health-uk synthetic demo",
         member_count=len(seed_data.members),
         claim_count=len(seed_data.claims),
         premium_row_count=len(seed_data.premium),
     )
     answer = build_demo_answer(build_result, rows)
-    return DemoExecutionResult(
+    return ExecutionResult(
         rows=rows,
         row_count=len(rows),
         answer=answer,
         dataset=dataset,
+        mode="local_demo",
     )
 
 

@@ -85,13 +85,14 @@ def build_execution_audit_event(
     result: QueryBuildResult,
     row_count: int,
     answer: str,
+    mode: str = "local_demo",
 ) -> AuditEvent:
     """Create an audit event for a successful local demo execution."""
     return _build_audit_event(
         request,
         result,
         event_type="query_execute",
-        execution={"mode": "local_demo", "row_count": row_count, "answer": answer},
+        execution={"mode": mode, "row_count": row_count, "answer": answer},
     )
 
 
@@ -144,7 +145,7 @@ def build_ask_audit_event(
         ),
         execution=(
             {
-                "mode": "local_demo",
+                "mode": result.execution_result.mode,
                 "row_count": result.execution_result.row_count,
                 "answer": result.execution_result.answer,
             }

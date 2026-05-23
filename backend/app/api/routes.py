@@ -24,7 +24,7 @@ from app.audit.logger import (
     build_preview_audit_event,
 )
 from app.config import get_settings
-from app.execution.demo import execute_demo_query
+from app.execution.factory import execute_query as execute_configured_query
 from app.intent.factory import build_intent_provider
 from app.semantic.catalogue import CatalogueError, load_catalogue
 from app.semantic.question_resolver import resolve_question
@@ -93,8 +93,7 @@ def ask(request: AskApiRequest) -> AskResponse:
         result = answer_question(
             catalogue,
             ask_request,
-            member_count=settings.demo_member_count,
-            month_count=settings.demo_month_count,
+            settings=settings,
         )
     except ResolutionError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
@@ -150,11 +149,7 @@ def execute_query(request: QueryExecuteRequest) -> QueryExecuteResponse:
     try:
         catalogue = _load_active_catalogue()
         build_result = build_query(catalogue, request)
-        execution_result = execute_demo_query(
-            build_result,
-            member_count=settings.demo_member_count,
-            month_count=settings.demo_month_count,
-        )
+        execution_result = execute_configured_query(build_result, settings)
     except ResolutionError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
     except ValueError as error:
@@ -165,6 +160,7 @@ def execute_query(request: QueryExecuteRequest) -> QueryExecuteResponse:
         build_result,
         row_count=execution_result.row_count,
         answer=execution_result.answer,
+        mode=execution_result.mode,
     )
     JsonlAuditLogger(settings.audit_log_path).record(audit_event)
 

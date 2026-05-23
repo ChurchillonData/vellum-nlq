@@ -133,12 +133,33 @@ Current first slice:
 
 Current safety and audit gaps:
 
-- Product execution is not using a Postgres read-only role yet.
 - The Postgres append-only audit table is not built yet.
 - Red-team coverage is still a first slice; broader prompt-injection and
   obfuscation cases are planned.
 - Broader result-size policies for future dimensions are planned as grouped
   analytics expands.
+
+## Phase 3B: Postgres Execution Path
+
+Status: complete for first backend slice
+
+- `VELLUM_EXECUTION_BACKEND` selects the execution backend.
+- `local_demo` remains the default so the project runs without Docker.
+- `postgres` executes guarded generated SQL through
+  `VELLUM_READONLY_DATABASE_URL`.
+- The Postgres executor refuses SQL that failed guard validation.
+- The Postgres executor uses SQLAlchemy `text(...)` with bound parameters from
+  the generator; it does not accept user-written SQL.
+- API execution responses and audit events now surface the actual execution
+  mode.
+- Unit tests cover read-only URL selection, parameter passing, row caps, and API
+  response/audit mode.
+
+Current gaps:
+
+- Live Postgres integration tests are not implemented yet because Docker is not
+  available in the current execution environment.
+- Append-only Postgres audit is still the next backend storage slice.
 
 ## Phase 4: OpenAI Intent Layer
 

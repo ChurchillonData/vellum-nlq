@@ -142,9 +142,10 @@ execution, and audit.
 
 **Decision.** Postgres for both tests and production. The test container is started by docker-compose and torn down on completion.
 
-**Current implementation.** Deterministic demo execution uses in-memory SQLite
-to keep the first backend slice fast and self-contained. Postgres execution and
-integration tests are still planned.
+**Current implementation.** Deterministic demo execution still defaults to
+in-memory SQLite so the backend runs without Docker. A guarded Postgres
+execution path is available behind `VELLUM_EXECUTION_BACKEND=postgres` and uses
+the read-only database URL. Live Postgres integration tests are still planned.
 
 **Consequences.**
 - The test suite needs Docker to run. CI uses the github-actions Docker runner.

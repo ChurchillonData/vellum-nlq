@@ -1,8 +1,8 @@
 # API Contract
 
 This document describes the API surface that exists in the current phased build.
-The OpenAI intent provider boundary is available behind configuration. Production
-Postgres execution is not active yet.
+The OpenAI intent provider boundary is available behind configuration. Guarded
+Postgres execution is available behind `VELLUM_EXECUTION_BACKEND=postgres`.
 
 Base URL for local development:
 
@@ -315,7 +315,9 @@ Response includes all preview fields plus:
 - `execution_mode`
 - `dataset`
 
-Current execution mode is `local_demo`. It does not run against production data.
+Default execution mode is `local_demo`. When
+`VELLUM_EXECUTION_BACKEND=postgres`, execution runs guarded generated SQL
+against `VELLUM_READONLY_DATABASE_URL`.
 
 Supported deterministic metrics in this phase:
 

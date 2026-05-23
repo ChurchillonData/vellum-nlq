@@ -3,7 +3,9 @@ from datetime import date
 
 from app.analytics.build import build_query
 from app.analytics.models import QueryBuildResult
-from app.execution.demo import DemoExecutionResult, execute_demo_query
+from app.config import Settings
+from app.execution.factory import execute_query
+from app.execution.models import ExecutionResult
 from app.semantic.models import Catalogue
 from app.semantic.question_resolver import QuestionResolution, resolve_question
 
@@ -27,14 +29,13 @@ class AskResult:
     status: str
     resolution: QuestionResolution
     build_result: QueryBuildResult | None
-    execution_result: DemoExecutionResult | None
+    execution_result: ExecutionResult | None
 
 
 def answer_question(
     catalogue: Catalogue,
     request: AskRequest,
-    member_count: int,
-    month_count: int,
+    settings: Settings,
 ) -> AskResult:
     """Resolve, plan, guard, and execute a question when possible."""
     resolution = resolve_question(
@@ -56,11 +57,7 @@ def answer_question(
         )
 
     build_result = build_query(catalogue, resolution.resolved_request)
-    execution_result = execute_demo_query(
-        build_result,
-        member_count=member_count,
-        month_count=month_count,
-    )
+    execution_result = execute_query(build_result, settings)
     return AskResult(
         status="answer",
         resolution=resolution,
