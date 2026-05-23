@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException
 
 from app.analytics.build import build_query
+from app.api.ask_schemas import AskRequest as AskApiRequest
+from app.api.ask_schemas import AskResponse
 from app.api.schemas import (
     MetricResponse,
     MetricsResponse,
@@ -10,6 +12,8 @@ from app.api.schemas import (
     QueryPreviewResponse,
 )
 from app.api.resolve_schemas import QueryResolveRequest, QueryResolveResponse
+from app.ask.service import AskRequest as AskServiceRequest
+from app.ask.service import answer_question
 from app.audit.logger import (
     JsonlAuditLogger,
     build_execution_audit_event,
@@ -46,6 +50,43 @@ def list_metrics() -> MetricsResponse:
             for metric in sorted(catalogue.metrics.values(), key=lambda item: item.id)
         ],
     )
+
+
+@router.post("/ask", response_model=AskResponse)
+def ask(request: AskApiRequest) -> AskResponse:
+    """Return the ask workspace state for one user question."""
+    settings = get_settings()
+
+    try:
+        catalogue = _load_active_catalogue()
+        result = answer_question(
+            catalogue,
+            AskServiceRequest(
+                question=request.question,
+                start_date=request.start_date,
+                end_date=request.end_date,
+                plan_tier=request.plan_tier,
+            ),
+            member_count=settings.demo_member_count,
+            month_count=settings.demo_month_count,
+        )
+    except ResolutionError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+    if result.build_result is None or result.execution_result is None:
+        return AskResponse.from_ask_result(result)
+
+    audit_event = build_execution_audit_event(
+        result.resolution.resolved_request,
+        result.build_result,
+        row_count=result.execution_result.row_count,
+        answer=result.execution_result.answer,
+    )
+    JsonlAuditLogger(settings.audit_log_path).record(audit_event)
+
+    return AskResponse.from_ask_result(result, query_id=audit_event.query_id)
 
 
 @router.post("/queries/resolve", response_model=QueryResolveResponse)

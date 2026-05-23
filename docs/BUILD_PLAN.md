@@ -47,6 +47,8 @@ Current first slice:
   metrics or returns clarification candidates without calling an LLM.
 - The resolve path blocks destructive database intent before planning or SQL
   generation, returning a safety rule ID for the UI rejection state.
+- `POST /ask` now orchestrates the first product-facing flow: answer,
+  clarification, or blocked state from one endpoint.
 
 ## Phase 3: Safety And Audit
 
