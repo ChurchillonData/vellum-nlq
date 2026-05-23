@@ -26,6 +26,7 @@ from app.audit.store import build_audit_store
 from app.config import get_settings
 from app.execution.factory import execute_query as execute_configured_query
 from app.intent.factory import build_intent_provider
+from app.intent.models import IntentProviderError
 from app.semantic.catalogue import CatalogueError, load_catalogue
 from app.semantic.question_resolver import resolve_question
 from app.semantic.resolver import ResolutionError
@@ -97,6 +98,8 @@ def ask(request: AskApiRequest) -> AskResponse:
         )
     except ResolutionError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+    except IntentProviderError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
 

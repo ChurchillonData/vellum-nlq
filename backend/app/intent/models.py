@@ -24,3 +24,7 @@ class IntentProvider(Protocol):
     def extract_intent(self, catalogue: Catalogue, question: str) -> IntentResult:
         """Return catalogue-shaped intent for one user question."""
         ...
+
+
+class IntentProviderError(RuntimeError):
+    """Raised when an intent provider cannot return a usable response."""

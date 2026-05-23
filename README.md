@@ -35,6 +35,8 @@ Implemented today:
 - OpenAI intent-provider boundary behind configuration. OpenAI may propose
   structured intent, but Vellum still owns catalogue resolution, SQL generation,
   guard validation, execution, and audit.
+- OpenAI intent output is sanitized against the catalogue, confidence-gated,
+  and can fall back to deterministic parsing.
 - Narrow natural-language parsing for quarter phrases, ISO date ranges, and
   demo plan tiers on `POST /ask`.
 - Ambiguity, out-of-scope, and destructive-intent responses for controlled demo
@@ -92,6 +94,11 @@ Five things make this different from a generic text-to-SQL demo.
    questions return structured states rather than confident wrong answers.
 5. **Provenance first.** Answers include metric details, SQL, parameters,
    validation outcome, and a query ID.
+
+OpenAI can be enabled for intent extraction with `VELLUM_INTENT_PROVIDER=openai`
+and `VELLUM_OPENAI_API_KEY`. The model is not allowed to return SQL; it only
+proposes structured fields such as metric, date range, plan tier, grouping, and
+confidence.
 
 ## Why It Exists
 

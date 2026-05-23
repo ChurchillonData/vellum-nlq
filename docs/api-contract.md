@@ -25,6 +25,11 @@ fields. It does not generate SQL. The proposed intent still passes through the
 catalogue, deterministic planner, SQL generator, SQL guard, demo execution, and
 audit path.
 
+OpenAI output is treated as untrusted input. Unknown metric IDs, unsupported
+plan tiers, unsupported groupings, and low-confidence proposals are discarded
+before the resolver runs. If the OpenAI provider is unavailable, Vellum falls
+back to deterministic parsing by default.
+
 Request:
 
 ```json

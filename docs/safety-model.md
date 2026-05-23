@@ -20,6 +20,8 @@ Current build:
   rows.
 - OpenAI, when enabled, only proposes structured intent. It does not generate
   SQL or execute queries.
+- OpenAI output is sanitized against the catalogue and confidence-gated before
+  the resolver can use it.
 - Every `/ask` outcome writes a local JSONL audit event, including blocked,
   clarification, date-range-required, out-of-scope, and answer states.
 - Successful previews and local demo executions also write local JSONL audit
@@ -48,6 +50,10 @@ one layer inside a governed workflow:
 3. The planner builds a supported analytics path.
 4. The generator emits parameterised SQL.
 5. The guard validates the final SQL before execution.
+
+When OpenAI is enabled, it sits before step 1 as an intent proposer only. The
+system discards unknown provider values instead of expanding the executable
+surface.
 
 ## Layer 1: Question Safety
 

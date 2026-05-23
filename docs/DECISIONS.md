@@ -110,7 +110,7 @@ read-only role is a target production control.
 
 ## ADR-006: OpenAI as the LLM provider, behind a provider adapter
 
-**Status:** Accepted, planned
+**Status:** Accepted, first production slice implemented
 
 **Context.** The intent interpreter calls an LLM with structured output. Vellum-NLQ needs the model to propose typed analytics intent while the catalogue and deterministic planner remain the authority for what can execute.
 
@@ -121,7 +121,9 @@ default, has a fake provider for tests, and includes an OpenAI provider behind
 `VELLUM_INTENT_PROVIDER=openai`. The provider returns structured intent only.
 It cannot return SQL through the intent schema, and provider output still passes
 through catalogue resolution, deterministic planning, SQL guard validation,
-execution, and audit.
+execution, and audit. OpenAI output is sanitized against the active catalogue,
+low-confidence proposals are discarded, and provider failures fall back to
+deterministic parsing by default.
 
 **Consequences.**
 - The intent interpreter has one source of LLM-specific code, in `app/intent/openai_provider.py`.

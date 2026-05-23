@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     intent_provider: str = "deterministic"
     openai_api_key: str | None = None
     openai_model: str = "gpt-5.4-mini"
+    openai_timeout_seconds: float = 8.0
+    openai_max_retries: int = 1
+    openai_min_confidence: float = 0.70
+    openai_fallback_enabled: bool = True
 
 
 @lru_cache

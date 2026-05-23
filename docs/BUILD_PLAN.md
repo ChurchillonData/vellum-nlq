@@ -179,6 +179,13 @@ Current first slice:
 - The OpenAI provider is available behind `VELLUM_INTENT_PROVIDER=openai` and
   returns structured intent only: metric, date range, plan tier, grouping, and
   confidence.
+- OpenAI provider output is sanitized against the active catalogue. Unknown
+  metrics, unknown plan tiers, and unsupported groupings are discarded before
+  resolution.
+- Low-confidence OpenAI proposals are discarded so the request falls back into
+  the normal deterministic parsing and clarification path.
+- The OpenAI client has configured timeout and retry settings, and provider
+  failures fall back to deterministic parsing by default.
 - Unit tests use a fake provider to prove provider output still flows through
   catalogue resolution, deterministic planning, SQL guard validation, local demo
   execution, and audit.
@@ -187,7 +194,6 @@ Current first slice:
 Current gaps:
 
 - No live OpenAI integration test is run in CI.
-- Provider fallback and retry policy are intentionally minimal.
 - The structured intent schema is narrow and covers only the current demo
   fields.
 
