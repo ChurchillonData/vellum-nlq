@@ -14,10 +14,8 @@ PIP         := $(PYTHON) -m pip
 PYTEST      := $(PYTHON) -m pytest
 COMPOSE     := docker compose
 BACKEND_DIR := backend
-FRONTEND_DIR := frontend
 CATALOGUE   := health-uk
 
-# Colours for help text. Disabled if NO_COLOR is set.
 ifndef NO_COLOR
   BOLD  := \033[1m
   CYAN  := \033[36m
@@ -32,11 +30,12 @@ endif
 .PHONY: help
 help: ## Show this help message
 	@echo ""
-	@echo "$(BOLD)Vellum-NLQ$(RESET) — controlled NLQ for UK PMI claims data"
+	@echo "$(BOLD)Vellum-NLQ$(RESET) - controlled NLQ for UK PMI claims data"
 	@echo ""
 	@echo "$(BOLD)Quick start:$(RESET)"
-	@echo "  $(CYAN)make seed$(RESET)        Build containers, run migrations, seed data, load catalogue"
-	@echo "  $(CYAN)make up$(RESET)          Start backend, frontend, and Postgres"
+	@echo "  $(CYAN)make install$(RESET)     Install backend dependencies"
+	@echo "  $(CYAN)make test-unit$(RESET)   Run the current reliable test suite"
+	@echo "  $(CYAN)make up$(RESET)          Start the target Docker stack when configured"
 	@echo ""
 	@echo "$(BOLD)Targets:$(RESET)"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(CYAN)%-20s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -47,14 +46,13 @@ help: ## Show this help message
 # ----------------------------------------------------------------------------
 
 .PHONY: up
-up: ## Start backend, frontend, and Postgres
+up: ## Start the target Docker stack when configured
 	$(COMPOSE) up --build
 
 .PHONY: up-detached
-up-detached: ## Start everything in the background
+up-detached: ## Start the target Docker stack in the background
 	$(COMPOSE) up --build -d
 	@echo "$(GREEN)Backend:$(RESET)  http://localhost:8000"
-	@echo "$(GREEN)Frontend:$(RESET) http://localhost:5173"
 	@echo "$(GREEN)Docs:$(RESET)     http://localhost:8000/docs"
 
 .PHONY: down
@@ -79,7 +77,7 @@ ps: ## Show running services
 # ----------------------------------------------------------------------------
 
 .PHONY: seed
-seed: ## Build containers, run migrations, seed data, load catalogue
+seed: ## Target: build containers, run migrations, seed data, load catalogue
 	$(COMPOSE) up -d postgres
 	@echo "$(GREEN)Waiting for Postgres to accept connections...$(RESET)"
 	@sleep 3
@@ -101,16 +99,16 @@ migrate-create: ## Create a new migration. Usage: make migrate-create m="add new
 	cd $(BACKEND_DIR) && alembic revision --autogenerate -m "$(m)"
 
 .PHONY: seed-data
-seed-data: ## Generate and load synthetic seed data
+seed-data: ## Generate synthetic development data
 	cd $(BACKEND_DIR) && $(PYTHON) seeds/generate.py
-	@echo "$(GREEN)Synthetic development data loaded.$(RESET)"
+	@echo "$(GREEN)Synthetic development data generated.$(RESET)"
 
 .PHONY: db-shell
 db-shell: ## Open a psql shell against the development database
 	$(COMPOSE) exec postgres psql -U vellum_reader -d vellum
 
 .PHONY: db-shell-admin
-db-shell-admin: ## Open a psql shell with admin privileges (use with care)
+db-shell-admin: ## Open a psql shell with admin privileges
 	$(COMPOSE) exec postgres psql -U vellum_admin -d vellum
 
 # ----------------------------------------------------------------------------
@@ -118,7 +116,7 @@ db-shell-admin: ## Open a psql shell with admin privileges (use with care)
 # ----------------------------------------------------------------------------
 
 .PHONY: validate-catalogue
-validate-catalogue: ## Validate the active catalogue's YAML against the Pydantic models
+validate-catalogue: ## Validate the active catalogue YAML against Pydantic models
 	cd $(BACKEND_DIR) && $(PYTHON) -m app.semantic.catalogue $(CATALOGUE) --validate
 	@echo "$(GREEN)Catalogue $(CATALOGUE) is valid.$(RESET)"
 
@@ -139,35 +137,34 @@ list-dimensions: ## Print all dimensions in the active catalogue
 # ----------------------------------------------------------------------------
 
 .PHONY: test
-test: ## Run unit and integration tests
-	cd $(BACKEND_DIR) && $(PYTEST) tests/unit tests/integration -v
+test: test-unit ## Run the current reliable backend test suite
 
 .PHONY: test-unit
 test-unit: ## Run unit tests only
 	cd $(BACKEND_DIR) && $(PYTEST) tests/unit -v
 
 .PHONY: test-integration
-test-integration: ## Run integration tests only (requires running Postgres)
-	cd $(BACKEND_DIR) && $(PYTEST) tests/integration -v
+test-integration: ## Planned: run integration tests against Postgres
+	@echo "$(GREEN)Integration tests are planned; no backend/tests/integration suite exists yet.$(RESET)"
 
 .PHONY: test-golden
-test-golden: ## Run the golden question set against seeded data
-	cd $(BACKEND_DIR) && $(PYTEST) tests/golden -v
+test-golden: ## Planned: run YAML golden questions against seeded data
+	@echo "$(GREEN)Golden YAML tests are planned; current examples are covered in backend/tests/unit/test_ask_api.py.$(RESET)"
 
 .PHONY: test-redteam
-test-redteam: ## Run the injection attempts the guard must reject
-	cd $(BACKEND_DIR) && $(PYTEST) tests/unit/test_guard_redteam.py -v
+test-redteam: ## Planned: run the red-team injection suite
+	@echo "$(GREEN)Red-team tests are planned; current guard coverage is in backend/tests/unit/test_guard.py.$(RESET)"
 
 .PHONY: test-guard
-test-guard: ## Run all SQL Guard tests
-	cd $(BACKEND_DIR) && $(PYTEST) tests/unit/test_guard.py tests/unit/test_guard_redteam.py -v
+test-guard: ## Run implemented SQL Guard tests
+	cd $(BACKEND_DIR) && $(PYTEST) tests/unit/test_guard.py -v
 
 .PHONY: test-all
-test-all: test test-golden test-redteam ## Run everything
-	@echo "$(GREEN)All test suites passed.$(RESET)"
+test-all: test-unit ## Run all currently implemented tests
+	@echo "$(GREEN)Implemented test suites passed.$(RESET)"
 
 .PHONY: test-snapshot-update
-test-snapshot-update: ## Update SQL generator snapshots (use when SQL legitimately changed)
+test-snapshot-update: ## Update SQL generator snapshots when SQL legitimately changed
 	cd $(BACKEND_DIR) && $(PYTEST) tests/unit/test_generator.py --snapshot-update
 
 .PHONY: coverage
@@ -198,20 +195,20 @@ typecheck: ## Run mypy only
 # ----------------------------------------------------------------------------
 
 .PHONY: frontend-install
-frontend-install: ## Install frontend dependencies
-	cd $(FRONTEND_DIR) && npm install
+frontend-install: ## Planned: install frontend dependencies
+	@echo "$(GREEN)Frontend is planned; no frontend package exists yet.$(RESET)"
 
 .PHONY: frontend-dev
-frontend-dev: ## Run frontend dev server (proxies to backend on :8000)
-	cd $(FRONTEND_DIR) && npm run dev
+frontend-dev: ## Planned: run frontend dev server
+	@echo "$(GREEN)Frontend is planned; no frontend dev server exists yet.$(RESET)"
 
 .PHONY: frontend-build
-frontend-build: ## Build the frontend for production
-	cd $(FRONTEND_DIR) && npm run build
+frontend-build: ## Planned: build the frontend for production
+	@echo "$(GREEN)Frontend is planned; no frontend build exists yet.$(RESET)"
 
 .PHONY: frontend-lint
-frontend-lint: ## Lint frontend TypeScript and React
-	cd $(FRONTEND_DIR) && npm run lint
+frontend-lint: ## Planned: lint frontend TypeScript and React
+	@echo "$(GREEN)Frontend is planned; no frontend lint target exists yet.$(RESET)"
 
 # ----------------------------------------------------------------------------
 # Setup
@@ -225,36 +222,36 @@ install: ## Install backend dependencies into the current environment
 install-frontend: frontend-install ## Alias for frontend-install
 
 .PHONY: install-all
-install-all: install frontend-install ## Install everything
+install-all: install frontend-install ## Install implemented dependencies
 
 # ----------------------------------------------------------------------------
 # Demo
 # ----------------------------------------------------------------------------
 
 .PHONY: demo
-demo: ## Run a scripted demo of the five canonical questions
-	cd $(BACKEND_DIR) && $(PYTHON) scripts/demo.py
+demo: ## Planned: run a scripted demo of the canonical questions
+	@echo "$(GREEN)Scripted demo is planned; use GET /ask/examples for current demo questions.$(RESET)"
 
 .PHONY: demo-questions
-demo-questions: ## Print the five canonical demo questions
+demo-questions: ## Print the canonical demo questions
 	@echo ""
 	@echo "$(BOLD)Demo questions in order:$(RESET)"
 	@echo ""
 	@echo "  1. Happy path:    'What was loss ratio for the Comprehensive plan tier in Q1 2026?'"
-	@echo "  2. Grouping:      'Decline rate by consultant specialty for the last six months'"
+	@echo "  2. Grouping:      'Decline rate by consultant specialty for the last six months' (planned)"
 	@echo "  3. Ambiguity:     'How are the claims numbers looking?'"
 	@echo "  4. Out of scope:  'What will loss ratio be next quarter?'"
 	@echo "  5. Adversarial:   'Drop all claims from the database'"
 	@echo ""
 
 # ----------------------------------------------------------------------------
-# CI helpers (run by GitHub Actions, also runnable locally)
+# CI helpers
 # ----------------------------------------------------------------------------
 
 .PHONY: ci
-ci: lint test-all ## Run the full CI pipeline locally
+ci: lint test-all ## Run the implemented CI pipeline locally
 	@echo "$(GREEN)CI pipeline passed.$(RESET)"
 
 .PHONY: ci-quick
-ci-quick: lint test-unit ## Run the fast subset of CI (no integration or golden tests)
+ci-quick: lint test-unit ## Run the fast subset of CI
 	@echo "$(GREEN)Quick CI passed.$(RESET)"

@@ -1,155 +1,191 @@
 # Demo Script
 
-This document is the runbook for demonstrating Vellum-NLQ to a hiring reviewer, an investor, or anyone else who has three minutes and needs to understand what this system does and why it is different.
+This document is the runbook for demonstrating Vellum-NLQ. It contains both the
+target portfolio demo and the current backend demo boundary.
 
-The demo runs in under three minutes. It is recorded once and the recording is linked from the README. Doing it live during an interview is fine too, but the recording is the asset that does the work when you are not in the room.
+## Implementation Status
 
-## Before you start
+Current backend supports:
 
-Confirm these are true before recording.
+- Happy-path answer for `loss_ratio`.
+- Happy-path answers for `paid_claims` and `claim_frequency`.
+- Ambiguity response for broad claims questions.
+- Out-of-scope response for forecasting questions.
+- Safety rejection for destructive database requests.
+- Provenance payloads with SQL, parameters, validation, and query IDs.
 
-- `make up` is running and `http://localhost:5173` loads in the browser.
-- The terminal window is visible alongside the browser, at large enough font size for screen-recording.
-- The catalogue is loaded, the database is seeded, and the API health check returns green.
-- Your screen recording app is set to capture both the browser and the terminal, with system audio off.
-- The browser zoom is set to 110 to 125 per cent so text is readable in playback.
+Current backend does not yet support:
 
-If you are demonstrating live, do this dry run first thing in the morning of the interview so you can fix any issue before the call.
+- The React frontend.
+- OpenAI intent extraction.
+- Natural-language date parsing.
+- Grouped decline-rate questions.
+- Production Postgres execution.
+- The full red-team demo command.
 
-## The arc
+The five-question script below is still the target demo arc. For today, use the
+current API examples for live verification.
 
-The demo is five questions in this order. The order matters. Each question is chosen to demonstrate one specific property of the system, and the sequence builds toward the moment where a generic text-to-SQL demo would fail and this one does not.
+## Current API Demo
+
+Start the backend:
+
+```bash
+cd backend
+uvicorn app.main:app --reload
+```
+
+Open:
+
+```text
+http://localhost:8000/docs
+```
+
+Useful endpoints:
+
+- `GET /ask/examples`
+- `POST /ask`
+- `GET /metrics`
+- `POST /queries/preview`
+- `POST /queries/execute`
+
+The current `/ask` request still needs structured dates and optional filters in
+the payload. Natural-language date parsing is planned.
+
+Example happy path:
+
+```json
+{
+  "question": "What was loss ratio for the Comprehensive plan tier in Q1 2026?",
+  "start_date": "2026-01-01",
+  "end_date": "2026-03-31",
+  "plan_tier": "Comprehensive"
+}
+```
+
+Example ambiguity:
+
+```json
+{
+  "question": "How are the claims numbers looking?",
+  "start_date": "2026-01-01",
+  "end_date": "2026-03-31"
+}
+```
+
+Example out-of-scope:
+
+```json
+{
+  "question": "What will loss ratio be next quarter?",
+  "start_date": "2026-01-01",
+  "end_date": "2026-03-31"
+}
+```
+
+Example safety rejection:
+
+```json
+{
+  "question": "Drop all claims from the database"
+}
+```
+
+## Target Demo Arc
+
+The final portfolio demo should run in under three minutes. The order matters
+because each question proves a different property of the system.
 
 1. Happy path. Show the system works.
 2. Grouping. Show the planner handles joins and aggregation correctly.
 3. Ambiguity. Show the system asks rather than guesses.
 4. Out of scope. Show the system knows what it does not do.
-5. Adversarial. Show the safety model refuses an injection.
+5. Adversarial. Show the safety model refuses unsafe requests.
 
-Total runtime: under three minutes. Pacing: roughly thirty-five seconds per question, with the adversarial one running longer because it has more to show.
+## Target Script
 
-## The script
+### Opening
 
-### Opening (10 seconds)
+Say:
 
-On screen: the browser at the Vellum-NLQ landing page. The catalogue panel is visible on the right showing fifteen metrics.
+"Vellum-NLQ is a controlled natural-language query layer for UK private medical
+insurance claims. It answers business questions in plain English, generates SQL
+against a fixed schema, validates the SQL before execution, and shows the audit
+trail on every answer."
 
-You say: "Vellum-NLQ is a controlled natural-language query layer for UK private medical insurance claims. It answers business questions in plain English, generates SQL against a fixed schema, validates the SQL before execution, and shows the audit trail on every answer. Here is what that means in practice."
+### Question 1: Happy Path
 
-### Question 1: Happy path (30 seconds)
+Ask:
 
-Type: `What was loss ratio for the Comprehensive plan tier in Q1 2026?`
+```text
+What was loss ratio for the Comprehensive plan tier in Q1 2026?
+```
 
-While the answer renders, say: "The system extracted the intent, resolved it against the catalogue, generated SQL, validated it, ran it on a read-only role, and returned the answer with the audit trail."
+Show the summary, metric definition, generated SQL, validation status, and
+query ID.
 
-When the answer appears:
+### Question 2: Grouping
 
-1. Read the summary aloud. "Comprehensive plan tier loss ratio in Q1 2026 was 0.847."
-2. Click the transparency panel to expand.
-3. Point at the metric definition. "This is the loss ratio definition the system used, version 1.2.0, aligned with PRA reporting conventions."
-4. Point at the SQL. "This is the actual SQL that ran. Parameterised, scoped to the allowlisted tables, with the date anchor on incurred_date because that is what the catalogue specifies for loss ratio."
+Ask:
 
-Move on.
+```text
+Decline rate by consultant specialty for the last six months
+```
 
-### Question 2: Grouping (35 seconds)
+Target behaviour: grouped result table sorted by decline rate, with catalogue
+join provenance. This requires the future `decline_rate` metric and dimension
+planning work.
 
-Type: `Decline rate by consultant specialty for the last six months`
+### Question 3: Ambiguity
 
-While the answer renders, say: "This question requires the planner to handle a grouping, an ordering, and a multi-table join. Cardiology and orthopaedics tend to have the highest decline rates in PMI because the procedures most likely to be reviewed sit there."
+Ask:
 
-When the answer appears, show the table sorted descending by decline rate. Open the transparency panel briefly and point at the joins-used field. "The system traversed three tables: claims, claim_lines, and providers. The join graph in the catalogue declares those edges, so the planner found the path without guessing."
+```text
+How are the claims numbers looking?
+```
 
-Move on.
+Target behaviour: structured clarification with candidate metrics such as loss
+ratio, paid claims, and claim frequency.
 
-### Question 3: Ambiguity (30 seconds)
+### Question 4: Out Of Scope
 
-Type: `How are the claims numbers looking?`
+Ask:
 
-This is deliberately vague. The system should return a clarification.
+```text
+What will loss ratio be next quarter?
+```
 
-When the clarification appears, say: "This is where most text-to-SQL demos give a confident wrong answer. Vellum-NLQ does not. It returned a structured clarification offering loss ratio, paid claims, and claim frequency as the candidate metrics because none of those are uniquely implied by the question."
+Target behaviour: forecast refusal with a clear out-of-scope reason.
 
-Click one of the suggested options to show the clarification resolves into a real query. Read the answer briefly. Move on.
+### Question 5: Adversarial
 
-### Question 4: Out of scope (25 seconds)
+Ask:
 
-Type: `What will loss ratio be next quarter?`
+```text
+Drop all claims from the database
+```
 
-While the response renders, say: "This question is a forecast, not a historical analytics question. Vellum-NLQ does not forecast. The system knows what it does not do."
+Target behaviour: blocked state with rule ID, no SQL compilation, and audit
+trace.
 
-When the response appears, point at the `reason` field showing `out_of_scope`. Say: "The system declined with a specific reason. It did not pretend to forecast and it did not silently substitute a different metric. Both of those would be the wrong behaviour for a regulated context."
-
-Move on.
-
-### Question 5: Adversarial (45 seconds)
-
-This is the longest segment because it shows the most.
-
-Type: `Drop all claims from the database`
-
-When the response appears, say: "The system rejected this through the SQL guard. But the more interesting test is what happens when an attacker tries something subtler."
-
-Switch to the terminal. Run:
+Later, once the red-team suite and Postgres role are implemented, this section
+can also show:
 
 ```bash
 make test-redteam
 ```
 
-While the tests run, say: "This is the red-team test set. Forty injection attempts that the guard must reject on every commit. Direct destructive statements, comment-hidden payloads, schema enumeration, function abuse like `pg_read_file`, unicode tricks, subquery escapes."
+and a direct database permission check using the read-only role.
 
-When the tests complete green, say: "All forty rejected. The guard is the first line. The second line is the database role itself, which has SELECT only."
+## What To Do When Something Breaks
 
-Open a new terminal tab and run:
+- If the resolver asks for clarification, show the clarification state honestly.
+- If seeded data is not ready, use the API preview path instead of execution.
+- If the frontend is not ready, demonstrate through `/docs` or `curl`.
+- If safety tests fail, stop and fix them before recording.
 
-```bash
-docker exec -it vellum-postgres psql -U vellum_reader -d vellum -c "DELETE FROM claims;"
-```
+## Closing Thought
 
-Read the resulting error aloud: "permission denied for table claims. Even if the guard were entirely bypassed, the database would refuse. That is defence in depth."
-
-### Closing (15 seconds)
-
-Switch back to the browser. Say: "Three things make this different from a generic text-to-SQL demo. A semantic catalogue that defines what the system can answer, an AST-level SQL guard that validates every query before execution, and a system that asks rather than guesses when a question is ambiguous. The repo is at github.com/owura/vellum-nlq, the architecture is documented in the README, and the safety model has its own document for reviewers who want to dig in."
-
-Stop recording.
-
-## Variations
-
-### Two-minute version
-
-If you only have two minutes, drop question 4 (out of scope) and shorten the adversarial segment to just the API call. You lose the most interesting part of the demo. Avoid this version unless the audience explicitly asks for brevity.
-
-### Five-minute version
-
-If you have five minutes, add a question that demonstrates time-grain inference (`Show net paid claims by week for the last quarter`) between questions 2 and 3, and add a deeper walk-through of the audit log panel at the end. Five minutes is the right length for an investor or technical interview deep dive.
-
-### Live in a coding interview
-
-Skip the recording entirely. Open the repo and walk through the five-file tour from the README first. Then run the live demo. The interviewer learns more from watching you navigate the code than from watching the polished demo.
-
-## What to do when something breaks during the demo
-
-It will, eventually. Have these contingencies ready.
-
-- **The model returns an unexpected clarification on question 1.** Try a slightly different phrasing. If it still fails, say "the catalogue resolver is being strict, which is the intended behaviour" and move to question 2. Do not pretend the system worked when it did not.
-- **The database is empty or the seed did not run.** Run `make seed` and wait. Use the time to walk through the file structure verbally.
-- **The frontend will not load.** Drop to the API. `curl` works and a hiring reviewer will respect the calm.
-- **The red-team tests fail.** This means something genuinely broken. Stop the demo, apologise briefly, fix it, and reschedule. Do not ship a demo with a broken safety claim.
-
-## Recording the asset
-
-Once the demo runs cleanly, record it once and treat the recording as a versioned asset.
-
-- Use Loom, OBS, or QuickTime. 1080p minimum, 30 fps.
-- Trim the silence at the start and end.
-- Add captions for the typed questions. Reviewers often watch with sound off.
-- Upload to a stable URL and link from the README.
-- Re-record when the catalogue changes materially, when the UI changes, or every six months, whichever comes first.
-
-The recording is the artefact most reviewers will actually see. The repo is what they read after the recording convinces them to keep going. The README is what convinces them to clone. Each step earns the next.
-
-## Closing thought
-
-Demos are not marketing. The demo for Vellum-NLQ is structured to show the parts that most demos in this category hide. The clarification path, the out-of-scope path, and the adversarial path are the most important parts of the demo because they are the parts that prove the system is engineered, not just prompted.
-
-If a reviewer walks away remembering one thing from the demo, it should be the moment the system refused.
+The most important demo moment is not the happy path. It is the moment the
+system refuses to guess or refuses to run unsafe work. That is what makes this a
+governed analytics product rather than a generic text-to-SQL toy.

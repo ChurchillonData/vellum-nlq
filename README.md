@@ -3,170 +3,211 @@
 A controlled natural-language query layer for UK private medical insurance claims data.
 
 > Implementation note: this repository is being built in phases. The overview
-> documents describe the target system; `docs/BUILD_PLAN.md` tracks the code path
-> from the current foundation to the full demoable product.
-> `docs/CODEBASE_STANDARDS.md` records the maintainability rules for implementation.
+> documents describe the target system, while `docs/BUILD_PLAN.md` tracks what
+> is implemented today and what remains.
 
-[![CI](https://img.shields.io/badge/CI-passing-green)]()
 [![Catalogue](https://img.shields.io/badge/catalogue-health--uk-blue)]()
 [![Python](https://img.shields.io/badge/python-3.11+-blue)]()
 
-Vellum-NLQ answers questions like "what was loss ratio for the Comprehensive plan tier in Q1 2026?" by generating SQL against a fixed schema, validating that SQL with an AST walker before execution, and running it on a read-only database role. Every answer ships with the SQL used, the metric definition, the join path traversed, and the validation result.
+Vellum-NLQ answers governed analytics questions by resolving intent against a
+semantic catalogue, generating parameterised SQL, validating that SQL before
+execution, and returning the answer with provenance.
 
-It is not a chatbot. It is a narrow, auditable analytics interface for a regulated domain where wrong numbers cause real harm.
+It is not a chatbot. It is a narrow, auditable analytics interface for a
+regulated domain where wrong numbers cause real harm.
 
-## Five-minute tour
+## Current Build
+
+The current backend is a deterministic demo slice. It does not call OpenAI yet
+and does not execute against Postgres yet.
+
+Implemented today:
+
+- FastAPI backend with product-facing `/ask` and development query endpoints.
+- Catalogue-backed deterministic paths for `loss_ratio`, `paid_claims`, and
+  `claim_frequency`.
+- Ambiguity, out-of-scope, and destructive-intent responses for controlled demo
+  questions.
+- SQL generation and guard validation for generated SELECT statements.
+- Catalogue-backed table, column, function, and join-path validation.
+- In-memory SQLite demo execution seeded from synthetic data.
+- Local JSONL audit events for successful previews and demo executions.
+- Twelve `/ask/examples` items covered by unit tests.
+
+Planned next:
+
+- OpenAI structured intent extraction behind a narrow provider interface.
+- Natural-language date and filter parsing.
+- Postgres read-only execution and append-only audit table.
+- Red-team test suite and YAML golden question set.
+- Frontend implementation using the uploaded UI mockups.
+
+## Five-Minute Tour
 
 If you have five minutes, read these files in this order.
 
-1. `backend/catalogues/health-uk/metrics/loss_ratio.yaml` — what a metric definition looks like.
-2. `backend/catalogues/health-uk/joins.yaml` — the join graph the planner traverses.
-3. `backend/app/sql/guard.py` — the eleven checks that run on every generated SQL string.
-4. `backend/tests/golden/questions.yaml` — the approved question set CI runs on every commit.
-5. `docs/DECISIONS.md` — the architectural decisions and what was rejected.
+1. `backend/catalogues/health-uk/metrics/loss_ratio.yaml` - what a metric
+   definition looks like.
+2. `backend/catalogues/health-uk/joins.yaml` - the join graph the planner and
+   guard use.
+3. `backend/app/sql/guard.py` - the SQL validation boundary.
+4. `backend/app/ask/examples.py` - the current demo examples used by tests.
+5. `docs/DECISIONS.md` - the architectural decisions and what was rejected.
 
-That tour tells you what this system does, what it refuses to do, and why.
+That tour shows what the current backend can answer, what it refuses, and why.
 
-## What it does
+## What It Does
 
-A claims analyst asks a question in plain English. The system extracts the intent, resolves it against a typed semantic catalogue, generates parameterised SQL, validates the SQL against an allowlist, runs it on a read-only role, and returns the answer with full provenance.
+A claims analyst asks a governed analytics question. The system resolves it
+against a typed semantic catalogue, builds a logical plan, generates
+parameterised SQL, validates the SQL, and returns the answer with provenance.
 
 Five things make this different from a generic text-to-SQL demo.
 
-1. **A semantic catalogue, not prompt engineering.** Metrics are defined in YAML with explicit formulas, time anchors, and version numbers. The model proposes intent. The catalogue decides what the system can answer.
-2. **An AST-level SQL guard.** SQL is parsed with SQLGlot and walked against a table allowlist, a column allowlist, a function allowlist, and a join graph before execution. The database connects on a read-only role as a second line of defence.
-3. **Clarification before guessing.** Ambiguous, unsupported, and out-of-scope questions get a structured clarification, not a confident wrong answer.
-4. **Audit on every request.** Every question, intent, SQL string, validation outcome, row count, and latency is logged before the response returns.
-5. **Multi-catalogue by design.** Version one ships the health-uk catalogue only. Adding motor-uk or property-uk is a configuration exercise, not a code change.
+1. **A semantic catalogue, not prompt engineering.** Metrics are defined in YAML
+   with explicit formulas, time anchors, owners, and version numbers.
+2. **A SELECT-only product boundary.** Vellum-NLQ is an analytics reader, not a
+   database driver. Mutable SQL is outside the product.
+3. **Catalogue-backed SQL safety.** Generated SQL is checked against table,
+   column, function, and join allowlists before execution.
+4. **Clarification before guessing.** Ambiguous, unsupported, and out-of-scope
+   questions return structured states rather than confident wrong answers.
+5. **Provenance first.** Answers include metric details, SQL, parameters,
+   validation outcome, and a query ID.
 
-## Why it exists
+## Why It Exists
 
-This project is a prototype of the analytics surface I am building for Govaxis, a UK claims intelligence platform for health insurers. It is also an honest demonstration that I understand the parts of building AI systems for regulated industries that most portfolio projects skip.
+This project is a prototype of the analytics surface I am building for Govaxis,
+a UK claims intelligence platform for health insurers. It is also a portfolio
+demonstration of AI system design for regulated analytics.
 
-Claims teams need numbers they can defend in front of regulators, auditors, and underwriters. Today they get those numbers by writing tickets to a small analytics team and waiting two to five days. Vellum-NLQ replaces the slow lane with a fast lane that has the same controls.
+Claims teams need numbers they can defend in front of regulators, auditors, and
+underwriters. Today they often get those numbers by writing tickets to a small
+analytics team and waiting. Vellum-NLQ explores a faster path with explicit
+controls.
 
-## Quick start
+## Quick Start
+
+Install backend dependencies, then run the current test suite.
 
 ```bash
-git clone https://github.com/owura/vellum-nlq
-cd vellum-nlq
-make seed     # Builds containers, runs migrations, seeds data, loads catalogue
-make up       # Starts backend, frontend, and Postgres
+cd backend
+python -m pip install -e ".[dev]"
+python -m pytest tests/unit -q
 ```
 
-Open `http://localhost:5173` and ask "what was loss ratio for the Comprehensive plan tier in Q1 2026?"
+Run the API locally.
 
-## Repository layout
-
+```bash
+cd backend
+uvicorn app.main:app --reload
 ```
+
+Then open `http://localhost:8000/docs`.
+
+## Repository Layout
+
+```text
 vellum-nlq/
-├── README.md
-├── docs/
-│   ├── BUILD_PLAN.md                 # Phased implementation plan
-│   ├── CODEBASE_STANDARDS.md         # Maintainability rules
-│   ├── DECISIONS.md                  # Architectural decisions and what was rejected
-│   ├── demo-script.md
-│   ├── adding-a-metric.md
-│   └── safety-model.md
-├── architecture.svg                  # Request lifecycle and trust boundaries
-├── docker-compose.yml
-├── Makefile
-├── backend/
-│   ├── app/
-│   │   ├── api/                      # FastAPI routes and Pydantic schemas
-│   │   ├── semantic/                 # Catalogue loader, validator, resolver
-│   │   ├── intent/                   # LLM call with structured output
-│   │   ├── planner/                  # ResolvedRequest to LogicalPlan
-│   │   ├── sql/                      # Generator, guard, allowlist, runner
-│   │   ├── compose/                  # Result set to summary
-│   │   ├── audit/                    # Append-only audit logger
-│   │   └── db/                       # Read-only and read-write engines
-│   ├── catalogues/
-│   │   ├── health-uk/                # v1 ships this only
-│   │   ├── motor-uk/                 # documented, not built
-│   │   └── property-uk/              # documented, not built
-│   ├── seeds/                        # Synthetic data generator
-│   └── tests/
-│       ├── unit/
-│       ├── integration/
-│       └── golden/                   # Approved Q&A pairs, runs in CI
-└── frontend/                         # React + Vite + TypeScript
+|-- README.md
+|-- docs/
+|   |-- BUILD_PLAN.md
+|   |-- CODEBASE_STANDARDS.md
+|   |-- DECISIONS.md
+|   |-- api-contract.md
+|   |-- demo-script.md
+|   |-- adding-a-metric.md
+|   `-- safety-model.md
+|-- design-mockups/
+|   `-- frontend/
+|-- database/
+|-- backend/
+|   |-- app/
+|   |   |-- analytics/
+|   |   |-- api/
+|   |   |-- ask/
+|   |   |-- audit/
+|   |   |-- execution/
+|   |   |-- planner/
+|   |   |-- semantic/
+|   |   `-- sql/
+|   |-- catalogues/
+|   |   `-- health-uk/
+|   |-- seeds/
+|   `-- tests/
+|       `-- unit/
+`-- Makefile
 ```
 
-## The catalogue
+Frontend, integration tests, red-team tests, and production Postgres execution
+are planned phases, not finished implementation.
 
-Vellum-NLQ is multi-catalogue by design. The Python loader supports any number of catalogues mounted under `catalogues/`, with each catalogue scoped to one line of business and one regulatory jurisdiction.
+## The Catalogue
 
-| Catalogue | Status | Notes |
-|---|---|---|
-| `health-uk` | Shipped in v1 | UK private medical insurance. Fifteen metrics, twelve dimensions. GBP. |
-| `motor-uk` | Documented only | Requires bodily injury versus damage split, salvage and subrogation handling, and reserve development as a first-class metric. Largest extension by effort. |
-| `property-uk` | Documented only | Requires catastrophe event tagging, building versus contents split, and long-tail claim handling. |
+Vellum-NLQ is multi-catalogue by design. The current build includes the
+`health-uk` catalogue slice.
 
-Adding a new catalogue is a YAML and migration exercise. The Python loader, the resolver, the planner, the SQL generator, the guard, the runner, and the API surface do not change.
+| Metric | Catalogue status | Executable today |
+|---|---:|---:|
+| `loss_ratio` | Yes | Yes |
+| `paid_claims` | Yes | Yes |
+| `claim_frequency` | Yes | Yes |
+| `incurred_claims` | Yes | No |
+| `claim_severity` | Yes | No |
 
-## The fifteen metrics in health-uk
+Adding a new metric should start with catalogue YAML, tests, and a narrow
+planner/generator path. The codebase intentionally favours small readable files
+over one large clever pipeline.
 
-| Metric | Measures |
-|---|---|
-| `paid_claims` | Sum of claim payments in the period, by paid date. |
-| `incurred_claims` | Paid claims plus change in case reserves, by incurred date. |
-| `loss_ratio` | Incurred claims divided by earned premium. |
-| `claim_frequency` | Claim count per thousand member months. |
-| `claim_severity` | Average paid amount per closed claim. |
-| `average_claim_cost` | Mean of net paid amount across non-declined claims. |
-| `decline_rate` | Declined claim count divided by adjudicated claim count. |
-| `partial_decline_rate` | Claims with at least one declined line divided by adjudicated claims. |
-| `turnaround_time` | Median days from claim receipt to adjudication. |
-| `reopen_rate` | Claims reopened within ninety days divided by closed claims. |
-| `pend_rate` | Claims in pended status divided by total active claims. |
-| `duplicate_submission_rate` | Same consultant, same member, same service date, within seven days. |
-| `high_value_claim_share` | Share of paid amount from claims over fifty thousand pounds. |
-| `network_utilisation` | In-network paid amount divided by total paid amount. |
-| `er_visit_rate` | Emergency visits per thousand member months. |
+## Safety Model
 
-Each one has a YAML file in `backend/catalogues/health-uk/metrics/` with its formula, time anchor, required tables, default filters, synonyms, owner, version, and last-reviewed date.
+The current SQL guard checks:
 
-## Safety model
+1. SQL parses successfully.
+2. Exactly one statement is present.
+3. The statement is SELECT-only.
+4. Comments are absent.
+5. System schemas are not referenced.
+6. Tables are on the catalogue allowlist.
+7. Columns are on the catalogue allowlist.
+8. Functions are on the allowlist.
+9. Join paths match the catalogue graph.
 
-The guard runs eleven checks on every generated SQL string before execution.
+The current allowlisted functions are deliberately small: `CAST`, `COUNT`,
+`NULLIF`, and `SUM`.
 
-1. Statement type must be SELECT.
-2. Exactly one statement per request.
-3. Every referenced table on the allowlist.
-4. Every referenced column on the allowlist.
-5. Every function call on the allowlist.
-6. Every join condition matches an edge in `joins.yaml`.
-7. Subqueries validated recursively against the same allowlists.
-8. LIMIT enforced at ten thousand rows.
-9. No `information_schema`, no `pg_catalog`, no other schemas.
-10. Comments stripped before parsing.
-11. All literals must be bound parameters.
+Planned safety work includes Postgres read-only role enforcement, a persisted
+append-only audit table, red-team tests, and result-size controls.
 
-The database role has SELECT only and a fifteen-second `statement_timeout`. The audit log is append-only.
-
-Read `docs/safety-model.md` for the full safety story including the red-team test cases.
+Read `docs/safety-model.md` for the current safety boundary and target model.
 
 ## Testing
 
+Current reliable test command:
+
 ```bash
-make test            # Unit and integration tests
-make test-golden     # Golden question set against seeded data
-make test-redteam    # Injection attempts the guard must reject
+cd backend
+python -m pytest tests/unit -q
 ```
 
-The golden test set is in `backend/tests/golden/questions.yaml`. New questions are added by pull request. A change that breaks a golden answer fails CI.
+Or from the repo root:
+
+```bash
+make test-unit
+```
+
+The current suite covers catalogue loading, deterministic resolution, planning,
+SQL generation, SQL guard checks, demo execution, audit lookup, and `/ask`
+examples.
 
 ## Current API Surface
 
-The current backend exposes one product-facing endpoint plus development
-endpoints for the deterministic build path. Full request and response examples
-are documented in `docs/api-contract.md`.
+Full request and response examples are documented in `docs/api-contract.md`.
 
 | Endpoint | Purpose |
 |---|---|
-| `POST /ask` | Product-facing ask flow. Returns answer, clarification, or blocked state. |
-| `GET /ask/examples` | Twelve golden demo questions used by tests and future UI controls. |
+| `POST /ask` | Product-facing ask flow. Returns answer, clarification, blocked, or out-of-scope state. |
+| `GET /ask/examples` | Twelve demo questions used by tests and future UI controls. |
 | `GET /metrics` | Active catalogue metric definitions with formulas and versions. |
 | `POST /queries/resolve` | Deterministic metric resolution and early safety blocking. |
 | `POST /queries/preview` | Parameterised SQL and provenance without execution. |
@@ -174,22 +215,16 @@ are documented in `docs/api-contract.md`.
 | `GET /queries/{query_id}` | Local JSONL audit trace for a previous preview or execution. |
 | `GET /health` | Liveness and active catalogue name. |
 
-Execution is currently SELECT-only and demo-data-backed. The OpenAI intent
-layer is intentionally not active yet.
+## What This Proves
 
-## What this proves
+If you are reading this as a hiring reviewer, the project is meant to show:
 
-If you are reading this as a hiring reviewer, the things this repo is meant to demonstrate are:
-
-- I understand that the semantic catalogue is the hard part, not the LLM plumbing.
-- I treat safety as a property of the parser and the database role, not a policy in the README.
+- I understand that the semantic catalogue is the hard part, not the LLM
+  plumbing.
+- I treat SELECT-only execution as the product boundary.
+- I validate generated SQL structurally before it reaches execution.
+- I can build in phases without pretending the unfinished parts are done.
 - I write tests that double as documentation.
-- I can ship. The demo runs in two commands. CI is green. The architecture diagram matches the code.
-- I chose a domain I can defend in an interview.
-
-## Status
-
-Version 1.0 ships the health-uk catalogue. Motor-uk and property-uk are documented but not built.
 
 ## Author
 

@@ -201,11 +201,15 @@ If a decision is not listed here, it was either obvious or unimportant.
 
 ## ADR-011: A golden test set in YAML, run on every commit
 
-**Status:** Accepted
+**Status:** Accepted, planned
 
 **Context.** Unit tests cover individual modules. They do not catch a regression where the system as a whole gives a different answer to a known question. Snapshot testing of LLM output is unreliable because models change.
 
 **Decision.** A YAML file of approved question-and-answer pairs. CI runs every question against the seeded database on every pull request. The test asserts on the type of response (answer or clarification), the metric used, the dimensions, the row count, and an approximate value with a tolerance.
+
+**Current implementation.** The YAML golden suite is not built yet. The current
+backend protects twelve demo examples through `GET /ask/examples` and
+`backend/tests/unit/test_ask_api.py`.
 
 **Consequences.**
 - A change that breaks a golden answer fails the build.

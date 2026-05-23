@@ -49,7 +49,7 @@ Current first slice:
   generation, returning a safety rule ID for the UI rejection state.
 - `POST /ask` now orchestrates the first product-facing flow: answer,
   clarification, or blocked state from one endpoint.
-- `GET /ask/examples` exposes nine golden demo questions, and tests run each
+- `GET /ask/examples` exposes twelve golden demo questions, and tests run each
   example through `/ask` to protect answer, clarification, and blocked states.
 - `docs/api-contract.md` documents the current backend API surface for frontend
   integration and reviewer walkthroughs.
@@ -60,6 +60,15 @@ Current first slice:
   questions, matching the canonical demo script's forecast refusal state.
 - `claim_frequency` now completes the first executable clarification trio:
   `loss_ratio`, `paid_claims`, and `claim_frequency`.
+
+Current backend gaps before calling this phase complete:
+
+- Natural-language date and filter parsing is not implemented yet.
+- Grouped and dimensioned analytics are not implemented yet.
+- Catalogue metrics `incurred_claims` and `claim_severity` are defined but not
+  executable yet.
+- The canonical demo's `decline_rate by consultant specialty` question is not
+  supported yet because `decline_rate` and grouping are future work.
 
 ## Phase 3: Safety And Audit
 
@@ -84,6 +93,14 @@ Current first slice:
   row count, and answer summary.
 - `GET /queries/{query_id}` can read back local JSONL audit events while the
   Postgres audit table is not built yet.
+
+Current safety and audit gaps:
+
+- Product execution is not using a Postgres read-only role yet.
+- The Postgres append-only audit table is not built yet.
+- The full red-team test suite is not built yet.
+- Guard-level result-size caps and literal-parameter enforcement are planned
+  but not implemented yet.
 
 ## Phase 4: OpenAI Intent Layer
 

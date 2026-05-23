@@ -86,9 +86,16 @@ Avoid synonyms that collide with other metrics. If `claim_severity` and `average
 
 **Checkpoint.** Run `make check-synonyms`. It fails if any synonym appears in two metrics.
 
-### 5. Add the metric to the integration test fixtures
+### 5. Add demo examples and future golden coverage
 
-Open `backend/tests/golden/questions.yaml`. Add at least three new entries.
+Current build: open `backend/app/ask/examples.py` and add examples when the
+metric is executable through `/ask`.
+
+Planned build: once the YAML golden suite exists, add the same coverage to
+`backend/tests/golden/questions.yaml`.
+
+Add at least three new entries across the current examples and future golden
+suite.
 
 - One question that should answer using the new metric.
 - One question that should return a clarification because the new metric is ambiguous against an existing one.
@@ -116,7 +123,10 @@ Example for a new metric called `pend_rate`:
 
 The `approximate_value` is the value you expect when the test runs against the seeded data. The tolerance accounts for synthetic-data variance.
 
-**Checkpoint.** `make test-golden` passes including your new entries. If it fails, either your formula is wrong or your expected value is wrong. Both are useful failures.
+**Checkpoint.** Current build: `make test-unit` passes, including the `/ask`
+examples test. Planned build: `make test-golden` passes once the YAML golden
+suite exists. If a metric answer fails, either the formula is wrong or the
+expected value is wrong. Both are useful failures.
 
 ### 6. Add unit tests for the resolver
 
