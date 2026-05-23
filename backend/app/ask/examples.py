@@ -35,9 +35,9 @@ GOLDEN_ASK_EXAMPLES = (
         plan_tier="Comprehensive",
     ),
     AskExample(
-        id="answer_incurred_loss_ratio_period",
-        label="Incurred loss ratio with explicit period",
-        question="What is the incurred loss ratio for Comprehensive from January to March 2026?",
+        id="answer_claim_frequency_plan_tier",
+        label="Claim frequency by plan tier filter",
+        question="Show claim frequency for the Comprehensive plan tier.",
         expected_status="answer",
         start_date=date(2026, 1, 1),
         end_date=date(2026, 3, 31),

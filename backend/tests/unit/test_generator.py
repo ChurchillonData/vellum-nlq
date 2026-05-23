@@ -59,3 +59,36 @@ def test_paid_claims_query_is_parameterised_and_has_provenance(health_uk_catalog
     )
     assert result.provenance.result_shape.columns == ("paid_claims",)
     assert result.validation.passed is True
+
+
+def test_claim_frequency_query_is_parameterised_and_has_provenance(
+    health_uk_catalogue,
+) -> None:
+    request = AnalyticsRequest(
+        metric_id="claim_frequency",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+        plan_tier="Comprehensive",
+    )
+
+    result = build_query(health_uk_catalogue, request)
+
+    assert "WITH claim_counts AS" in result.query.sql
+    assert "member_months AS" in result.query.sql
+    assert "count(DISTINCT claims.id)" in result.query.sql
+    assert "%(start_date)s" in result.query.sql
+    assert "%(plan_tier)s" in result.query.sql
+    assert "Comprehensive" not in result.query.sql
+    assert result.query.parameters["start_date"] == date(2026, 1, 1)
+    assert result.query.parameters["end_date"] == date(2026, 3, 31)
+    assert result.query.parameters["plan_tier"] == "Comprehensive"
+
+    assert result.provenance.metric_id == "claim_frequency"
+    assert result.provenance.tables_used == (
+        "claims",
+        "enrolment_months",
+        "members",
+        "plans",
+    )
+    assert result.provenance.result_shape.columns == ("claim_frequency",)
+    assert result.validation.passed is True

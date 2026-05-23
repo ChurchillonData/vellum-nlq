@@ -1,9 +1,14 @@
 from app.analytics.models import AnalyticsRequest, QueryBuildResult, QueryProvenance
+from app.planner.claim_frequency import build_claim_frequency_plan
 from app.planner.loss_ratio import build_loss_ratio_plan
 from app.planner.paid_claims import build_paid_claims_plan
 from app.semantic.models import Catalogue, JoinEdge
 from app.semantic.resolver import resolve_request
-from app.sql.generator import generate_loss_ratio_query, generate_paid_claims_query
+from app.sql.generator import (
+    generate_claim_frequency_query,
+    generate_loss_ratio_query,
+    generate_paid_claims_query,
+)
 from app.sql.guard import validate_sql
 
 
@@ -16,6 +21,9 @@ def build_query(catalogue: Catalogue, request: AnalyticsRequest) -> QueryBuildRe
     elif resolved.metric.id == "paid_claims":
         plan = build_paid_claims_plan(catalogue, resolved)
         query = generate_paid_claims_query(plan)
+    elif resolved.metric.id == "claim_frequency":
+        plan = build_claim_frequency_plan(catalogue, resolved)
+        query = generate_claim_frequency_query(plan)
     else:
         raise ValueError(f"metric is not implemented yet: {resolved.metric.id}")
 

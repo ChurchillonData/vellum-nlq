@@ -58,6 +58,8 @@ Current first slice:
   golden ask examples.
 - The ask flow now returns `out_of_scope` for forecasting and prediction
   questions, matching the canonical demo script's forecast refusal state.
+- `claim_frequency` now completes the first executable clarification trio:
+  `loss_ratio`, `paid_claims`, and `claim_frequency`.
 
 ## Phase 3: Safety And Audit
 

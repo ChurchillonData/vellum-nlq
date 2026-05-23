@@ -1,0 +1,71 @@
+from app.analytics.models import QueryBuildResult
+
+
+def build_demo_answer(
+    build_result: QueryBuildResult,
+    rows: list[dict[str, object]],
+) -> str:
+    """Build a concise answer for one executed demo query."""
+    if build_result.provenance.metric_id == "claim_frequency":
+        return _build_claim_frequency_answer(build_result, rows)
+    if build_result.provenance.metric_id == "paid_claims":
+        return _build_paid_claims_answer(build_result, rows)
+    return _build_loss_ratio_answer(build_result, rows)
+
+
+def _build_loss_ratio_answer(
+    build_result: QueryBuildResult,
+    rows: list[dict[str, object]],
+) -> str:
+    value = rows[0].get("loss_ratio") if rows else None
+    subject = _subject(build_result, "loss ratio")
+    period = _period(build_result)
+
+    if value is None:
+        return f"{subject} from {period} could not be calculated because premium was zero."
+
+    ratio = float(value)
+    return f"{subject} from {period} was {ratio:.3f} ({ratio:.1%})."
+
+
+def _build_paid_claims_answer(
+    build_result: QueryBuildResult,
+    rows: list[dict[str, object]],
+) -> str:
+    value = rows[0].get("paid_claims") if rows else None
+    subject = _subject(build_result, "paid claims")
+    period = _period(build_result)
+
+    if value is None:
+        return f"{subject} from {period} had no paid claim amount."
+
+    return f"{subject} from {period} were GBP {float(value):,.2f}."
+
+
+def _build_claim_frequency_answer(
+    build_result: QueryBuildResult,
+    rows: list[dict[str, object]],
+) -> str:
+    value = rows[0].get("claim_frequency") if rows else None
+    subject = _subject(build_result, "claim frequency")
+    period = _period(build_result)
+
+    if value is None:
+        return f"{subject} from {period} could not be calculated."
+
+    return f"{subject} from {period} was {float(value):.2f} per 1,000 member months."
+
+
+def _subject(build_result: QueryBuildResult, metric_label: str) -> str:
+    plan_tier = build_result.plan.plan_tier
+    if plan_tier:
+        return f"{plan_tier} plan tier {metric_label}"
+    return metric_label.capitalize()
+
+
+def _period(build_result: QueryBuildResult) -> str:
+    return (
+        f"{build_result.plan.start_date.isoformat()} "
+        f"to {build_result.plan.end_date.isoformat()}"
+    )
+

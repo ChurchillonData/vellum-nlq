@@ -50,6 +50,13 @@ def _create_demo_tables(connection: sqlite3.Connection) -> None:
             net_paid_amount REAL NOT NULL
         );
 
+        CREATE TABLE enrolment_months (
+            id TEXT PRIMARY KEY,
+            member_id TEXT NOT NULL,
+            coverage_month TEXT NOT NULL,
+            member_months REAL NOT NULL
+        );
+
         CREATE TABLE premium (
             id TEXT PRIMARY KEY,
             member_id TEXT NOT NULL,
@@ -111,6 +118,16 @@ def _insert_demo_rows(connection: sqlite3.Connection, seed_data: SeedData) -> No
         [
             _clean_row(row, ("id", "claim_id", "paid_date", "net_paid_amount"))
             for row in seed_data.claim_lines
+        ],
+    )
+    connection.executemany(
+        """
+        INSERT INTO enrolment_months (id, member_id, coverage_month, member_months)
+        VALUES (:id, :member_id, :coverage_month, :member_months)
+        """,
+        [
+            _clean_row(row, ("id", "member_id", "coverage_month", "member_months"))
+            for row in seed_data.enrolment_months
         ],
     )
     connection.executemany(

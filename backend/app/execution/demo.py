@@ -2,6 +2,12 @@ import sqlite3
 from dataclasses import dataclass
 
 from app.analytics.models import QueryBuildResult
+from app.execution.demo_answers import build_demo_answer
+from app.execution.demo_sql import (
+    claim_frequency_sql,
+    loss_ratio_sql,
+    paid_claims_sql,
+)
 from app.execution.sqlite_seed import prepare_demo_database, to_sqlite_parameters
 from app.seeds.synthetic import build_seed_data
 
@@ -34,7 +40,8 @@ def execute_demo_query(
     """Run one guarded query against deterministic in-memory demo data."""
     if not build_result.validation.passed:
         raise ValueError("cannot execute SQL that failed guard validation")
-    if build_result.provenance.metric_id not in {"loss_ratio", "paid_claims"}:
+    supported_metrics = {"loss_ratio", "paid_claims", "claim_frequency"}
+    if build_result.provenance.metric_id not in supported_metrics:
         raise ValueError("demo execution does not support this metric yet")
 
     seed_data = build_seed_data(member_count=member_count, month_count=month_count)
@@ -49,7 +56,7 @@ def execute_demo_query(
         claim_count=len(seed_data.claims),
         premium_row_count=len(seed_data.premium),
     )
-    answer = _build_answer(build_result, rows)
+    answer = build_demo_answer(build_result, rows)
     return DemoExecutionResult(
         rows=rows,
         row_count=len(rows),
@@ -62,6 +69,8 @@ def _run_demo_query(
     connection: sqlite3.Connection,
     build_result: QueryBuildResult,
 ) -> list[dict[str, object]]:
+    if build_result.provenance.metric_id == "claim_frequency":
+        return _run_claim_frequency_query(connection, build_result)
     if build_result.provenance.metric_id == "paid_claims":
         return _run_paid_claims_query(connection, build_result)
     return _run_loss_ratio_query(connection, build_result)
@@ -72,7 +81,7 @@ def _run_loss_ratio_query(
     build_result: QueryBuildResult,
 ) -> list[dict[str, object]]:
     parameters = build_result.query.parameters
-    sql = _loss_ratio_sql(has_plan_tier=bool(parameters.get("plan_tier")))
+    sql = loss_ratio_sql(has_plan_tier=bool(parameters.get("plan_tier")))
     rows = connection.execute(sql, to_sqlite_parameters(parameters)).fetchall()
     return [dict(row) for row in rows]
 
@@ -82,99 +91,16 @@ def _run_paid_claims_query(
     build_result: QueryBuildResult,
 ) -> list[dict[str, object]]:
     parameters = build_result.query.parameters
-    sql = _paid_claims_sql(has_plan_tier=bool(parameters.get("plan_tier")))
+    sql = paid_claims_sql(has_plan_tier=bool(parameters.get("plan_tier")))
     rows = connection.execute(sql, to_sqlite_parameters(parameters)).fetchall()
     return [dict(row) for row in rows]
 
 
-def _loss_ratio_sql(has_plan_tier: bool) -> str:
-    plan_filter = "AND plans.plan_tier = :plan_tier" if has_plan_tier else ""
-    return f"""
-        WITH claim_totals AS (
-            SELECT
-                claims.member_id AS member_id,
-                SUM(claims.net_incurred_amount) AS incurred_claims
-            FROM claims
-            JOIN members ON claims.member_id = members.id
-            JOIN plans ON members.plan_id = plans.id
-            WHERE claims.incurred_date BETWEEN :start_date AND :end_date
-              AND claims.status != :excluded_status
-              {plan_filter}
-            GROUP BY claims.member_id
-        ),
-        premium_totals AS (
-            SELECT
-                premium.member_id AS member_id,
-                SUM(premium.earned_amount) AS earned_premium
-            FROM premium
-            JOIN members ON premium.member_id = members.id
-            JOIN plans ON members.plan_id = plans.id
-            WHERE premium.coverage_month BETWEEN :start_date AND :end_date
-              {plan_filter}
-            GROUP BY premium.member_id
-        )
-        SELECT
-            SUM(claim_totals.incurred_claims)
-            / NULLIF(SUM(premium_totals.earned_premium), 0) AS loss_ratio
-        FROM claim_totals
-        JOIN premium_totals ON claim_totals.member_id = premium_totals.member_id
-    """
-
-
-def _paid_claims_sql(has_plan_tier: bool) -> str:
-    plan_filter = "AND plans.plan_tier = :plan_tier" if has_plan_tier else ""
-    return f"""
-        SELECT SUM(claim_lines.net_paid_amount) AS paid_claims
-        FROM claim_lines
-        JOIN claims ON claim_lines.claim_id = claims.id
-        JOIN members ON claims.member_id = members.id
-        JOIN plans ON members.plan_id = plans.id
-        WHERE claim_lines.paid_date BETWEEN :start_date AND :end_date
-          {plan_filter}
-    """
-
-
-def _build_answer(
+def _run_claim_frequency_query(
+    connection: sqlite3.Connection,
     build_result: QueryBuildResult,
-    rows: list[dict[str, object]],
-) -> str:
-    if build_result.provenance.metric_id == "paid_claims":
-        return _build_paid_claims_answer(build_result, rows)
-    return _build_loss_ratio_answer(build_result, rows)
-
-
-def _build_loss_ratio_answer(
-    build_result: QueryBuildResult,
-    rows: list[dict[str, object]],
-) -> str:
-    value = rows[0].get("loss_ratio") if rows else None
-    plan_tier = build_result.plan.plan_tier
-    period = (
-        f"{build_result.plan.start_date.isoformat()} "
-        f"to {build_result.plan.end_date.isoformat()}"
-    )
-    subject = f"{plan_tier} plan tier loss ratio" if plan_tier else "Loss ratio"
-
-    if value is None:
-        return f"{subject} from {period} could not be calculated because premium was zero."
-
-    ratio = float(value)
-    return f"{subject} from {period} was {ratio:.3f} ({ratio:.1%})."
-
-
-def _build_paid_claims_answer(
-    build_result: QueryBuildResult,
-    rows: list[dict[str, object]],
-) -> str:
-    value = rows[0].get("paid_claims") if rows else None
-    plan_tier = build_result.plan.plan_tier
-    period = (
-        f"{build_result.plan.start_date.isoformat()} "
-        f"to {build_result.plan.end_date.isoformat()}"
-    )
-    subject = f"{plan_tier} plan tier paid claims" if plan_tier else "Paid claims"
-
-    if value is None:
-        return f"{subject} from {period} had no paid claim amount."
-
-    return f"{subject} from {period} were GBP {float(value):,.2f}."
+) -> list[dict[str, object]]:
+    parameters = build_result.query.parameters
+    sql = claim_frequency_sql(has_plan_tier=bool(parameters.get("plan_tier")))
+    rows = connection.execute(sql, to_sqlite_parameters(parameters)).fetchall()
+    return [dict(row) for row in rows]

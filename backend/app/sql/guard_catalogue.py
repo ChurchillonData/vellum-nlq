@@ -3,7 +3,7 @@ from sqlglot import exp
 from app.semantic.models import Catalogue, JoinEdge
 
 
-ALLOWED_FUNCTIONS = {"CAST", "NULLIF", "SUM"}
+ALLOWED_FUNCTIONS = {"CAST", "COUNT", "NULLIF", "SUM"}
 IGNORED_FUNCTION_NODES = (exp.And, exp.Or, exp.Not)
 
 
@@ -132,4 +132,3 @@ def _join_predicate_signatures(join: exp.Join) -> set[frozenset[tuple[str, str]]
         )
 
     return signatures
-

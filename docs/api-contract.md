@@ -261,6 +261,7 @@ Supported deterministic metrics in this phase:
 
 - `loss_ratio`
 - `paid_claims`
+- `claim_frequency`
 
 ### GET `/queries/{query_id}`
 
