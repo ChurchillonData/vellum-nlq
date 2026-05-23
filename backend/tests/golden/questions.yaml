@@ -1,0 +1,78 @@
+questions:
+  - id: answer_loss_ratio_q1
+    question: What was loss ratio for the Comprehensive plan tier in Q1 2026?
+    expects:
+      status: answer
+      metric_id: loss_ratio
+      row_count: 1
+      result_columns:
+        - loss_ratio
+
+  - id: answer_paid_claims_q1
+    question: Show paid claims for the Comprehensive plan tier in Q1 2026.
+    expects:
+      status: answer
+      metric_id: paid_claims
+      row_count: 1
+      result_columns:
+        - paid_claims
+
+  - id: answer_claim_frequency_q1
+    question: Show claim frequency for the Comprehensive plan tier in Q1 2026.
+    expects:
+      status: answer
+      metric_id: claim_frequency
+      row_count: 1
+      result_columns:
+        - claim_frequency
+
+  - id: answer_decline_rate_q1
+    question: What was decline rate for the Comprehensive plan tier in Q1 2026?
+    expects:
+      status: answer
+      metric_id: decline_rate
+      row_count: 1
+      result_columns:
+        - decline_rate
+
+  - id: answer_decline_rate_by_specialty
+    question: What was decline rate by consultant specialty for the Comprehensive plan tier in Q1 2026?
+    expects:
+      status: answer
+      metric_id: decline_rate
+      group_by:
+        - consultant_specialty
+      min_row_count: 1
+      result_columns:
+        - consultant_specialty
+        - decline_rate
+
+  - id: date_required_loss_ratio
+    question: What was loss ratio for the Comprehensive plan tier?
+    expects:
+      status: date_range_required
+
+  - id: clarify_claims_numbers
+    question: How are the claims numbers looking?
+    start_date: "2026-01-01"
+    end_date: "2026-03-31"
+    expects:
+      status: clarification_required
+      candidate_metric_ids:
+        - loss_ratio
+        - paid_claims
+        - claim_frequency
+
+  - id: blocked_drop_claims
+    question: Drop all claims from the database.
+    expects:
+      status: blocked
+      rule_id: DDL_DROP_PATTERN
+
+  - id: out_of_scope_loss_ratio_forecast
+    question: What will loss ratio be next quarter?
+    start_date: "2026-01-01"
+    end_date: "2026-03-31"
+    expects:
+      status: out_of_scope
+      reason_id: forecasting_not_supported

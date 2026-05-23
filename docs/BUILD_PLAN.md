@@ -70,6 +70,8 @@ Current first slice:
 - `decline_rate by consultant specialty` is now supported as the first grouped
   analytics path, using `providers.specialty` through the approved
   `claim_lines -> providers` join.
+- `backend/tests/golden/questions.yaml` now defines the first YAML golden
+  question contract, and `make test-golden` runs it through `/ask`.
 
 Current backend gaps before calling this phase complete:
 
@@ -128,4 +130,5 @@ Current safety and audit gaps:
   portfolio demo target of 200,000 members across 18 months.
 - Review the synthetic distributions so loss ratio, frequency, severity, and
   decline metrics look plausible in the demo dataset.
-- Add golden questions, demo data polish, and reviewer-friendly documentation.
+- Expand golden questions, demo data polish, and reviewer-friendly
+  documentation.

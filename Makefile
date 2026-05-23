@@ -148,8 +148,8 @@ test-integration: ## Planned: run integration tests against Postgres
 	@echo "$(GREEN)Integration tests are planned; no backend/tests/integration suite exists yet.$(RESET)"
 
 .PHONY: test-golden
-test-golden: ## Planned: run YAML golden questions against seeded data
-	@echo "$(GREEN)Golden YAML tests are planned; current examples are covered in backend/tests/unit/test_ask_api.py.$(RESET)"
+test-golden: ## Run YAML golden questions through the ask endpoint
+	cd $(BACKEND_DIR) && $(PYTEST) tests/golden -v
 
 .PHONY: test-redteam
 test-redteam: ## Planned: run the red-team injection suite
@@ -160,7 +160,7 @@ test-guard: ## Run implemented SQL Guard tests
 	cd $(BACKEND_DIR) && $(PYTEST) tests/unit/test_guard.py -v
 
 .PHONY: test-all
-test-all: test-unit ## Run all currently implemented tests
+test-all: test-unit test-golden ## Run all currently implemented tests
 	@echo "$(GREEN)Implemented test suites passed.$(RESET)"
 
 .PHONY: test-snapshot-update

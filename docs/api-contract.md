@@ -185,6 +185,14 @@ controls. Each example has an expected ask state.
 
 The unit suite sends every returned example back through `POST /ask`.
 
+The YAML golden contract lives at `backend/tests/golden/questions.yaml` and is
+run with:
+
+```bash
+cd backend
+python -m pytest tests/golden -q
+```
+
 ## Catalogue
 
 ### GET `/metrics`

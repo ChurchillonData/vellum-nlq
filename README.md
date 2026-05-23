@@ -35,14 +35,15 @@ Implemented today:
 - Catalogue-backed table, column, function, and join-path validation.
 - In-memory SQLite demo execution seeded from synthetic data.
 - Local JSONL audit events for successful previews and demo executions.
-- Twelve `/ask/examples` items covered by unit tests.
+- Fifteen `/ask/examples` items covered by unit tests.
+- YAML golden question suite covering the core demo contract.
 
 Planned next:
 
 - OpenAI structured intent extraction behind a narrow provider interface.
 - Richer natural-language date and filter parsing.
 - Postgres read-only execution and append-only audit table.
-- Red-team test suite and YAML golden question set.
+- Red-team test suite.
 - Frontend implementation using the uploaded UI mockups.
 
 ## Five-Minute Tour
@@ -138,6 +139,7 @@ vellum-nlq/
 |   |   `-- health-uk/
 |   |-- seeds/
 |   `-- tests/
+|       |-- golden/
 |       `-- unit/
 `-- Makefile
 ```
@@ -194,15 +196,23 @@ cd backend
 python -m pytest tests/unit -q
 ```
 
+Golden contract test:
+
+```bash
+cd backend
+python -m pytest tests/golden -q
+```
+
 Or from the repo root:
 
 ```bash
 make test-unit
+make test-golden
 ```
 
 The current suite covers catalogue loading, deterministic resolution, planning,
-SQL generation, SQL guard checks, demo execution, audit lookup, and `/ask`
-examples.
+SQL generation, SQL guard checks, demo execution, audit lookup, `/ask`
+examples, and the YAML golden question contract.
 
 ## Current API Surface
 
@@ -211,7 +221,7 @@ Full request and response examples are documented in `docs/api-contract.md`.
 | Endpoint | Purpose |
 |---|---|
 | `POST /ask` | Product-facing ask flow. Returns answer, clarification, blocked, or out-of-scope state. |
-| `GET /ask/examples` | Twelve demo questions used by tests and future UI controls. |
+| `GET /ask/examples` | Fifteen demo questions used by tests and future UI controls. |
 | `GET /metrics` | Active catalogue metric definitions with formulas and versions. |
 | `POST /queries/resolve` | Deterministic metric resolution and early safety blocking. |
 | `POST /queries/preview` | Parameterised SQL and provenance without execution. |
