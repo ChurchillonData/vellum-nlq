@@ -34,14 +34,14 @@ def execute_demo_query(
     """Run one guarded query against deterministic in-memory demo data."""
     if not build_result.validation.passed:
         raise ValueError("cannot execute SQL that failed guard validation")
-    if build_result.provenance.metric_id != "loss_ratio":
-        raise ValueError("demo execution currently supports loss_ratio only")
+    if build_result.provenance.metric_id not in {"loss_ratio", "paid_claims"}:
+        raise ValueError("demo execution does not support this metric yet")
 
     seed_data = build_seed_data(member_count=member_count, month_count=month_count)
     with sqlite3.connect(":memory:") as connection:
         connection.row_factory = sqlite3.Row
         prepare_demo_database(connection, seed_data)
-        rows = _run_loss_ratio_query(connection, build_result)
+        rows = _run_demo_query(connection, build_result)
 
     dataset = DemoDatasetSummary(
         name="health-uk synthetic demo",
@@ -49,12 +49,22 @@ def execute_demo_query(
         claim_count=len(seed_data.claims),
         premium_row_count=len(seed_data.premium),
     )
+    answer = _build_answer(build_result, rows)
     return DemoExecutionResult(
         rows=rows,
         row_count=len(rows),
-        answer=_build_loss_ratio_answer(build_result, rows),
+        answer=answer,
         dataset=dataset,
     )
+
+
+def _run_demo_query(
+    connection: sqlite3.Connection,
+    build_result: QueryBuildResult,
+) -> list[dict[str, object]]:
+    if build_result.provenance.metric_id == "paid_claims":
+        return _run_paid_claims_query(connection, build_result)
+    return _run_loss_ratio_query(connection, build_result)
 
 
 def _run_loss_ratio_query(
@@ -63,6 +73,16 @@ def _run_loss_ratio_query(
 ) -> list[dict[str, object]]:
     parameters = build_result.query.parameters
     sql = _loss_ratio_sql(has_plan_tier=bool(parameters.get("plan_tier")))
+    rows = connection.execute(sql, to_sqlite_parameters(parameters)).fetchall()
+    return [dict(row) for row in rows]
+
+
+def _run_paid_claims_query(
+    connection: sqlite3.Connection,
+    build_result: QueryBuildResult,
+) -> list[dict[str, object]]:
+    parameters = build_result.query.parameters
+    sql = _paid_claims_sql(has_plan_tier=bool(parameters.get("plan_tier")))
     rows = connection.execute(sql, to_sqlite_parameters(parameters)).fetchall()
     return [dict(row) for row in rows]
 
@@ -101,6 +121,28 @@ def _loss_ratio_sql(has_plan_tier: bool) -> str:
     """
 
 
+def _paid_claims_sql(has_plan_tier: bool) -> str:
+    plan_filter = "AND plans.plan_tier = :plan_tier" if has_plan_tier else ""
+    return f"""
+        SELECT SUM(claim_lines.net_paid_amount) AS paid_claims
+        FROM claim_lines
+        JOIN claims ON claim_lines.claim_id = claims.id
+        JOIN members ON claims.member_id = members.id
+        JOIN plans ON members.plan_id = plans.id
+        WHERE claim_lines.paid_date BETWEEN :start_date AND :end_date
+          {plan_filter}
+    """
+
+
+def _build_answer(
+    build_result: QueryBuildResult,
+    rows: list[dict[str, object]],
+) -> str:
+    if build_result.provenance.metric_id == "paid_claims":
+        return _build_paid_claims_answer(build_result, rows)
+    return _build_loss_ratio_answer(build_result, rows)
+
+
 def _build_loss_ratio_answer(
     build_result: QueryBuildResult,
     rows: list[dict[str, object]],
@@ -118,3 +160,21 @@ def _build_loss_ratio_answer(
 
     ratio = float(value)
     return f"{subject} from {period} was {ratio:.3f} ({ratio:.1%})."
+
+
+def _build_paid_claims_answer(
+    build_result: QueryBuildResult,
+    rows: list[dict[str, object]],
+) -> str:
+    value = rows[0].get("paid_claims") if rows else None
+    plan_tier = build_result.plan.plan_tier
+    period = (
+        f"{build_result.plan.start_date.isoformat()} "
+        f"to {build_result.plan.end_date.isoformat()}"
+    )
+    subject = f"{plan_tier} plan tier paid claims" if plan_tier else "Paid claims"
+
+    if value is None:
+        return f"{subject} from {period} had no paid claim amount."
+
+    return f"{subject} from {period} were GBP {float(value):,.2f}."

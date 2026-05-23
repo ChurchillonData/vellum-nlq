@@ -53,6 +53,9 @@ Current first slice:
   example through `/ask` to protect answer, clarification, and blocked states.
 - `docs/api-contract.md` documents the current backend API surface for frontend
   integration and reviewer walkthroughs.
+- `paid_claims` now has a deterministic catalogue-backed path through
+  resolution, planning, SQL generation, guard validation, demo execution, and
+  golden ask examples.
 
 ## Phase 3: Safety And Audit
 

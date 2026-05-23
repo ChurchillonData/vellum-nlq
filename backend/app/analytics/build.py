@@ -1,16 +1,24 @@
 from app.analytics.models import AnalyticsRequest, QueryBuildResult, QueryProvenance
 from app.planner.loss_ratio import build_loss_ratio_plan
+from app.planner.paid_claims import build_paid_claims_plan
 from app.semantic.models import Catalogue, JoinEdge
 from app.semantic.resolver import resolve_request
-from app.sql.generator import generate_loss_ratio_query
+from app.sql.generator import generate_loss_ratio_query, generate_paid_claims_query
 from app.sql.guard import validate_sql
 
 
 def build_query(catalogue: Catalogue, request: AnalyticsRequest) -> QueryBuildResult:
     """Build one deterministic query with provenance and no database execution."""
     resolved = resolve_request(catalogue, request)
-    plan = build_loss_ratio_plan(catalogue, resolved)
-    query = generate_loss_ratio_query(plan)
+    if resolved.metric.id == "loss_ratio":
+        plan = build_loss_ratio_plan(catalogue, resolved)
+        query = generate_loss_ratio_query(plan)
+    elif resolved.metric.id == "paid_claims":
+        plan = build_paid_claims_plan(catalogue, resolved)
+        query = generate_paid_claims_query(plan)
+    else:
+        raise ValueError(f"metric is not implemented yet: {resolved.metric.id}")
+
     validation = validate_sql(query.sql, catalogue)
     provenance = QueryProvenance(
         metric_id=plan.metric.id,

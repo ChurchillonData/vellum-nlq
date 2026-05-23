@@ -43,6 +43,13 @@ def _create_demo_tables(connection: sqlite3.Connection) -> None:
             net_incurred_amount REAL NOT NULL
         );
 
+        CREATE TABLE claim_lines (
+            id TEXT PRIMARY KEY,
+            claim_id TEXT NOT NULL,
+            paid_date TEXT,
+            net_paid_amount REAL NOT NULL
+        );
+
         CREATE TABLE premium (
             id TEXT PRIMARY KEY,
             member_id TEXT NOT NULL,
@@ -98,6 +105,16 @@ def _insert_demo_rows(connection: sqlite3.Connection, seed_data: SeedData) -> No
     )
     connection.executemany(
         """
+        INSERT INTO claim_lines (id, claim_id, paid_date, net_paid_amount)
+        VALUES (:id, :claim_id, :paid_date, :net_paid_amount)
+        """,
+        [
+            _clean_row(row, ("id", "claim_id", "paid_date", "net_paid_amount"))
+            for row in seed_data.claim_lines
+        ],
+    )
+    connection.executemany(
+        """
         INSERT INTO premium (id, member_id, coverage_month, earned_amount)
         VALUES (:id, :member_id, :coverage_month, :earned_amount)
         """,
@@ -120,4 +137,3 @@ def _sqlite_value(value: object) -> object:
     if isinstance(value, date | datetime):
         return value.isoformat()
     return value
-

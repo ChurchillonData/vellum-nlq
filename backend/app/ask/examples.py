@@ -26,9 +26,9 @@ GOLDEN_ASK_EXAMPLES = (
         plan_tier="Comprehensive",
     ),
     AskExample(
-        id="answer_loss_ratio_plan_tier",
-        label="Loss ratio by plan tier filter",
-        question="Show loss ratio for the Comprehensive plan tier.",
+        id="answer_paid_claims_plan_tier",
+        label="Paid claims by plan tier filter",
+        question="Show paid claims for the Comprehensive plan tier.",
         expected_status="answer",
         start_date=date(2026, 1, 1),
         end_date=date(2026, 3, 31),
@@ -92,4 +92,3 @@ GOLDEN_ASK_EXAMPLES = (
         end_date=date(2026, 3, 31),
     ),
 )
-

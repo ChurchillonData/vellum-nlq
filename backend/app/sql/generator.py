@@ -2,7 +2,7 @@ from sqlalchemy import Date, String, bindparam, func, select
 from sqlalchemy.dialects import postgresql
 
 from app.analytics.models import GeneratedQuery, LogicalPlan
-from app.db.schema import claims, members, plans, premium
+from app.db.schema import claim_lines, claims, members, plans, premium
 
 
 def generate_loss_ratio_query(plan: LogicalPlan) -> GeneratedQuery:
@@ -60,6 +60,32 @@ def generate_loss_ratio_query(plan: LogicalPlan) -> GeneratedQuery:
             premium_totals,
             claim_totals.c.member_id == premium_totals.c.member_id,
         )
+    )
+
+    compiled = statement.compile(dialect=postgresql.dialect())
+    return GeneratedQuery(sql=str(compiled), parameters=compiled.params)
+
+
+def generate_paid_claims_query(plan: LogicalPlan) -> GeneratedQuery:
+    """Generate parameterised SQL for a planned paid-claims request."""
+    start_date = bindparam("start_date", plan.start_date, type_=Date())
+    end_date = bindparam("end_date", plan.end_date, type_=Date())
+
+    source = (
+        claim_lines.join(claims, claim_lines.c.claim_id == claims.c.id)
+        .join(members, claims.c.member_id == members.c.id)
+        .join(plans, members.c.plan_id == plans.c.id)
+    )
+    filters = [claim_lines.c.paid_date.between(start_date, end_date)]
+
+    if plan.plan_tier:
+        plan_tier = bindparam("plan_tier", plan.plan_tier, type_=String())
+        filters.append(plans.c.plan_tier == plan_tier)
+
+    statement = (
+        select(func.sum(claim_lines.c.net_paid_amount).label("paid_claims"))
+        .select_from(source)
+        .where(*filters)
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())

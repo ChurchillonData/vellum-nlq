@@ -1,12 +1,12 @@
 from app.analytics.models import AnalyticsRequest, ResolvedRequest
-from app.semantic.models import Catalogue
+from app.semantic.models import Catalogue, MetricSpec
 
 
 class ResolutionError(ValueError):
     """Raised when a structured request cannot be resolved yet."""
 
 
-SUPPORTED_METRICS = {"loss_ratio"}
+SUPPORTED_METRICS = {"loss_ratio", "paid_claims"}
 
 
 def resolve_request(catalogue: Catalogue, request: AnalyticsRequest) -> ResolvedRequest:
@@ -18,16 +18,29 @@ def resolve_request(catalogue: Catalogue, request: AnalyticsRequest) -> Resolved
     if metric.id not in SUPPORTED_METRICS:
         raise ResolutionError(f"metric is not implemented yet: {metric.id}")
 
+    if metric.id == "loss_ratio":
+        _validate_loss_ratio_metric(metric)
+    if metric.id == "paid_claims":
+        _validate_paid_claims_metric(metric)
+
+    return ResolvedRequest(request=request, metric=metric)
+
+
+def _validate_loss_ratio_metric(metric: MetricSpec) -> None:
     if metric.time_anchor != "claims.incurred_date":
         raise ResolutionError(
             f"loss_ratio expects claims.incurred_date, found {metric.time_anchor}"
         )
 
-    required_tables = set(metric.required_tables)
-    if required_tables != {"claims", "premium"}:
+    if set(metric.required_tables) != {"claims", "premium"}:
+        raise ResolutionError("loss_ratio requires claims and premium")
+
+
+def _validate_paid_claims_metric(metric: MetricSpec) -> None:
+    if metric.time_anchor != "claim_lines.paid_date":
         raise ResolutionError(
-            "loss_ratio requires claims and premium in the current planner"
+            f"paid_claims expects claim_lines.paid_date, found {metric.time_anchor}"
         )
 
-    return ResolvedRequest(request=request, metric=metric)
-
+    if set(metric.required_tables) != {"claim_lines"}:
+        raise ResolutionError("paid_claims requires claim_lines")

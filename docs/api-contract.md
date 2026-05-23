@@ -236,6 +236,11 @@ Response includes all preview fields plus:
 
 Current execution mode is `local_demo`. It does not run against production data.
 
+Supported deterministic metrics in this phase:
+
+- `loss_ratio`
+- `paid_claims`
+
 ### GET `/queries/{query_id}`
 
 Reads one local JSONL audit event by query ID.

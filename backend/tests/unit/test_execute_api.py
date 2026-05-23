@@ -40,6 +40,37 @@ def test_execute_endpoint_runs_loss_ratio_against_demo_data(tmp_path) -> None:
     assert "Comprehensive plan tier loss ratio" in body["answer"]
 
 
+def test_execute_endpoint_runs_paid_claims_against_demo_data(tmp_path) -> None:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    original_member_count = settings.demo_member_count
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+    settings.demo_member_count = 120
+
+    try:
+        response = TestClient(app).post(
+            "/queries/execute",
+            json={
+                "metric_id": "paid_claims",
+                "start_date": "2026-01-01",
+                "end_date": "2026-03-31",
+                "plan_tier": "Comprehensive",
+            },
+        )
+    finally:
+        settings.audit_log_path = original_path
+        settings.demo_member_count = original_member_count
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["metric_id"] == "paid_claims"
+    assert body["row_count"] == 1
+    assert body["rows"][0]["paid_claims"] > 0
+    assert body["validation"]["passed"] is True
+    assert "Comprehensive plan tier paid claims" in body["answer"]
+
+
 def test_execute_endpoint_writes_execution_audit_event(tmp_path) -> None:
     settings = get_settings()
     original_path = settings.audit_log_path
@@ -85,4 +116,3 @@ def test_execute_endpoint_reports_unknown_metric() -> None:
 
     assert response.status_code == 400
     assert response.json() == {"detail": "unknown metric: not_a_metric"}
-
