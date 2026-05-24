@@ -4,6 +4,7 @@ import {
   ClipboardList,
   Code2,
   Copy,
+  Info,
   Shield
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -46,10 +47,10 @@ function AnswerPanel({ askResult, metric }: TrustPanelProps) {
       </div>
 
       <dl className="metadata-list">
-        <MetaRow label="Metric used" value={`${metric.id} (financial_kpi)`} mono />
+        <MetaRow label="Metric used" value={`${metric.id} (financial_kpi)`} icon={<Info size={16} />} mono />
         <MetaRow label="Metric version" value={metric.version} mono />
         <MetaRow label="Time anchor" value={metric.time_anchor} mono />
-        <MetaRow label="Joins used" value={joins} mono />
+        <MetaRow label="Joins used" value={joins} mono compact />
         <MetaRow
           label="Validation result"
           value={
@@ -57,6 +58,7 @@ function AnswerPanel({ askResult, metric }: TrustPanelProps) {
               ? `${validation.rules_checked.length} rules checked - no violations`
               : "pending"
           }
+          icon={<CheckCircle2 size={17} />}
           tone="success"
         />
         <MetaRow label="Audit / Query ID" value={askResult.query_id} mono />
@@ -233,11 +235,15 @@ function highlightSqlLine(line: string): ReactNode[] {
 }
 
 function MetaRow({
+  compact = false,
+  icon,
   label,
   mono = false,
   tone,
   value
 }: {
+  compact?: boolean;
+  icon?: ReactNode;
   label: string;
   mono?: boolean;
   tone?: "success" | "warning" | "danger";
@@ -246,7 +252,10 @@ function MetaRow({
   return (
     <div className="metadata-row">
       <dt>{label}</dt>
-      <dd className={`${mono ? "mono" : ""} ${tone ? `tone-${tone}` : ""}`}>{value}</dd>
+      <dd className={`${mono ? "mono" : ""} ${tone ? `tone-${tone}` : ""} ${compact ? "compact-meta" : ""}`}>
+        {icon && <span className="meta-icon">{icon}</span>}
+        <span>{value}</span>
+      </dd>
     </div>
   );
 }

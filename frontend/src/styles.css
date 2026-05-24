@@ -555,10 +555,25 @@ td {
   overflow-wrap: anywhere;
   color: var(--text);
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.45;
 }
 
 .tone-success {
   color: var(--teal) !important;
+}
+
+.meta-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: currentColor;
+}
+
+.compact-meta {
+  font-size: 16px;
+  letter-spacing: 0;
 }
 
 .tone-warning {
@@ -615,7 +630,7 @@ kbd {
   gap: 0;
   background: #0d1d31;
   color: #8ba2bd;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.75;
   padding: 16px 20px;
   user-select: none;
@@ -626,7 +641,7 @@ kbd {
 .sql-placeholder {
   margin: 0;
   overflow: auto;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.75;
   white-space: pre;
 }
