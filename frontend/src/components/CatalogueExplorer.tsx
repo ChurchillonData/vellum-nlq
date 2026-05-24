@@ -1,6 +1,5 @@
 import {
   BarChart3,
-  BadgeCheck,
   BookOpen,
   CalendarDays,
   ChevronRight,
@@ -11,6 +10,7 @@ import {
   Download,
   Filter,
   Gauge,
+  GitBranch,
   Layers3,
   LockKeyhole,
   Network,
@@ -81,7 +81,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
           </div>
 
           <div className="catalogue-detail-grid">
-            <CatalogueBlock icon={<BookOpen size={17} />} title="Definition">{primaryMetric.description}</CatalogueBlock>
+            <CatalogueBlock icon={<BookOpen size={17} />} title="Definition" wide>{primaryMetric.description}</CatalogueBlock>
             <CatalogueBlock icon={<Calculator size={17} />} title="Formula" tone="blue" wide>
               <div className="catalogue-code-strip">
                 <code>{primaryMetric.formula.expression}</code>
@@ -89,15 +89,16 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
               </div>
             </CatalogueBlock>
             <CatalogueMeta icon={<UserRound size={21} />} label="Owner" tone="teal" value={formatOwner(primaryMetric.owner)} />
-            <CatalogueMeta icon={<BadgeCheck size={21} />} label="Version" mono tone="violet" value={primaryMetric.version} />
+            <CatalogueMeta icon={<GitBranch size={21} />} label="Version" mono tone="violet" value={primaryMetric.version} />
             <CatalogueMeta
               icon={<CalendarDays size={21} />}
               label="Time anchor"
               tone="blue"
               value={`${primaryMetric.time_anchor} (monthly aggregation)`}
               mono
+              wide
             />
-            <CatalogueBlock icon={<Tags size={17} />} title="Synonyms" tone="amber">
+            <CatalogueBlock icon={<Tags size={17} />} title="Synonyms" tone="amber" wide>
               <div className="catalogue-chip-row">
                 {getSynonyms(primaryMetric).map((synonym) => (
                   <span className="catalogue-chip" key={synonym}>{synonym}</span>
@@ -288,16 +289,18 @@ function CatalogueMeta({
   label,
   mono = false,
   tone = "teal",
-  value
+  value,
+  wide = false
 }: {
   icon: ReactNode;
   label: string;
   mono?: boolean;
   tone?: IconTone;
   value: string;
+  wide?: boolean;
 }) {
   return (
-    <div className="catalogue-meta">
+    <div className={["catalogue-meta", wide ? "wide" : ""].filter(Boolean).join(" ")}>
       <span className={`icon-tone-${tone}`}>{icon}</span>
       <div>
         <h2 className={`icon-label icon-tone-${tone}`}>{label}</h2>

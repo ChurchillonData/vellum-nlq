@@ -1055,6 +1055,10 @@ kbd {
   grid-column: span 2;
 }
 
+.catalogue-meta.wide {
+  grid-column: span 2;
+}
+
 .catalogue-block.full {
   grid-column: 1 / -1;
 }
@@ -1489,6 +1493,7 @@ kbd {
   }
 
   .catalogue-block.wide,
+  .catalogue-meta.wide,
   .catalogue-block.full {
     grid-column: auto;
   }
