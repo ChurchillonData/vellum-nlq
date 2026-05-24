@@ -72,15 +72,23 @@ export function AskWorkspace({
 
           {!isBlocked && (
             <div className="suggestion-row">
-              {demoQuestions.slice(1, 4).map((item, index) => (
+              {[
+                { icon: <BarChart3 size={16} />, label: "loss ratio by plan tier", question: demoQuestions[1] },
+                {
+                  icon: <Users size={16} />,
+                  label: "average claim amount per member",
+                  question: "average claim amount per member"
+                },
+                { icon: <span className="suggestion-plus">+</span>, label: "More examples", question: demoQuestions[2] }
+              ].map((item) => (
                 <button
                   className="suggestion"
-                  key={item}
-                  onClick={() => onRun(item)}
+                  key={item.label}
+                  onClick={() => onRun(item.question)}
                   type="button"
                 >
-                  {index === 1 ? <Users size={16} /> : <BarChart3 size={16} />}
-                  {item}
+                  {item.icon}
+                  {item.label}
                 </button>
               ))}
             </div>
@@ -117,7 +125,8 @@ function WorkspaceState({
             <ResultTable rows={askResult.answer.rows} />
             <p className="row-note">
               {askResult.answer.row_count} row
-              {askResult.answer.row_count === 1 ? "" : "s"} - based on {metric.formula.expression}
+              {askResult.answer.row_count === 1 ? "" : "s"} - based on{" "}
+              {metric.id === "loss_ratio" ? "incurred claims / earned premium" : metric.formula.expression}
             </p>
           </div>
         </div>

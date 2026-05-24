@@ -10,7 +10,7 @@ export const demoQuestions = [
 
 export const demoAskResponse: AskResponse = {
   status: "answer",
-  query_id: "q_demo_loss_ratio",
+  query_id: "vellum:audit:9f3a2d1c-84b2",
   question: demoQuestions[0],
   message: "Resolved to metric: loss_ratio.",
   resolved_request: {
@@ -31,23 +31,26 @@ export const demoAskResponse: AskResponse = {
   safety: null,
   scope: null,
   answer: {
-    query_id: "q_demo_loss_ratio",
+    query_id: "vellum:audit:9f3a2d1c-84b2",
     metric_id: "loss_ratio",
     answer: "Comprehensive plan tier loss ratio in Q1 2026 was 0.847 (84.7%).",
     row_count: 1,
     rows: [{ quarter: "2026 Q1", plan_tier: "Comprehensive", loss_ratio: 0.847 }],
-    sql: `WITH claim_totals AS (
-  SELECT claims.member_id, SUM(claims.net_incurred_amount) AS incurred_claims
-  FROM claims
-  JOIN members ON claims.member_id = members.id
-  JOIN plans ON members.plan_id = plans.id
-  WHERE claims.incurred_date BETWEEN %(start_date)s AND %(end_date)s
-    AND plans.plan_tier = %(plan_tier)s
-  GROUP BY claims.member_id
+    sql: `-- vellum-nlq - loss_ratio v1.2.0
+WITH premium_data AS (
+  SELECT member_id, SUM(premium_amt) AS total_premium
+  FROM uk_claims_db.premium
+  WHERE quarter = '2026-Q1'
+  GROUP BY member_id
+), claim_loss AS (
+  SELECT member_id, SUM(claim_amount) AS incurred_loss
+  FROM uk_claims_db.claims
+  WHERE plan_tier = 'Comprehensive'
+    AND incurred_date BETWEEN '2026-01-01' AND '2026-03-31'
+  GROUP BY member_id
 )
-SELECT SUM(claim_totals.incurred_claims) / NULLIF(SUM(premium_totals.earned_premium), 0) AS loss_ratio
-FROM claim_totals
-JOIN premium_totals ON claim_totals.member_id = premium_totals.member_id;`,
+SELECT SUM(incurred_loss)/SUM(total_premium) AS loss_ratio
+FROM claim_loss JOIN premium_data USING(member_id);`,
     parameters: {
       start_date: "2026-01-01",
       end_date: "2026-03-31",
@@ -56,16 +59,12 @@ JOIN premium_totals ON claim_totals.member_id = premium_totals.member_id;`,
     provenance: {
       metric_id: "loss_ratio",
       metric_label: "Loss ratio",
-      metric_version: "0.1.0",
+      metric_version: "1.2.0",
       metric_description: "Incurred claims divided by earned premium for the selected reporting slice.",
       formula: "SUM(claims.net_incurred_amount) / NULLIF(SUM(premium.earned_amount), 0)",
       time_anchor: "claims.incurred_date",
-      tables_used: ["claims", "members", "plans", "premium"],
-      joins_used: [
-        "claims.member_id = members.id",
-        "premium.member_id = members.id",
-        "members.plan_id = plans.id"
-      ],
+      tables_used: ["claims", "premium"],
+      joins_used: ["claims -> premium (member_id)"],
       result_shape: {
         columns: ["loss_ratio"],
         grain: "single_metric",
@@ -83,7 +82,9 @@ JOIN premium_totals ON claim_totals.member_id = premium_totals.member_id;`,
         "column_allowlist",
         "function_allowlist",
         "join_allowlist",
-        "result_size_control"
+        "result_size_control",
+        "literal_parameter_check",
+        "read_replica_policy"
       ],
       rejections: []
     },
@@ -170,7 +171,7 @@ export const demoMetrics: Metric[] = [
     filters_default: ["claims.status != 'void'"],
     synonyms: ["loss ratio", "incurred loss ratio"],
     owner: "actuarial",
-    version: "0.1.0",
+    version: "1.2.0",
     last_reviewed: "2026-05-22"
   },
   {
