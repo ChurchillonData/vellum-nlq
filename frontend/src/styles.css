@@ -172,6 +172,11 @@ button:disabled {
 }
 
 .trust-panel {
+  display: flex;
+  height: calc(100vh - 72px);
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--panel-soft);
   padding: 24px 24px 28px 32px;
 }
@@ -557,7 +562,8 @@ td {
 }
 
 .metadata-list {
-  margin: 20px 0 18px;
+  flex: 0 0 auto;
+  margin: 20px 0 16px;
 }
 
 .metadata-row {
@@ -565,8 +571,8 @@ td {
   grid-template-columns: 42% minmax(0, 58%);
   gap: 18px;
   border-bottom: 1px solid var(--line);
-  padding: 10px 0;
-  font-size: 14px;
+  padding: 11px 0;
+  font-size: 16px;
 }
 
 .metadata-row dt {
@@ -597,7 +603,7 @@ td {
 }
 
 .compact-meta {
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: 0;
 }
 
@@ -617,7 +623,11 @@ kbd {
 }
 
 .sql-status {
-  margin-top: 16px;
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  margin-top: 12px;
 }
 
 .sql-header {
@@ -643,6 +653,8 @@ kbd {
 .sql-frame {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr);
+  min-height: 0;
+  flex: 1 1 auto;
   overflow: hidden;
   border-radius: 8px;
   background: var(--code);
@@ -656,9 +668,9 @@ kbd {
   gap: 0;
   background: #0d1d31;
   color: #8ba2bd;
-  font-size: 13px;
-  line-height: 1.55;
-  padding: 12px 16px;
+  font-size: 15px;
+  line-height: 1.58;
+  padding: 14px 16px;
   user-select: none;
 }
 
@@ -667,8 +679,8 @@ kbd {
 .sql-placeholder {
   margin: 0;
   overflow: auto;
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: 16px;
+  line-height: 1.58;
   white-space: pre;
 }
 
@@ -676,7 +688,7 @@ kbd {
   max-height: none;
   background: var(--code);
   color: #dcecff;
-  padding: 12px 14px;
+  padding: 14px 16px;
 }
 
 .sql-line {
@@ -1017,6 +1029,8 @@ kbd {
 
   .trust-panel {
     border-top: 1px solid var(--line);
+    height: auto;
+    overflow: visible;
   }
 
   .about-catalogue {
