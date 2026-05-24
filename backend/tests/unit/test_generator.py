@@ -226,3 +226,42 @@ def test_decline_rate_query_groups_by_consultant_specialty(
     assert result.provenance.result_shape.grain == "consultant_specialty"
     assert result.provenance.result_shape.max_rows == 50
     assert result.validation.passed is True
+
+
+def test_loss_ratio_query_groups_by_plan_tier(health_uk_catalogue) -> None:
+    request = AnalyticsRequest(
+        metric_id="loss_ratio",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+        group_by=("plan_tier",),
+    )
+
+    result = build_query(health_uk_catalogue, request)
+
+    assert "plans.plan_tier AS plan_tier" in result.query.sql
+    assert "GROUP BY plans.plan_tier" in result.query.sql
+    assert "LIMIT %(result_limit)s" in result.query.sql
+    assert result.query.parameters["result_limit"] == 50
+    assert result.provenance.result_shape.columns == ("plan_tier", "loss_ratio")
+    assert result.provenance.result_shape.grain == "plan_tier"
+    assert result.provenance.result_shape.max_rows == 50
+    assert result.validation.passed is True
+
+
+def test_paid_claims_query_groups_by_region(health_uk_catalogue) -> None:
+    request = AnalyticsRequest(
+        metric_id="paid_claims",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+        group_by=("region",),
+    )
+
+    result = build_query(health_uk_catalogue, request)
+
+    assert "members.region AS region" in result.query.sql
+    assert "GROUP BY members.region" in result.query.sql
+    assert "LIMIT %(result_limit)s" in result.query.sql
+    assert result.query.parameters["result_limit"] == 50
+    assert result.provenance.result_shape.columns == ("region", "paid_claims")
+    assert result.provenance.result_shape.max_rows == 50
+    assert result.validation.passed is True

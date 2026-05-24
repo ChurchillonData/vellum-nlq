@@ -1,4 +1,5 @@
-from app.analytics.models import LogicalPlan, ResolvedRequest, ResultShape
+from app.analytics.models import LogicalPlan, ResolvedRequest
+from app.planner.grouping import result_shape
 from app.planner.joins import find_join
 from app.semantic.models import Catalogue
 
@@ -17,15 +18,10 @@ def build_decline_rate_plan(catalogue: Catalogue, resolved: ResolvedRequest) -> 
     if request.plan_tier:
         filters.append("plans.plan_tier = plan_tier")
 
-    result_shape = ResultShape(columns=("decline_rate",), grain="single_metric")
+    shape = result_shape("decline_rate", request.group_by)
     if request.group_by == ("consultant_specialty",):
         joins.append(find_join(catalogue, "claim_lines", "providers"))
         tables.append("providers")
-        result_shape = ResultShape(
-            columns=("consultant_specialty", "decline_rate"),
-            grain="consultant_specialty",
-            max_rows=50,
-        )
 
     return LogicalPlan(
         metric=resolved.metric,
@@ -36,5 +32,5 @@ def build_decline_rate_plan(catalogue: Catalogue, resolved: ResolvedRequest) -> 
         tables=tuple(tables),
         joins=tuple(joins),
         filters=tuple(filters),
-        result_shape=result_shape,
+        result_shape=shape,
     )

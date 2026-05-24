@@ -79,7 +79,10 @@ def _run_loss_ratio_query(
     build_result: QueryBuildResult,
 ) -> list[dict[str, object]]:
     parameters = build_result.query.parameters
-    sql = loss_ratio_sql(has_plan_tier=bool(parameters.get("plan_tier")))
+    sql = loss_ratio_sql(
+        has_plan_tier=bool(parameters.get("plan_tier")),
+        group_by=build_result.plan.group_by,
+    )
     rows = connection.execute(sql, to_sqlite_parameters(parameters)).fetchall()
     return [dict(row) for row in rows]
 
@@ -89,7 +92,10 @@ def _run_paid_claims_query(
     build_result: QueryBuildResult,
 ) -> list[dict[str, object]]:
     parameters = build_result.query.parameters
-    sql = paid_claims_sql(has_plan_tier=bool(parameters.get("plan_tier")))
+    sql = paid_claims_sql(
+        has_plan_tier=bool(parameters.get("plan_tier")),
+        group_by=build_result.plan.group_by,
+    )
     rows = connection.execute(sql, to_sqlite_parameters(parameters)).fetchall()
     return [dict(row) for row in rows]
 
@@ -99,7 +105,10 @@ def _run_incurred_claims_query(
     build_result: QueryBuildResult,
 ) -> list[dict[str, object]]:
     parameters = build_result.query.parameters
-    sql = incurred_claims_sql(has_plan_tier=bool(parameters.get("plan_tier")))
+    sql = incurred_claims_sql(
+        has_plan_tier=bool(parameters.get("plan_tier")),
+        group_by=build_result.plan.group_by,
+    )
     rows = connection.execute(sql, to_sqlite_parameters(parameters)).fetchall()
     return [dict(row) for row in rows]
 
@@ -109,7 +118,10 @@ def _run_claim_frequency_query(
     build_result: QueryBuildResult,
 ) -> list[dict[str, object]]:
     parameters = build_result.query.parameters
-    sql = claim_frequency_sql(has_plan_tier=bool(parameters.get("plan_tier")))
+    sql = claim_frequency_sql(
+        has_plan_tier=bool(parameters.get("plan_tier")),
+        group_by=build_result.plan.group_by,
+    )
     rows = connection.execute(sql, to_sqlite_parameters(parameters)).fetchall()
     return [dict(row) for row in rows]
 
@@ -119,7 +131,10 @@ def _run_claim_severity_query(
     build_result: QueryBuildResult,
 ) -> list[dict[str, object]]:
     parameters = build_result.query.parameters
-    sql = claim_severity_sql(has_plan_tier=bool(parameters.get("plan_tier")))
+    sql = claim_severity_sql(
+        has_plan_tier=bool(parameters.get("plan_tier")),
+        group_by=build_result.plan.group_by,
+    )
     rows = connection.execute(sql, to_sqlite_parameters(parameters)).fetchall()
     return [dict(row) for row in rows]
 

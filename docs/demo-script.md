@@ -11,22 +11,25 @@ Current backend supports:
 - Happy-path answers for `paid_claims`, `claim_frequency`, `incurred_claims`,
   `claim_severity`, and ungrouped `decline_rate`.
 - Grouped decline-rate answer by consultant specialty.
+- Grouped outputs by plan tier and member region for supported metrics.
 - Ambiguity response for broad claims questions.
 - Out-of-scope response for forecasting questions.
 - Safety rejection for destructive database requests.
-- Narrow natural-language parsing for quarters, ISO date ranges, and demo plan
-  tiers.
+- Backend-v1 natural-language parsing for quarters, ISO date ranges, relative
+  demo periods, full-year phrases, demo plan tiers, and supported grouping
+  phrases.
 - A date-range-required state when the metric is clear but the period is not.
 - Provenance payloads with SQL, parameters, validation, and query IDs.
+- OpenAI intent extraction behind configuration, with catalogue sanitization and
+  deterministic fallback.
+- Guarded Postgres execution behind configuration.
 
 Current backend does not yet support:
 
 - The React frontend.
-- OpenAI intent extraction.
-- Richer natural-language date parsing beyond the current deterministic parser.
-- Broader grouped analytics beyond decline rate by consultant specialty.
-- Production Postgres execution.
-- Expanded red-team demo coverage beyond the first safety suite.
+- Live Postgres integration tests in this execution environment.
+- A partner data mapping layer for insurer-specific schemas.
+- The large portfolio demo dataset and performance-tuning pass.
 
 The five-question script below is still the target demo arc. For today, use the
 current API examples for live verification.
@@ -55,8 +58,9 @@ Useful endpoints:
 - `POST /queries/execute`
 
 The current `/ask` endpoint can infer supported quarter phrases, ISO date
-ranges, and demo plan tiers. Explicit structured dates and filters are still
-accepted and take priority over inferred values.
+ranges, relative demo periods, full-year phrases, demo plan tiers, and supported
+grouping phrases. Explicit structured dates and filters are still accepted and
+take priority over inferred values.
 
 Example happy path:
 

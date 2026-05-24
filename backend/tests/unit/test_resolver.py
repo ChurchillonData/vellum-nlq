@@ -106,6 +106,27 @@ def test_resolver_accepts_decline_rate_consultant_specialty_grouping(
     assert resolved.request.group_by == ("consultant_specialty",)
 
 
+def test_resolver_accepts_common_demo_groupings(health_uk_catalogue) -> None:
+    for metric_id in (
+        "loss_ratio",
+        "paid_claims",
+        "claim_frequency",
+        "decline_rate",
+        "incurred_claims",
+        "claim_severity",
+    ):
+        request = AnalyticsRequest(
+            metric_id=metric_id,
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 3, 31),
+            group_by=("plan_tier",),
+        )
+
+        resolved = resolve_request(health_uk_catalogue, request)
+
+        assert resolved.request.group_by == ("plan_tier",)
+
+
 def test_resolver_rejects_unsupported_grouping(health_uk_catalogue) -> None:
     request = AnalyticsRequest(
         metric_id="loss_ratio",

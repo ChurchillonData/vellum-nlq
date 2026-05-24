@@ -1,3 +1,4 @@
+import calendar
 import re
 from dataclasses import dataclass
 from datetime import date
@@ -8,6 +9,8 @@ PLAN_TIERS = {
     "comprehensive": "Comprehensive",
     "executive": "Executive",
 }
+
+DEMO_TODAY = date(2026, 5, 24)
 
 
 @dataclass(frozen=True)
@@ -38,13 +41,22 @@ def _parse_date_range(question: str) -> tuple[date | None, date | None]:
     if quarter_range != (None, None):
         return quarter_range
 
-    return _parse_iso_date_range(question)
+    iso_range = _parse_iso_date_range(question)
+    if iso_range != (None, None):
+        return iso_range
+
+    relative_range = _parse_relative_range(question)
+    if relative_range != (None, None):
+        return relative_range
+
+    return _parse_year_range(question)
 
 
 def _parse_quarter(question: str) -> tuple[date | None, date | None]:
     patterns = (
         r"\bq([1-4])\s+(\d{4})\b",
         r"\b(\d{4})\s+q([1-4])\b",
+        r"\bq([1-4])\b",
     )
 
     for pattern in patterns:
@@ -52,7 +64,13 @@ def _parse_quarter(question: str) -> tuple[date | None, date | None]:
         if match is None:
             continue
 
-        first, second = match.groups()
+        groups = match.groups()
+        if len(groups) == 1:
+            quarter = int(groups[0])
+            year = DEMO_TODAY.year
+            return _quarter_bounds(year, quarter)
+
+        first, second = groups
         quarter = int(first if len(first) == 1 else second)
         year = int(second if len(first) == 1 else first)
         return _quarter_bounds(year, quarter)
@@ -79,6 +97,33 @@ def _parse_iso_date_range(question: str) -> tuple[date | None, date | None]:
     return start_date, end_date
 
 
+def _parse_relative_range(question: str) -> tuple[date | None, date | None]:
+    normalized = question.casefold()
+    current_month_start = date(DEMO_TODAY.year, DEMO_TODAY.month, 1)
+
+    if re.search(r"\blast\s+(six|6)\s+months\b", normalized):
+        start_date = _add_months(current_month_start, -5)
+        return start_date, _month_end(DEMO_TODAY.year, DEMO_TODAY.month)
+
+    if re.search(r"\blast\s+month\b", normalized):
+        start_date = _add_months(current_month_start, -1)
+        return start_date, _month_end(start_date.year, start_date.month)
+
+    if re.search(r"\b(this\s+year|year\s+to\s+date|ytd)\b", normalized):
+        return date(DEMO_TODAY.year, 1, 1), DEMO_TODAY
+
+    return None, None
+
+
+def _parse_year_range(question: str) -> tuple[date | None, date | None]:
+    match = re.search(r"\b(?:in|for|during)\s+(20\d{2})\b", question, re.IGNORECASE)
+    if match is None:
+        return None, None
+
+    year = int(match.group(1))
+    return date(year, 1, 1), date(year, 12, 31)
+
+
 def _parse_plan_tier(question: str) -> str | None:
     normalized = question.casefold()
     for token, label in PLAN_TIERS.items():
@@ -89,6 +134,22 @@ def _parse_plan_tier(question: str) -> str | None:
 
 def _parse_group_by(question: str) -> tuple[str, ...]:
     normalized = question.casefold()
+    plan_tier_patterns = (
+        r"\bby\s+plan\s+tier\b",
+        r"\bper\s+plan\s+tier\b",
+        r"\bby\s+tier\b",
+    )
+    if any(re.search(pattern, normalized) for pattern in plan_tier_patterns):
+        return ("plan_tier",)
+
+    region_patterns = (
+        r"\bby\s+member\s+region\b",
+        r"\bby\s+region\b",
+        r"\bper\s+region\b",
+    )
+    if any(re.search(pattern, normalized) for pattern in region_patterns):
+        return ("region",)
+
     specialty_patterns = (
         r"\bby\s+consultant\s+specialty\b",
         r"\bby\s+specialty\b",
@@ -98,3 +159,12 @@ def _parse_group_by(question: str) -> tuple[str, ...]:
     if any(re.search(pattern, normalized) for pattern in specialty_patterns):
         return ("consultant_specialty",)
     return ()
+
+
+def _add_months(value: date, offset: int) -> date:
+    month_index = value.month - 1 + offset
+    return date(value.year + month_index // 12, (month_index % 12) + 1, 1)
+
+
+def _month_end(year: int, month: int) -> date:
+    return date(year, month, calendar.monthrange(year, month)[1])

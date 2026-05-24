@@ -37,8 +37,10 @@ Implemented today:
   guard validation, execution, and audit.
 - OpenAI intent output is sanitized against the catalogue, confidence-gated,
   and can fall back to deterministic parsing.
-- Narrow natural-language parsing for quarter phrases, ISO date ranges, and
-  demo plan tiers on `POST /ask`.
+- Backend-v1 natural-language parsing for quarters, ISO date ranges, relative
+  demo periods, full-year phrases, plan tiers, and supported grouping phrases.
+- Grouped demo outputs for plan tier and region across supported metrics, plus
+  decline rate by consultant specialty.
 - Ambiguity, out-of-scope, and destructive-intent responses for controlled demo
   questions.
 - SQL generation and guard validation for generated SELECT statements.
@@ -51,15 +53,15 @@ Implemented today:
 - Local JSONL audit events for all `/ask` outcomes, successful previews, and
   demo executions.
 - Append-only Postgres audit table behind `VELLUM_AUDIT_BACKEND=postgres`.
-- Seventeen `/ask/examples` items covered by unit tests.
+- Twenty `/ask/examples` items covered by unit tests.
 - YAML golden question suite covering the core demo contract.
 - First red-team suite for destructive questions and unsafe SQL guard cases.
 
 Planned next:
 
-- Richer natural-language date and filter parsing.
-- Expanded red-team coverage for obfuscated and prompt-injection-style attacks.
 - Frontend implementation using the uploaded UI mockups.
+- Large portfolio demo dataset and live Postgres performance checks.
+- Pilot-readiness mapping layer for a partner insurer schema.
 
 ## Five-Minute Tour
 
@@ -252,7 +254,7 @@ Full request and response examples are documented in `docs/api-contract.md`.
 | Endpoint | Purpose |
 |---|---|
 | `POST /ask` | Product-facing ask flow. Returns answer, clarification, blocked, or out-of-scope state. |
-| `GET /ask/examples` | Seventeen demo questions used by tests and future UI controls. |
+| `GET /ask/examples` | Twenty demo questions used by tests and future UI controls. |
 | `GET /metrics` | Active catalogue metric definitions with formulas and versions. |
 | `POST /queries/resolve` | Deterministic metric resolution and early safety blocking. |
 | `POST /queries/preview` | Parameterised SQL and provenance without execution. |

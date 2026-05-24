@@ -78,6 +78,24 @@ GOLDEN_ASK_EXAMPLES = (
         expected_status="answer",
     ),
     AskExample(
+        id="answer_loss_ratio_by_plan_tier",
+        label="Loss ratio by plan tier",
+        question="Show loss ratio by plan tier in Q1 2026.",
+        expected_status="answer",
+    ),
+    AskExample(
+        id="answer_paid_claims_by_region",
+        label="Paid claims by region",
+        question="Show paid claims by region for the last six months.",
+        expected_status="answer",
+    ),
+    AskExample(
+        id="answer_claim_frequency_ytd",
+        label="Claim frequency YTD",
+        question="Show claim frequency year to date.",
+        expected_status="answer",
+    ),
+    AskExample(
         id="date_required_loss_ratio",
         label="Date range required",
         question="What was loss ratio for the Comprehensive plan tier?",

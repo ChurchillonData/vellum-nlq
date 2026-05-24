@@ -28,8 +28,8 @@ Current build:
   events.
 - `VELLUM_AUDIT_BACKEND=postgres` writes the same event shape to an
   append-only `audit_events` table.
-- The first red-team suite covers destructive user intent and unsafe SQL guard
-  cases.
+- The red-team suite covers destructive user intent, delete-like synonyms,
+  prompt-injection-style destructive requests, and unsafe SQL guard cases.
 
 Not built yet:
 

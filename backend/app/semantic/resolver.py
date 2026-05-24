@@ -1,4 +1,5 @@
 from app.analytics.models import AnalyticsRequest, ResolvedRequest
+from app.planner.grouping import grouping_is_supported
 from app.semantic.models import Catalogue, MetricSpec
 
 
@@ -104,10 +105,7 @@ def _validate_claim_severity_metric(metric: MetricSpec) -> None:
 
 
 def _validate_group_by(metric: MetricSpec, group_by: tuple[str, ...]) -> None:
-    if not group_by:
-        return
-
-    if metric.id == "decline_rate" and group_by == ("consultant_specialty",):
+    if grouping_is_supported(metric.id, group_by):
         return
 
     group_list = ", ".join(group_by)

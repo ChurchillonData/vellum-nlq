@@ -39,7 +39,7 @@ Exit criteria:
 
 ## Phase 2: Deterministic Analytics Path
 
-Status: in progress
+Status: complete for backend v1 demo
 
 - Resolve a small set of catalogue-backed analytics requests without an LLM.
 - Build logical plans and parameterised SQL for the first metrics.
@@ -88,19 +88,17 @@ Current first slice:
 - `incurred_claims` and `claim_severity` are now executable deterministic
   metrics through catalogue resolution, planning, guarded SQL generation, local
   demo execution, ask examples, and golden questions.
-
-Current backend gaps before calling this phase complete:
-
-- Natural-language parsing is intentionally narrow: quarter phrases, ISO date
-  ranges, and plan tiers are supported; richer date language is still planned.
-- Grouped analytics are currently limited to `decline_rate` by
-  `consultant_specialty`; broader dimension support is still planned.
-- Additional grouped metrics and dimensions beyond consultant specialty are
-  still planned.
+- Backend-v1 natural-language parsing covers quarter phrases, ISO date ranges,
+  `last month`, `last six months`, year-to-date, full-year phrases, demo plan
+  tiers, and supported grouping phrases.
+- Common grouped demo outputs now support `plan_tier` and `region` across the
+  supported metrics, with guarded 50-row limits.
+- `decline_rate by consultant_specialty` remains the consultant-join grouped
+  path for the demo.
 
 ## Phase 3: Safety And Audit
 
-Status: in progress
+Status: complete for backend v1 demo
 
 - Add the SQL guard and allowlists.
 - Run queries through a read-only database role.
@@ -124,9 +122,9 @@ Current first slice:
   out-of-scope states.
 - `GET /queries/{query_id}` can read back local JSONL audit events while the
   default audit backend is JSONL.
-- `backend/tests/redteam/` now contains the first red-team slice. It checks
-  destructive user intent through `/ask` and unsafe generated-SQL shapes through
-  the SQL guard. `make test-redteam` runs this suite.
+- `backend/tests/redteam/` checks destructive user intent, delete-like synonyms,
+  prompt-injection-style destructive requests, and unsafe generated-SQL shapes
+  through the SQL guard. `make test-redteam` runs this suite.
 - The SQL guard now rejects embedded string/date literals and uncontrolled
   grouped result sets. Grouped generated SQL must carry an approved result
   limit, currently capped at 50 rows.
@@ -135,12 +133,12 @@ Current first slice:
 - Alembic migration `0002` creates the audit table, audit indexes, and
   SELECT/INSERT-only local audit grants.
 
-Current safety and audit gaps:
+Remaining production hardening:
 
-- Red-team coverage is still a first slice; broader prompt-injection and
-  obfuscation cases are planned.
 - Broader result-size policies for future dimensions are planned as grouped
   analytics expands.
+- Live Postgres integration tests and operational security review are still
+  production-readiness work.
 
 ## Phase 3B: Postgres Execution Path
 
@@ -165,7 +163,7 @@ Current gaps:
 
 ## Phase 4: OpenAI Intent Layer
 
-Status: in progress
+Status: complete for backend v1 demo
 
 - Use the OpenAI API for structured intent extraction.
 - Keep provider code behind a narrow interface and use fakes in tests.
@@ -191,7 +189,7 @@ Current first slice:
   execution, and audit.
 - Unsafe user intent is still blocked before provider metric intent can run.
 
-Current gaps:
+Remaining production hardening:
 
 - No live OpenAI integration test is run in CI.
 - The structured intent schema is narrow and covers only the current demo

@@ -1,4 +1,5 @@
-from app.analytics.models import LogicalPlan, ResolvedRequest, ResultShape
+from app.analytics.models import LogicalPlan, ResolvedRequest
+from app.planner.grouping import result_shape
 from app.planner.joins import find_join
 from app.semantic.models import Catalogue
 
@@ -31,5 +32,5 @@ def build_claim_severity_plan(
         tables=("claim_lines", "claims", "members", "plans"),
         joins=joins,
         filters=tuple(filters),
-        result_shape=ResultShape(columns=("claim_severity",), grain="single_metric"),
+        result_shape=result_shape("claim_severity", request.group_by),
     )

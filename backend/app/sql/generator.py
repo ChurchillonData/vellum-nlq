@@ -37,38 +37,59 @@ def generate_loss_ratio_query(plan: LogicalPlan) -> GeneratedQuery:
         claims_filters.append(plans.c.plan_tier == plan_tier)
         premium_filters.append(plans.c.plan_tier == plan_tier)
 
-    claim_totals = (
-        select(
-            claims.c.member_id.label("member_id"),
-            func.sum(claims.c.net_incurred_amount).label("incurred_claims"),
-        )
+    group_key = _group_key(plan)
+    group_expression = _member_group_expression(group_key)
+
+    claim_columns = [func.sum(claims.c.net_incurred_amount).label("incurred_claims")]
+    premium_columns = [func.sum(premium.c.earned_amount).label("earned_premium")]
+    if group_expression is not None:
+        claim_columns.insert(0, group_expression.label(group_key))
+        premium_columns.insert(0, group_expression.label(group_key))
+    else:
+        claim_columns.insert(0, claims.c.member_id.label("member_id"))
+        premium_columns.insert(0, premium.c.member_id.label("member_id"))
+
+    claim_totals_query = (
+        select(*claim_columns)
         .select_from(claims_source)
         .where(*claims_filters)
-        .group_by(claims.c.member_id)
-        .cte("claim_totals")
     )
-    premium_totals = (
-        select(
-            premium.c.member_id.label("member_id"),
-            func.sum(premium.c.earned_amount).label("earned_premium"),
-        )
+    premium_totals_query = (
+        select(*premium_columns)
         .select_from(premium_source)
         .where(*premium_filters)
-        .group_by(premium.c.member_id)
-        .cte("premium_totals")
     )
 
-    statement = select(
-        (
-            func.sum(claim_totals.c.incurred_claims)
-            / func.nullif(func.sum(premium_totals.c.earned_premium), 0)
-        ).label("loss_ratio")
-    ).select_from(
-        claim_totals.join(
-            premium_totals,
-            claim_totals.c.member_id == premium_totals.c.member_id,
+    if group_expression is not None:
+        claim_totals_query = claim_totals_query.group_by(group_expression)
+        premium_totals_query = premium_totals_query.group_by(group_expression)
+    else:
+        claim_totals_query = claim_totals_query.group_by(claims.c.member_id)
+        premium_totals_query = premium_totals_query.group_by(premium.c.member_id)
+
+    claim_totals = claim_totals_query.cte("claim_totals")
+    premium_totals = premium_totals_query.cte("premium_totals")
+    loss_ratio = (
+        func.sum(claim_totals.c.incurred_claims)
+        / func.nullif(func.sum(premium_totals.c.earned_premium), 0)
+    ).label("loss_ratio")
+
+    if group_key is not None:
+        join_condition = claim_totals.c[group_key] == premium_totals.c[group_key]
+    else:
+        join_condition = claim_totals.c.member_id == premium_totals.c.member_id
+
+    source = claim_totals.join(premium_totals, join_condition)
+    if group_key is None:
+        statement = select(loss_ratio).select_from(source)
+    else:
+        statement = (
+            select(claim_totals.c[group_key], loss_ratio)
+            .select_from(source)
+            .group_by(claim_totals.c[group_key])
+            .order_by(loss_ratio.element.desc())
+            .limit(_result_limit(plan))
         )
-    )
 
     compiled = statement.compile(dialect=postgresql.dialect())
     return GeneratedQuery(sql=str(compiled), parameters=compiled.params)
@@ -90,10 +111,12 @@ def generate_paid_claims_query(plan: LogicalPlan) -> GeneratedQuery:
         plan_tier = bindparam("plan_tier", plan.plan_tier, type_=String())
         filters.append(plans.c.plan_tier == plan_tier)
 
-    statement = (
-        select(func.sum(claim_lines.c.net_paid_amount).label("paid_claims"))
-        .select_from(source)
-        .where(*filters)
+    paid_claims = func.sum(claim_lines.c.net_paid_amount).label("paid_claims")
+    statement = _aggregate_statement(
+        plan=plan,
+        source=source,
+        filters=filters,
+        metric_column=paid_claims,
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())
@@ -118,10 +141,12 @@ def generate_incurred_claims_query(plan: LogicalPlan) -> GeneratedQuery:
         plan_tier = bindparam("plan_tier", plan.plan_tier, type_=String())
         filters.append(plans.c.plan_tier == plan_tier)
 
-    statement = (
-        select(func.sum(claims.c.net_incurred_amount).label("incurred_claims"))
-        .select_from(source)
-        .where(*filters)
+    incurred_claims = func.sum(claims.c.net_incurred_amount).label("incurred_claims")
+    statement = _aggregate_statement(
+        plan=plan,
+        source=source,
+        filters=filters,
+        metric_column=incurred_claims,
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())
@@ -153,26 +178,52 @@ def generate_claim_frequency_query(plan: LogicalPlan) -> GeneratedQuery:
         claims_filters.append(plans.c.plan_tier == plan_tier)
         enrolment_filters.append(plans.c.plan_tier == plan_tier)
 
-    claim_counts = (
-        select(func.count(claims.c.id.distinct()).label("claim_count"))
+    group_key = _group_key(plan)
+    group_expression = _member_group_expression(group_key)
+
+    claim_columns = [func.count(claims.c.id.distinct()).label("claim_count")]
+    member_month_columns = [func.sum(enrolment_months.c.member_months).label("member_months")]
+    if group_expression is not None:
+        claim_columns.insert(0, group_expression.label(group_key))
+        member_month_columns.insert(0, group_expression.label(group_key))
+
+    claim_counts_query = (
+        select(*claim_columns)
         .select_from(claims_source)
         .where(*claims_filters)
-        .cte("claim_counts")
     )
-    member_months = (
-        select(func.sum(enrolment_months.c.member_months).label("member_months"))
+    member_months_query = (
+        select(*member_month_columns)
         .select_from(enrolment_source)
         .where(*enrolment_filters)
-        .cte("member_months")
     )
 
-    statement = select(
-        (
-            claim_counts.c.claim_count
-            * 1000
-            / func.nullif(member_months.c.member_months, 0)
-        ).label("claim_frequency")
-    ).select_from(claim_counts.join(member_months, true()))
+    if group_expression is not None:
+        claim_counts_query = claim_counts_query.group_by(group_expression)
+        member_months_query = member_months_query.group_by(group_expression)
+
+    claim_counts = claim_counts_query.cte("claim_counts")
+    member_months = member_months_query.cte("member_months")
+    claim_frequency = (
+        claim_counts.c.claim_count
+        * 1000
+        / func.nullif(member_months.c.member_months, 0)
+    ).label("claim_frequency")
+
+    source = claim_counts.join(member_months, true())
+    if group_key is not None:
+        source = claim_counts.join(
+            member_months,
+            claim_counts.c[group_key] == member_months.c[group_key],
+        )
+        statement = (
+            select(claim_counts.c[group_key], claim_frequency)
+            .select_from(source)
+            .order_by(claim_frequency.desc())
+            .limit(_result_limit(plan))
+        )
+    else:
+        statement = select(claim_frequency).select_from(source)
 
     compiled = statement.compile(dialect=postgresql.dialect())
     return GeneratedQuery(sql=str(compiled), parameters=compiled.params)
@@ -198,15 +249,15 @@ def generate_claim_severity_query(plan: LogicalPlan) -> GeneratedQuery:
         plan_tier = bindparam("plan_tier", plan.plan_tier, type_=String())
         filters.append(plans.c.plan_tier == plan_tier)
 
-    statement = (
-        select(
-            (
-                func.sum(claim_lines.c.net_paid_amount)
-                / func.nullif(func.count(claims.c.id.distinct()), 0)
-            ).label("claim_severity")
-        )
-        .select_from(source)
-        .where(*filters)
+    claim_severity = (
+        func.sum(claim_lines.c.net_paid_amount)
+        / func.nullif(func.count(claims.c.id.distinct()), 0)
+    ).label("claim_severity")
+    statement = _aggregate_statement(
+        plan=plan,
+        source=source,
+        filters=filters,
+        metric_column=claim_severity,
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())
@@ -238,26 +289,50 @@ def generate_decline_rate_query(plan: LogicalPlan) -> GeneratedQuery:
         / func.nullif(func.count(claim_lines.c.id), 0)
     ).label("decline_rate")
 
-    if plan.group_by == ("consultant_specialty",):
-        statement = (
-            select(
-                providers.c.specialty.label("consultant_specialty"),
-                decline_rate,
-            )
-            .select_from(source)
-            .where(*filters)
-            .group_by(providers.c.specialty)
-            .order_by(decline_rate.element.desc())
-            .limit(
-                bindparam(
-                    "result_limit",
-                    plan.result_shape.max_rows,
-                    type_=Integer(),
-                )
-            )
-        )
-    else:
-        statement = select(decline_rate).select_from(source).where(*filters)
+    statement = _aggregate_statement(
+        plan=plan,
+        source=source,
+        filters=filters,
+        metric_column=decline_rate,
+    )
 
     compiled = statement.compile(dialect=postgresql.dialect())
     return GeneratedQuery(sql=str(compiled), parameters=compiled.params)
+
+
+def _aggregate_statement(plan: LogicalPlan, source, filters, metric_column):
+    group_key = _group_key(plan)
+    group_expression = _group_expression(group_key)
+    if group_expression is None:
+        return select(metric_column).select_from(source).where(*filters)
+
+    return (
+        select(group_expression.label(group_key), metric_column)
+        .select_from(source)
+        .where(*filters)
+        .group_by(group_expression)
+        .order_by(metric_column.element.desc())
+        .limit(_result_limit(plan))
+    )
+
+
+def _group_key(plan: LogicalPlan) -> str | None:
+    return plan.group_by[0] if plan.group_by else None
+
+
+def _group_expression(group_key: str | None):
+    if group_key == "consultant_specialty":
+        return providers.c.specialty
+    return _member_group_expression(group_key)
+
+
+def _member_group_expression(group_key: str | None):
+    if group_key == "plan_tier":
+        return plans.c.plan_tier
+    if group_key == "region":
+        return members.c.region
+    return None
+
+
+def _result_limit(plan: LogicalPlan):
+    return bindparam("result_limit", plan.result_shape.max_rows, type_=Integer())

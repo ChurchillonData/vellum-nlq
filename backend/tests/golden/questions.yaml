@@ -65,6 +65,30 @@ questions:
         - consultant_specialty
         - decline_rate
 
+  - id: answer_loss_ratio_by_plan_tier
+    question: Show loss ratio by plan tier in Q1 2026.
+    expects:
+      status: answer
+      metric_id: loss_ratio
+      group_by:
+        - plan_tier
+      min_row_count: 1
+      result_columns:
+        - plan_tier
+        - loss_ratio
+
+  - id: answer_paid_claims_by_region_last_six_months
+    question: Show paid claims by region for the last six months.
+    expects:
+      status: answer
+      metric_id: paid_claims
+      group_by:
+        - region
+      min_row_count: 1
+      result_columns:
+        - region
+        - paid_claims
+
   - id: date_required_loss_ratio
     question: What was loss ratio for the Comprehensive plan tier?
     expects:

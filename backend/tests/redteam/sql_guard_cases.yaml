@@ -38,3 +38,15 @@ cases:
   - id: guard_rejects_large_grouped_result_limit
     sql: SELECT providers.specialty, COUNT(claim_lines.id) FROM claim_lines JOIN providers ON claim_lines.provider_id = providers.id GROUP BY providers.specialty LIMIT 500
     expected_rule: result_size_control
+
+  - id: guard_rejects_inline_block_comment
+    sql: SELECT claims.id FROM claims /* pretend this is harmless */
+    expected_rule: comments_absent
+
+  - id: guard_rejects_information_schema
+    sql: SELECT tables.table_name FROM information_schema.tables
+    expected_rule: system_schema_absent
+
+  - id: guard_rejects_union_unknown_table
+    sql: SELECT claims.id FROM claims UNION SELECT users.id FROM users
+    expected_rule: select_only

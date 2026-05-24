@@ -26,6 +26,26 @@ DESTRUCTIVE_RULES = {
         severity="critical",
         reason="Question contains destructive DELETE intent.",
     ),
+    "erase": SafetyFinding(
+        rule_id="DML_DELETE_PATTERN",
+        severity="critical",
+        reason="Question contains destructive delete-like intent.",
+    ),
+    "purge": SafetyFinding(
+        rule_id="DML_DELETE_PATTERN",
+        severity="critical",
+        reason="Question contains destructive delete-like intent.",
+    ),
+    "remove": SafetyFinding(
+        rule_id="DML_DELETE_PATTERN",
+        severity="critical",
+        reason="Question contains destructive delete-like intent.",
+    ),
+    "wipe": SafetyFinding(
+        rule_id="DML_DELETE_PATTERN",
+        severity="critical",
+        reason="Question contains destructive delete-like intent.",
+    ),
     "alter": SafetyFinding(
         rule_id="DDL_ALTER_PATTERN",
         severity="critical",
@@ -51,4 +71,3 @@ def classify_question_safety(tokens: set[str]) -> SafetyFinding | None:
         if finding is not None:
             return finding
     return None
-
