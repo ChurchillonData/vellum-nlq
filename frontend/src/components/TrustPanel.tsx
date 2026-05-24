@@ -31,7 +31,6 @@ export function TrustPanel({ askResult, metric }: TrustPanelProps) {
 function AnswerPanel({ askResult, metric }: TrustPanelProps) {
   const answer = askResult.answer;
   const validation = answer?.validation;
-  const joins = formatJoinDisplay(answer?.provenance.joins_used);
 
   return (
     <aside className="trust-panel">
@@ -50,7 +49,7 @@ function AnswerPanel({ askResult, metric }: TrustPanelProps) {
         <MetaRow label="Metric used" value={`${metric.id} (financial_kpi)`} icon={<Info size={16} />} mono />
         <MetaRow label="Metric version" value={metric.version} mono />
         <MetaRow label="Time anchor" value={metric.time_anchor} mono />
-        <MetaRow label="Joins used" value={joins} mono compact />
+        <MetaRow label="Joins used" value={<JoinDisplay joins={answer?.provenance.joins_used} />} mono compact />
         <MetaRow
           label="Validation result"
           value={
@@ -234,14 +233,21 @@ function highlightSqlLine(line: string): ReactNode[] {
   });
 }
 
-function formatJoinDisplay(joins?: string[]) {
+function JoinDisplay({ joins }: { joins?: string[] }) {
   const joined = joins?.join("; ") ?? "claims -> premium (member_id)";
 
   if (joined.includes("claims") && joined.includes("premium")) {
-    return "claims ⟕ premium (member_id)";
+    return (
+      <span className="join-display">
+        <span>claims</span>
+        <span className="join-branch" aria-label="left join">{"\u27D5"}</span>
+        <span>premium</span>
+        <span className="join-key">(member_id)</span>
+      </span>
+    );
   }
 
-  return joined.replace(/->|→/g, "⟕");
+  return <span>{joined.replace(/->|→/g, "\u27D5")}</span>;
 }
 
 function MetaRow({
@@ -257,7 +263,7 @@ function MetaRow({
   label: string;
   mono?: boolean;
   tone?: "success" | "warning" | "danger";
-  value: string;
+  value: ReactNode;
 }) {
   return (
     <div className="metadata-row">

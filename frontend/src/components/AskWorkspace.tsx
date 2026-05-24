@@ -5,7 +5,6 @@ import {
   CircleSlash,
   HelpCircle,
   Play,
-  ShieldCheck,
   Sparkles,
   Users,
   WalletCards
@@ -116,7 +115,7 @@ function WorkspaceState({
         <p className="section-label">Result summary</p>
         <div className="answer-card">
           <div className="answer-icon success">
-            <ShieldCheck size={25} />
+            <span className="answer-check" aria-hidden="true">✓</span>
           </div>
           <div className="answer-content">
             <p className="answer-text">

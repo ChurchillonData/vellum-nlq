@@ -336,6 +336,14 @@ button:disabled {
 .answer-icon.success {
   background: var(--blue);
   color: #fff;
+  box-shadow: 0 6px 14px rgba(11, 104, 232, 0.2);
+}
+
+.answer-check {
+  color: #fff;
+  font-size: 31px;
+  font-weight: 500;
+  line-height: 1;
 }
 
 .answer-content {
@@ -607,6 +615,23 @@ td {
   letter-spacing: 0;
 }
 
+.join-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.join-branch {
+  color: #0f172a;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.join-key {
+  color: #0f172a;
+}
+
 .tone-warning {
   color: #b76a00 !important;
 }
@@ -696,20 +721,20 @@ kbd {
 }
 
 .sql-comment {
-  color: #6fbd73;
+  color: #61b26b;
 }
 
 .sql-keyword {
-  color: #c084fc;
+  color: #f07ad6;
   font-weight: 600;
 }
 
 .sql-string {
-  color: #f6c66b;
+  color: #f4c967;
 }
 
 .sql-number {
-  color: #7dd3fc;
+  color: #f4c967;
 }
 
 .sql-placeholder {
