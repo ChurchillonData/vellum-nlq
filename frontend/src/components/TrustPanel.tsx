@@ -1,4 +1,4 @@
-import { AlertCircle, ClipboardList, Code2, Copy, Info, Shield } from "lucide-react";
+import { AlertCircle, ClipboardList, Code2, Copy, Shield } from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { AskResponse, Metric } from "../types";
@@ -38,7 +38,13 @@ function AnswerPanel({ askResult, metric }: TrustPanelProps) {
       </div>
 
       <dl className="metadata-list">
-        <MetaRow label="Metric used" value={`${metric.id} (financial_kpi)`} trailingIcon={<Info size={16} />} mono />
+        <MetaRow
+          label="Metric used"
+          value={`${metric.id} (financial_kpi)`}
+          trailingIcon={<MetricInfoMark />}
+          mono
+          normalWeight
+        />
         <MetaRow label="Metric version" value={metric.version} mono />
         <MetaRow label="Time anchor" value={metric.time_anchor} mono />
         <MetaRow label="Joins used" value={<JoinDisplay joins={answer?.provenance.joins_used} />} mono compact />
@@ -281,11 +287,20 @@ function StraightCheck({ size }: { size: number }) {
   );
 }
 
+function MetricInfoMark() {
+  return (
+    <span aria-label="metric information" className="metric-info-mark">
+      i
+    </span>
+  );
+}
+
 function MetaRow({
   compact = false,
   icon,
   label,
   mono = false,
+  normalWeight = false,
   tone,
   trailingIcon,
   value
@@ -294,6 +309,7 @@ function MetaRow({
   icon?: ReactNode;
   label: string;
   mono?: boolean;
+  normalWeight?: boolean;
   tone?: "success" | "warning" | "danger";
   trailingIcon?: ReactNode;
   value: ReactNode;
@@ -301,7 +317,7 @@ function MetaRow({
   return (
     <div className="metadata-row">
       <dt>{label}</dt>
-      <dd className={`${mono ? "mono" : ""} ${tone ? `tone-${tone}` : ""} ${compact ? "compact-meta" : ""}`}>
+      <dd className={`${mono ? "mono" : ""} ${tone ? `tone-${tone}` : ""} ${compact ? "compact-meta" : ""} ${normalWeight ? "normal-meta" : ""}`}>
         {icon && <span className="meta-icon">{icon}</span>}
         <span>{value}</span>
         {trailingIcon && <span className="meta-icon">{trailingIcon}</span>}
