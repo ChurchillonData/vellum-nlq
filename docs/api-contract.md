@@ -238,7 +238,7 @@ Returns metric definitions from the active semantic catalogue.
       "filters_default": ["claims.status != 'void'"],
       "synonyms": ["loss ratio", "incurred loss ratio"],
       "owner": "actuarial",
-      "version": "0.1.0",
+      "version": "2.5.0",
       "last_reviewed": "2026-05-22"
     }
   ]

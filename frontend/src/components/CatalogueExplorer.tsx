@@ -255,7 +255,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
       <section className="catalogue-status-bar">
         <span>
           <Icon icon={CheckmarkBadge02Icon} size={17} />
-          Vellum semantic layer v2.1
+          Vellum semantic layer v2.5.0
         </span>
         <span>
           <Icon icon={PresentationLineChart01Icon} size={17} />
