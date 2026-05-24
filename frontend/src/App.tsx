@@ -4,7 +4,7 @@ import { askQuestion, fetchMetrics } from "./api";
 import { AskWorkspace } from "./components/AskWorkspace";
 import { CatalogueExplorer } from "./components/CatalogueExplorer";
 import { TopBar } from "./components/TopBar";
-import { demoAskResponse, demoMetrics, demoQuestions } from "./demoData";
+import { demoAskResponse, demoMetrics, demoQuestions, getDemoAskResponse } from "./demoData";
 import type { AskResponse, Metric } from "./types";
 
 type ActiveView = "ask" | "catalogue" | "audit";
@@ -41,10 +41,7 @@ export default function App() {
       setAskResult(response);
     } catch {
       setNotice("Backend API is not connected. Showing the saved demo answer.");
-      setAskResult({
-        ...demoAskResponse,
-        question: nextQuestion
-      });
+      setAskResult(getDemoAskResponse(nextQuestion));
     } finally {
       setIsRunning(false);
     }

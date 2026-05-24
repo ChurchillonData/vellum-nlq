@@ -33,9 +33,9 @@ export const demoAskResponse: AskResponse = {
   answer: {
     query_id: "q_demo_loss_ratio",
     metric_id: "loss_ratio",
-    answer: "Comprehensive plan tier loss ratio from 2026-01-01 to 2026-03-31 was 0.847 (84.7%).",
+    answer: "Comprehensive plan tier loss ratio in Q1 2026 was 0.847 (84.7%).",
     row_count: 1,
-    rows: [{ loss_ratio: 0.847 }],
+    rows: [{ quarter: "2026 Q1", plan_tier: "Comprehensive", loss_ratio: 0.847 }],
     sql: `WITH claim_totals AS (
   SELECT claims.member_id, SUM(claims.net_incurred_amount) AS incurred_claims
   FROM claims
@@ -90,6 +90,69 @@ JOIN premium_totals ON claim_totals.member_id = premium_totals.member_id;`,
     execution_mode: "local_demo"
   }
 };
+
+export const demoClarificationResponse: AskResponse = {
+  status: "clarification_required",
+  query_id: "vellum:clarify:7c8e9f1a",
+  question: "How are the claims numbers looking?",
+  message:
+    "\"claims numbers\" can refer to multiple business metrics. Select the intended KPI:",
+  resolved_request: null,
+  candidates: [
+    {
+      metric_id: "loss_ratio",
+      label: "Loss Ratio",
+      confidence: 0.42,
+      reason: "Incurred claims / earned premium"
+    },
+    {
+      metric_id: "paid_claims",
+      label: "Paid Claims (GBP)",
+      confidence: 0.38,
+      reason: "Total claim amount paid in GBP"
+    },
+    {
+      metric_id: "claim_frequency",
+      label: "Claim Frequency",
+      confidence: 0.35,
+      reason: "Claims per member per period"
+    }
+  ],
+  safety: null,
+  scope: null,
+  answer: null
+};
+
+export const demoBlockedResponse: AskResponse = {
+  status: "blocked",
+  query_id: "vellum:reject:ddl_9f3b2e",
+  question: "Drop all claims from the database.",
+  message:
+    "The operation \"DROP TABLE / destructive DDL\" is not permitted on the analytics read-replica. Vellum-NLQ enforces guardrails against mutable commands.",
+  resolved_request: null,
+  candidates: [],
+  safety: {
+    rule_id: "SQL_GUARD_07 / DDL_BLOCKLIST",
+    severity: "critical",
+    reason: "Command contains DROP + claims - potential data loss."
+  },
+  scope: null,
+  answer: null
+};
+
+export function getDemoAskResponse(question: string): AskResponse {
+  const normalized = question.toLowerCase();
+
+  if (normalized.includes("drop") || normalized.includes("delete")) {
+    return { ...demoBlockedResponse, question };
+  }
+
+  if (normalized.includes("claims numbers")) {
+    return { ...demoClarificationResponse, question };
+  }
+
+  return { ...demoAskResponse, question };
+}
 
 export const demoMetrics: Metric[] = [
   {

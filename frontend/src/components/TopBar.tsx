@@ -1,4 +1,4 @@
-import { CheckCircle2, Database } from "lucide-react";
+import { CheckCircle2, Database, ShieldPlus } from "lucide-react";
 
 type ActiveView = "ask" | "catalogue" | "audit";
 
@@ -17,9 +17,7 @@ export function TopBar({ activeView, onChangeView }: TopBarProps) {
   return (
     <header className="top-bar">
       <div className="brand-group">
-        <div className="brand-mark" aria-hidden="true">
-          V
-        </div>
+        <ShieldPlus className="brand-mark" aria-hidden="true" size={31} />
         <span className="brand-name">Vellum-NLQ</span>
         <nav className="nav-tabs" aria-label="Primary">
           {navItems.map((item) => (
