@@ -6,7 +6,6 @@ import {
   ClipboardList,
   Calculator,
   Copy,
-  Database,
   Download,
   Filter,
   Gauge,
@@ -151,27 +150,6 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
               ))}
             </ul>
           </div>
-
-          <div className="catalogue-about-card">
-            <span className="about-card-icon icon-tone-blue">
-              <ClipboardList size={22} />
-            </span>
-            <h2>About the catalogue</h2>
-            <p>
-              Unified metric registry with lineage, definitions, and certification.
-              All metrics follow Vellum semantic layer governance for NLQ.
-            </p>
-            <div className="about-card-stats">
-              <span>
-                <Database size={17} />
-                {Math.max(10, metrics.length)} active metrics
-              </span>
-              <span>
-                <RefreshCw size={17} />
-                auto-synced weekly
-              </span>
-            </div>
-          </div>
         </aside>
       </section>
 
@@ -253,7 +231,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
           Vellum semantic layer v2.1
         </span>
         <span>
-          <Database size={17} />
+          <ClipboardList size={17} />
           Source systems connected: 6
         </span>
         <span>

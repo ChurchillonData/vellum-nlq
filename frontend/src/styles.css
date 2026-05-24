@@ -965,7 +965,6 @@ kbd {
 
 .catalogue-primary-panel,
 .catalogue-side-card,
-.catalogue-about-card,
 .catalogue-registry,
 .catalogue-status-bar {
   border: 1px solid var(--line);
@@ -1099,7 +1098,6 @@ kbd {
 }
 
 .catalogue-meta > span,
-.about-card-icon,
 .side-card-icon {
   display: grid;
   width: 44px;
@@ -1115,29 +1113,25 @@ kbd {
 }
 
 .catalogue-meta > .icon-tone-blue,
-.side-card-icon.icon-tone-blue,
-.about-card-icon.icon-tone-blue {
+.side-card-icon.icon-tone-blue {
   background: #eef6ff;
   color: var(--blue);
 }
 
 .catalogue-meta > .icon-tone-teal,
-.side-card-icon.icon-tone-teal,
-.about-card-icon.icon-tone-teal {
+.side-card-icon.icon-tone-teal {
   background: #ecfdf5;
   color: var(--teal);
 }
 
 .catalogue-meta > .icon-tone-amber,
-.side-card-icon.icon-tone-amber,
-.about-card-icon.icon-tone-amber {
+.side-card-icon.icon-tone-amber {
   background: #fff7ed;
   color: #d97706;
 }
 
 .catalogue-meta > .icon-tone-violet,
-.side-card-icon.icon-tone-violet,
-.about-card-icon.icon-tone-violet {
+.side-card-icon.icon-tone-violet {
   background: #f5f3ff;
   color: #7c3aed;
 }
@@ -1203,8 +1197,7 @@ kbd {
   gap: 24px;
 }
 
-.catalogue-side-card,
-.catalogue-about-card {
+.catalogue-side-card {
   padding: 24px;
 }
 
@@ -1216,15 +1209,13 @@ kbd {
   margin-bottom: 18px;
 }
 
-.side-card-heading h2,
-.catalogue-about-card h2 {
+.side-card-heading h2 {
   margin: 0 0 6px;
   color: #0d1b35;
   font-size: 19px;
 }
 
-.catalogue-side-card p,
-.catalogue-about-card p {
+.catalogue-side-card p {
   margin: 0;
   color: #3f5065;
   line-height: 1.65;
@@ -1259,8 +1250,7 @@ kbd {
   content: "";
 }
 
-.side-card-stats,
-.about-card-stats {
+.side-card-stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
@@ -1269,17 +1259,12 @@ kbd {
   padding-top: 16px;
 }
 
-.side-card-stats span,
-.about-card-stats span {
+.side-card-stats span {
   display: flex;
   align-items: center;
   gap: 8px;
   color: #536273;
   font-size: 13px;
-}
-
-.catalogue-about-card {
-  background: #fff;
 }
 
 .catalogue-registry {
@@ -1575,7 +1560,6 @@ kbd {
   }
 
   .side-card-stats,
-  .about-card-stats,
   .catalogue-status-bar {
     grid-template-columns: 1fr;
     justify-content: flex-start;
