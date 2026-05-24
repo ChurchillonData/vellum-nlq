@@ -528,12 +528,18 @@ td {
 
 .state-card.red .state-heading {
   color: #c46500;
+  font-size: 22px;
 }
 
 .state-card p {
   color: #243244;
   font-size: 16px;
   line-height: 1.7;
+}
+
+.state-card.red p {
+  font-size: 18px;
+  line-height: 1.75;
 }
 
 .state-card code {
@@ -574,6 +580,8 @@ td {
   margin: 0;
   background: transparent;
   color: inherit;
+  font-size: 17px;
+  line-height: 1.65;
   padding: 0;
   white-space: pre-wrap;
 }
