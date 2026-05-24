@@ -993,8 +993,7 @@ kbd {
   width: 68px;
   height: 68px;
   place-items: center;
-  border-radius: 8px;
-  box-shadow: 0 14px 24px -18px rgba(11, 104, 232, 0.8);
+  color: #071529;
 }
 
 .catalogue-title-copy {
@@ -1199,8 +1198,8 @@ kbd {
 }
 
 .catalogue-large-icon.icon-tone-blue {
-  background: var(--blue);
-  color: #fff;
+  background: transparent;
+  color: #071529;
 }
 
 .catalogue-meta > .icon-tone-blue,
