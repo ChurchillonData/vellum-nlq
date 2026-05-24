@@ -1,27 +1,29 @@
 import {
-  BarChart3,
-  BookOpen,
-  CalendarDays,
-  ChevronRight,
-  ClipboardList,
-  Calculator,
-  Copy,
-  Download,
-  Filter,
-  Gauge,
-  GitBranch,
-  Layers3,
-  Lightbulb,
-  LockKeyhole,
-  Network,
-  RefreshCw,
-  Search,
-  ShieldCheck,
-  Tags,
-  TrendingUp,
-  UserRound,
-  WalletCards
-} from "lucide-react";
+  AiNetworkIcon,
+  Analytics01Icon,
+  ArrowRight01Icon,
+  BookOpenTextIcon,
+  BulbIcon,
+  Calculator01Icon,
+  Calendar03Icon,
+  CheckmarkBadge02Icon,
+  ClipboardCopyIcon,
+  CloudDownloadIcon,
+  DashboardSpeed02Icon,
+  FilterIcon,
+  GitBranchIcon,
+  Layers01Icon,
+  LockKeyIcon,
+  PresentationLineChart01Icon,
+  RefreshIcon,
+  Search01Icon,
+  TagsIcon,
+  TrendingUpDownIcon,
+  UserCircleIcon,
+  WalletCardsIcon
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import type { IconSvgElement } from "@hugeicons/react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 
@@ -66,7 +68,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
         <div className="catalogue-primary-panel">
           <div className="catalogue-primary-header">
             <span className="catalogue-large-icon icon-tone-blue">
-              <BarChart3 size={42} />
+              <Icon icon={Analytics01Icon} size={42} />
             </span>
             <div className="catalogue-title-copy">
               <div className="catalogue-title-line">
@@ -87,47 +89,47 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
               <p>{selectedMetric.description}</p>
             </div>
             <span className="approved-pill catalogue-approved">
-              <ShieldCheck size={17} />
+              <Icon icon={CheckmarkBadge02Icon} size={17} />
               Approved
             </span>
           </div>
 
           <div className="catalogue-detail-grid">
-            <CatalogueBlock icon={<BookOpen size={17} />} title="Definition" wide>{selectedMetric.description}</CatalogueBlock>
-            <CatalogueBlock icon={<Calculator size={17} />} title="Formula" tone="blue" wide>
+            <CatalogueBlock icon={<Icon icon={BookOpenTextIcon} size={17} />} title="Definition" wide>{selectedMetric.description}</CatalogueBlock>
+            <CatalogueBlock icon={<Icon icon={Calculator01Icon} size={17} />} title="Formula" tone="blue" wide>
               <div className="catalogue-code-strip">
                 <code>{selectedMetric.formula.expression}</code>
-                <Copy size={16} />
+                <Icon icon={ClipboardCopyIcon} size={16} />
               </div>
             </CatalogueBlock>
-            <CatalogueMeta icon={<UserRound size={21} />} label="Owner" tone="teal" value={formatOwner(selectedMetric.owner)} />
-            <CatalogueMeta icon={<GitBranch size={21} />} label="Version" mono tone="violet" value={selectedMetric.version} />
+            <CatalogueMeta icon={<Icon icon={UserCircleIcon} size={21} />} label="Owner" tone="teal" value={formatOwner(selectedMetric.owner)} />
+            <CatalogueMeta icon={<Icon icon={GitBranchIcon} size={21} />} label="Version" mono tone="violet" value={selectedMetric.version} />
             <CatalogueMeta
-              icon={<CalendarDays size={21} />}
+              icon={<Icon icon={Calendar03Icon} size={21} />}
               label="Time anchor"
               tone="blue"
               value={`${selectedMetric.time_anchor} (monthly aggregation)`}
               mono
               wide
             />
-            <CatalogueBlock icon={<Tags size={17} />} title="Synonyms" tone="amber" wide>
+            <CatalogueBlock icon={<Icon icon={TagsIcon} size={17} />} title="Synonyms" tone="amber" wide>
               <div className="catalogue-chip-row">
                 {getSynonyms(selectedMetric).map((synonym) => (
                   <span className="catalogue-chip" key={synonym}>{synonym}</span>
                 ))}
               </div>
             </CatalogueBlock>
-            <CatalogueBlock icon={<Layers3 size={17} />} title="Allowed dimensions" tone="violet" wide>
+            <CatalogueBlock icon={<Icon icon={Layers01Icon} size={17} />} title="Allowed dimensions" tone="violet" wide>
               <div className="catalogue-chip-row">
                 {defaultDimensions.map((dimension) => (
                   <span className="catalogue-chip accent" key={dimension}>{dimension}</span>
                 ))}
               </div>
             </CatalogueBlock>
-            <CatalogueBlock title="Required joins (preview)" full icon={<Network size={17} />} tone="blue">
+            <CatalogueBlock title="Required joins (preview)" full icon={<Icon icon={AiNetworkIcon} size={17} />} tone="blue">
               <div className="catalogue-code-strip muted">
                 <code>{formatJoinPreview(selectedMetric)}</code>
-                <Copy size={16} />
+                <Icon icon={ClipboardCopyIcon} size={16} />
               </div>
             </CatalogueBlock>
           </div>
@@ -137,7 +139,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
           <div className="catalogue-side-card">
             <div className="side-card-heading">
               <span className="side-card-icon icon-tone-amber">
-                <Lightbulb size={24} />
+                <Icon icon={BulbIcon} size={24} />
               </span>
               <div>
                 <h2>Insights</h2>
@@ -157,14 +159,14 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
         <div className="registry-toolbar">
           <div>
             <h2>
-              <ClipboardList size={20} />
+              <Icon icon={PresentationLineChart01Icon} size={20} />
               Metric registry explorer
             </h2>
             <span>Full catalog</span>
           </div>
           <div className="registry-actions">
             <label className="registry-search">
-              <Search size={17} />
+              <Icon icon={Search01Icon} size={17} />
               <input
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search metrics..."
@@ -172,11 +174,11 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
               />
             </label>
             <button type="button">
-              <Filter size={16} />
+              <Icon icon={FilterIcon} size={16} />
               All metrics
             </button>
             <button type="button">
-              <Download size={16} />
+              <Icon icon={CloudDownloadIcon} size={16} />
               Export
             </button>
           </div>
@@ -217,7 +219,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
                   <td>{defaultDimensions.join(", ")}</td>
                   <td><span className={index === 0 ? "cert-pill gold" : "cert-pill silver"}>{index === 0 ? "Gold" : "Silver"}</span></td>
                   <td>{index === 0 ? "2h ago" : "4h ago"}</td>
-                  <td><ChevronRight size={17} /></td>
+                  <td><Icon icon={ArrowRight01Icon} size={17} /></td>
                 </tr>
               ))}
             </tbody>
@@ -227,19 +229,19 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
 
       <section className="catalogue-status-bar">
         <span>
-          <ShieldCheck size={17} />
+          <Icon icon={CheckmarkBadge02Icon} size={17} />
           Vellum semantic layer v2.1
         </span>
         <span>
-          <ClipboardList size={17} />
+          <Icon icon={PresentationLineChart01Icon} size={17} />
           Source systems connected: 6
         </span>
         <span>
-          <LockKeyhole size={17} />
+          <Icon icon={LockKeyIcon} size={17} />
           Governed & certified
         </span>
         <span>
-          <RefreshCw size={17} />
+          <Icon icon={RefreshIcon} size={17} />
           Last refreshed: just now
         </span>
       </section>
@@ -272,6 +274,10 @@ function CatalogueBlock({
 
 type IconTone = "amber" | "blue" | "teal" | "violet";
 
+function Icon({ icon, size }: { icon: IconSvgElement; size: number }) {
+  return <HugeiconsIcon absoluteStrokeWidth icon={icon} size={size} strokeWidth={1.7} />;
+}
+
 function CatalogueMeta({
   icon,
   label,
@@ -300,18 +306,18 @@ function CatalogueMeta({
 
 function getMetricIcon(metricId: string, index: number): ReactNode {
   if (metricId.includes("loss")) {
-    return <Gauge size={17} />;
+    return <Icon icon={DashboardSpeed02Icon} size={17} />;
   }
 
   if (metricId.includes("paid")) {
-    return <WalletCards size={17} />;
+    return <Icon icon={WalletCardsIcon} size={17} />;
   }
 
   if (metricId.includes("frequency")) {
-    return <TrendingUp size={17} />;
+    return <Icon icon={TrendingUpDownIcon} size={17} />;
   }
 
-  return index % 2 === 0 ? <BarChart3 size={17} /> : <Calculator size={17} />;
+  return index % 2 === 0 ? <Icon icon={Analytics01Icon} size={17} /> : <Icon icon={Calculator01Icon} size={17} />;
 }
 
 function formatJoinPreview(metric: Metric): string {
