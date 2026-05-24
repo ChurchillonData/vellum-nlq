@@ -1018,22 +1018,109 @@ kbd {
   padding: 5px 9px;
 }
 
-.metric-switch {
-  min-width: 210px;
+.catalogue-metric-title {
+  margin: 0;
+  color: #071529;
+  font-size: 34px;
+  font-weight: 760;
+  letter-spacing: 0;
+  line-height: 1.08;
+}
+
+.metric-selector {
+  position: relative;
+  z-index: 4;
+}
+
+.metric-selector-button {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 9px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
-  color: #08152f;
-  font-size: 30px;
-  font-weight: 800;
-  line-height: 1.15;
-  padding: 8px 40px 8px 12px;
+  color: var(--blue);
+  padding: 5px 10px 5px 12px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
 }
 
-.metric-switch:focus {
-  border-color: var(--blue);
+.metric-selector-button code {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.metric-selector-button[aria-expanded="true"] {
+  border-color: #9ec5ff;
   box-shadow: 0 0 0 3px rgba(11, 104, 232, 0.12);
-  outline: 0;
+}
+
+.metric-selector-button[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.metric-selector-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 320px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.14);
+}
+
+.metric-selector-menu button {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 34px minmax(0, 1fr) 22px;
+  gap: 12px;
+  align-items: center;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  background: #fff;
+  color: #142238;
+  padding: 13px 14px;
+  text-align: left;
+}
+
+.metric-selector-menu button:last-child {
+  border-bottom: 0;
+}
+
+.metric-selector-menu button:hover,
+.metric-selector-menu button.selected {
+  background: #f4f9ff;
+}
+
+.metric-selector-menu button > span:nth-child(2) {
+  min-width: 0;
+}
+
+.metric-selector-menu strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.metric-selector-menu code {
+  border: 0;
+  background: transparent;
+  color: #5b6b7f;
+  padding: 0;
+  font-size: 12px;
+}
+
+.metric-menu-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 7px;
+  background: #eef6ff;
+  color: var(--blue);
 }
 
 .catalogue-title-copy p {

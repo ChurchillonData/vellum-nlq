@@ -1,6 +1,7 @@
 import {
   AiNetworkIcon,
   Analytics01Icon,
+  ArrowDown01Icon,
   ArrowRight01Icon,
   BookOpenTextIcon,
   BulbIcon,
@@ -36,6 +37,7 @@ type CatalogueExplorerProps = {
 const defaultDimensions = ["plan_tier", "treatment_category", "month", "region"];
 
 export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
+  const [isMetricMenuOpen, setIsMetricMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedId, setSelectedId] = useState("loss_ratio");
   const selectedMetric = useMemo(
@@ -72,19 +74,43 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
             </span>
             <div className="catalogue-title-copy">
               <div className="catalogue-title-line">
-                <select
-                  aria-label="Selected metric"
-                  className="metric-switch"
-                  onChange={(event) => setSelectedId(event.target.value)}
-                  value={selectedMetric.id}
-                >
-                  {metrics.map((metric) => (
-                    <option key={metric.id} value={metric.id}>
-                      {toTitleCase(metric.label)}
-                    </option>
-                  ))}
-                </select>
-                <code>{selectedMetric.id}</code>
+                <h1 className="catalogue-metric-title">{toTitleCase(selectedMetric.label)}</h1>
+                <div className="metric-selector">
+                  <button
+                    aria-expanded={isMetricMenuOpen}
+                    aria-haspopup="listbox"
+                    className="metric-selector-button"
+                    onClick={() => setIsMetricMenuOpen((isOpen) => !isOpen)}
+                    type="button"
+                  >
+                    <code>{selectedMetric.id}</code>
+                    <Icon icon={ArrowDown01Icon} size={15} />
+                  </button>
+                  {isMetricMenuOpen ? (
+                    <div className="metric-selector-menu" role="listbox">
+                      {metrics.map((metric, index) => (
+                        <button
+                          aria-selected={metric.id === selectedMetric.id}
+                          className={metric.id === selectedMetric.id ? "selected" : ""}
+                          key={metric.id}
+                          onClick={() => {
+                            setSelectedId(metric.id);
+                            setIsMetricMenuOpen(false);
+                          }}
+                          role="option"
+                          type="button"
+                        >
+                          <span className="metric-menu-icon">{getMetricIcon(metric.id, index)}</span>
+                          <span>
+                            <strong>{toTitleCase(metric.label)}</strong>
+                            <code>{metric.id}</code>
+                          </span>
+                          {metric.id === selectedMetric.id ? <Icon icon={CheckmarkBadge02Icon} size={17} /> : null}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               </div>
               <p>{selectedMetric.description}</p>
             </div>
