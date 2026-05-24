@@ -38,7 +38,7 @@ function AnswerPanel({ askResult, metric }: TrustPanelProps) {
       </div>
 
       <dl className="metadata-list">
-        <MetaRow label="Metric used" value={`${metric.id} (financial_kpi)`} icon={<Info size={16} />} mono />
+        <MetaRow label="Metric used" value={`${metric.id} (financial_kpi)`} trailingIcon={<Info size={16} />} mono />
         <MetaRow label="Metric version" value={metric.version} mono />
         <MetaRow label="Time anchor" value={metric.time_anchor} mono />
         <MetaRow label="Joins used" value={<JoinDisplay joins={answer?.provenance.joins_used} />} mono compact />
@@ -287,6 +287,7 @@ function MetaRow({
   label,
   mono = false,
   tone,
+  trailingIcon,
   value
 }: {
   compact?: boolean;
@@ -294,6 +295,7 @@ function MetaRow({
   label: string;
   mono?: boolean;
   tone?: "success" | "warning" | "danger";
+  trailingIcon?: ReactNode;
   value: ReactNode;
 }) {
   return (
@@ -302,6 +304,7 @@ function MetaRow({
       <dd className={`${mono ? "mono" : ""} ${tone ? `tone-${tone}` : ""} ${compact ? "compact-meta" : ""}`}>
         {icon && <span className="meta-icon">{icon}</span>}
         <span>{value}</span>
+        {trailingIcon && <span className="meta-icon">{trailingIcon}</span>}
       </dd>
     </div>
   );
