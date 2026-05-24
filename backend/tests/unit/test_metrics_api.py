@@ -35,4 +35,4 @@ def test_metrics_endpoint_exposes_loss_ratio_definition() -> None:
     assert loss_ratio["formula"]["denominator"] == "SUM(premium.earned_amount)"
     assert loss_ratio["time_anchor"] == "claims.incurred_date"
     assert loss_ratio["required_tables"] == ["claims", "premium"]
-    assert loss_ratio["version"] == "Vellus 2.5"
+    assert loss_ratio["version"] == "Vellum 2.5"

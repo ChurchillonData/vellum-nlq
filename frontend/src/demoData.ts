@@ -36,7 +36,7 @@ export const demoAskResponse: AskResponse = {
     answer: "Comprehensive plan tier loss ratio in Q1 2026 was 0.847 (84.7%).",
     row_count: 1,
     rows: [{ quarter: "2026 Q1", plan_tier: "Comprehensive", loss_ratio: 0.847 }],
-    sql: `-- vellum-nlq - loss_ratio Vellus 2.5
+    sql: `-- vellum-nlq - loss_ratio Vellum 2.5
 WITH premium_data AS (
   SELECT member_id, SUM(premium_amt) AS total_premium
   FROM uk_claims_db.premium
@@ -59,7 +59,7 @@ FROM claim_loss JOIN premium_data USING(member_id);`,
     provenance: {
       metric_id: "loss_ratio",
       metric_label: "Loss ratio",
-      metric_version: "Vellus 2.5",
+      metric_version: "Vellum 2.5",
       metric_description: "Incurred claims divided by earned premium for the selected reporting slice.",
       formula: "SUM(claims.net_incurred_amount) / NULLIF(SUM(premium.earned_amount), 0)",
       time_anchor: "claims.incurred_date",
@@ -171,7 +171,7 @@ export const demoMetrics: Metric[] = [
     filters_default: ["claims.status != 'void'"],
     synonyms: ["loss ratio", "incurred loss ratio"],
     owner: "actuarial",
-    version: "Vellus 2.5",
+    version: "Vellum 2.5",
     last_reviewed: "2026-05-22"
   },
   {
@@ -189,7 +189,7 @@ export const demoMetrics: Metric[] = [
     filters_default: [],
     synonyms: ["paid claims", "claim payments"],
     owner: "claims",
-    version: "Vellus 2.5",
+    version: "Vellum 2.5",
     last_reviewed: "2026-05-22"
   },
   {
@@ -207,7 +207,7 @@ export const demoMetrics: Metric[] = [
     filters_default: ["claims.status != 'void'"],
     synonyms: ["claim frequency", "claims per member"],
     owner: "actuarial",
-    version: "Vellus 2.5",
+    version: "Vellum 2.5",
     last_reviewed: "2026-05-22"
   }
 ];
