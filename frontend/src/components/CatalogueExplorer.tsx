@@ -12,6 +12,7 @@ import {
   Gauge,
   GitBranch,
   Layers3,
+  Lightbulb,
   LockKeyhole,
   Network,
   RefreshCw,
@@ -35,11 +36,12 @@ const defaultDimensions = ["plan_tier", "treatment_category", "month", "region"]
 
 export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const primaryMetric = useMemo(
-    () => metrics.find((metric) => metric.id === "loss_ratio") ?? metrics[0],
-    [metrics]
+  const [selectedId, setSelectedId] = useState("loss_ratio");
+  const selectedMetric = useMemo(
+    () => metrics.find((metric) => metric.id === selectedId) ?? metrics.find((metric) => metric.id === "loss_ratio") ?? metrics[0],
+    [metrics, selectedId]
   );
-  const spotlightMetric = useMemo(() => findSpotlightMetric(metrics, primaryMetric), [metrics, primaryMetric]);
+  const insights = useMemo(() => getMetricInsights(selectedMetric), [selectedMetric]);
   const filteredMetrics = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
 
@@ -55,7 +57,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
     );
   }, [metrics, searchTerm]);
 
-  if (!primaryMetric) {
+  if (!selectedMetric) {
     return <main className="catalogue-hub">No catalogue loaded.</main>;
   }
 
@@ -69,10 +71,21 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
             </span>
             <div className="catalogue-title-copy">
               <div className="catalogue-title-line">
-                <h1>{toTitleCase(primaryMetric.label)}</h1>
-                <code>{primaryMetric.id}</code>
+                <select
+                  aria-label="Selected metric"
+                  className="metric-switch"
+                  onChange={(event) => setSelectedId(event.target.value)}
+                  value={selectedMetric.id}
+                >
+                  {metrics.map((metric) => (
+                    <option key={metric.id} value={metric.id}>
+                      {toTitleCase(metric.label)}
+                    </option>
+                  ))}
+                </select>
+                <code>{selectedMetric.id}</code>
               </div>
-              <p>{primaryMetric.description}</p>
+              <p>{selectedMetric.description}</p>
             </div>
             <span className="approved-pill catalogue-approved">
               <ShieldCheck size={17} />
@@ -81,26 +94,26 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
           </div>
 
           <div className="catalogue-detail-grid">
-            <CatalogueBlock icon={<BookOpen size={17} />} title="Definition" wide>{primaryMetric.description}</CatalogueBlock>
+            <CatalogueBlock icon={<BookOpen size={17} />} title="Definition" wide>{selectedMetric.description}</CatalogueBlock>
             <CatalogueBlock icon={<Calculator size={17} />} title="Formula" tone="blue" wide>
               <div className="catalogue-code-strip">
-                <code>{primaryMetric.formula.expression}</code>
+                <code>{selectedMetric.formula.expression}</code>
                 <Copy size={16} />
               </div>
             </CatalogueBlock>
-            <CatalogueMeta icon={<UserRound size={21} />} label="Owner" tone="teal" value={formatOwner(primaryMetric.owner)} />
-            <CatalogueMeta icon={<GitBranch size={21} />} label="Version" mono tone="violet" value={primaryMetric.version} />
+            <CatalogueMeta icon={<UserRound size={21} />} label="Owner" tone="teal" value={formatOwner(selectedMetric.owner)} />
+            <CatalogueMeta icon={<GitBranch size={21} />} label="Version" mono tone="violet" value={selectedMetric.version} />
             <CatalogueMeta
               icon={<CalendarDays size={21} />}
               label="Time anchor"
               tone="blue"
-              value={`${primaryMetric.time_anchor} (monthly aggregation)`}
+              value={`${selectedMetric.time_anchor} (monthly aggregation)`}
               mono
               wide
             />
             <CatalogueBlock icon={<Tags size={17} />} title="Synonyms" tone="amber" wide>
               <div className="catalogue-chip-row">
-                {getSynonyms(primaryMetric).map((synonym) => (
+                {getSynonyms(selectedMetric).map((synonym) => (
                   <span className="catalogue-chip" key={synonym}>{synonym}</span>
                 ))}
               </div>
@@ -114,7 +127,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
             </CatalogueBlock>
             <CatalogueBlock title="Required joins (preview)" full icon={<Network size={17} />} tone="blue">
               <div className="catalogue-code-strip muted">
-                <code>{formatJoinPreview(primaryMetric)}</code>
+                <code>{formatJoinPreview(selectedMetric)}</code>
                 <Copy size={16} />
               </div>
             </CatalogueBlock>
@@ -124,26 +137,19 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
         <aside className="catalogue-side-stack">
           <div className="catalogue-side-card">
             <div className="side-card-heading">
-              <span className="side-card-icon icon-tone-teal">
-                <TrendingUp size={24} />
+              <span className="side-card-icon icon-tone-amber">
+                <Lightbulb size={24} />
               </span>
               <div>
-                <h2>{toTitleCase(spotlightMetric.label)}</h2>
-                <code>{spotlightMetric.id}</code>
+                <h2>Insights</h2>
+                <code>{selectedMetric.id}</code>
               </div>
-              <ChevronRight size={20} />
             </div>
-            <p>{spotlightMetric.description}</p>
-            <div className="side-card-stats">
-              <span>
-                <ShieldCheck size={16} />
-                {spotlightMetric.version}
-              </span>
-              <span>
-                <Layers3 size={16} />
-                {Math.max(2, spotlightMetric.required_tables.length)} dimensions
-              </span>
-            </div>
+            <ul className="insight-list">
+              {insights.map((insight) => (
+                <li key={insight}>{insight}</li>
+              ))}
+            </ul>
           </div>
 
           <div className="catalogue-about-card">
@@ -214,7 +220,11 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
             </thead>
             <tbody>
               {filteredMetrics.map((metric, index) => (
-                <tr key={metric.id}>
+                <tr
+                  className={metric.id === selectedMetric.id ? "selected" : ""}
+                  key={metric.id}
+                  onClick={() => setSelectedId(metric.id)}
+                >
                   <td>
                     <span className="registry-name">
                       <span className="registry-metric-icon">
@@ -326,21 +336,39 @@ function getMetricIcon(metricId: string, index: number): ReactNode {
   return index % 2 === 0 ? <BarChart3 size={17} /> : <Calculator size={17} />;
 }
 
-function findSpotlightMetric(metrics: Metric[], primaryMetric?: Metric): Metric {
-  return (
-    metrics.find((metric) => metric.id.includes("avg") || metric.id.includes("severity")) ??
-    metrics.find((metric) => metric.id !== primaryMetric?.id) ??
-    primaryMetric ??
-    metrics[0]
-  );
-}
-
 function formatJoinPreview(metric: Metric): string {
   if (metric.id === "loss_ratio") {
     return "claims -> premium (member_id, period), member_dimension";
   }
 
   return `${metric.required_tables.join(" -> ")} (approved join path)`;
+}
+
+function getMetricInsights(metric: Metric): string[] {
+  if (metric.id === "paid_claims") {
+    return [
+      "Tracks total settled claim value for the selected reporting window.",
+      "Best grouped by region, claim type, provider, or plan tier.",
+      "Uses paid date, so it reflects cash movement rather than incurred exposure.",
+      "Useful for claims operations monitoring and payment trend reviews."
+    ];
+  }
+
+  if (metric.id === "claim_frequency") {
+    return [
+      "Shows utilisation pressure by normalising claim counts against member exposure.",
+      "Best grouped by age band, region, plan tier, or month.",
+      "Helpful for spotting behaviour changes before claim cost rises fully appear.",
+      "Requires clean member-month exposure to avoid misleading comparisons."
+    ];
+  }
+
+  return [
+    "Connects incurred claims to earned premium for a clear profitability signal.",
+    "Best grouped by plan tier, month, region, or treatment category.",
+    "Uses incurred date, so it is suited to underwriting and actuarial views.",
+    "Sensitive to late claims and premium alignment across the same period."
+  ];
 }
 
 function formatOwner(owner: string): string {

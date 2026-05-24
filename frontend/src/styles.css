@@ -1008,14 +1008,6 @@ kbd {
   gap: 12px;
 }
 
-.catalogue-title-line h1 {
-  margin: 0;
-  color: #08152f;
-  font-size: 30px;
-  line-height: 1.1;
-  font-weight: 800;
-}
-
 .catalogue-title-line code,
 .side-card-heading code,
 .registry-table code {
@@ -1024,6 +1016,24 @@ kbd {
   background: #fff;
   color: var(--blue);
   padding: 5px 9px;
+}
+
+.metric-switch {
+  min-width: 210px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: #08152f;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.15;
+  padding: 8px 40px 8px 12px;
+}
+
+.metric-switch:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(11, 104, 232, 0.12);
+  outline: 0;
 }
 
 .catalogue-title-copy p {
@@ -1220,6 +1230,35 @@ kbd {
   line-height: 1.65;
 }
 
+.insight-list {
+  display: grid;
+  gap: 13px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.insight-list li {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: #29394e;
+  line-height: 1.55;
+  padding: 13px 14px 13px 36px;
+}
+
+.insight-list li::before {
+  position: absolute;
+  top: 18px;
+  left: 16px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #d97706;
+  content: "";
+}
+
 .side-card-stats,
 .about-card-stats {
   display: grid;
@@ -1345,6 +1384,15 @@ kbd {
 
 .registry-table td {
   color: #29394e;
+}
+
+.registry-table tbody tr {
+  cursor: pointer;
+}
+
+.registry-table tbody tr:hover,
+.registry-table tbody tr.selected {
+  background: #f8fbff;
 }
 
 .registry-name {
