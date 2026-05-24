@@ -1,7 +1,7 @@
 import { AlertCircle, ClipboardList, Code2, Copy, Shield } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { formatSafetyReason, getDisplayRuleId } from "../safetyDisplay";
+import { getDisplayRuleId, getSafetyReasonLines } from "../safetyDisplay";
 import type { AskResponse, Metric } from "../types";
 import { CleanCheck } from "./CleanCheck";
 
@@ -117,6 +117,8 @@ function ClarificationPanel({ askResult }: { askResult: AskResponse }) {
 }
 
 function BlockedPanel({ askResult }: { askResult: AskResponse }) {
+  const reasonLines = getSafetyReasonLines(askResult.safety?.reason);
+
   return (
     <aside className="trust-panel">
       <div className="panel-header">
@@ -132,7 +134,16 @@ function BlockedPanel({ askResult }: { askResult: AskResponse }) {
 
       <dl className="metadata-list">
         <MetaRow label="Rule ID" value={getDisplayRuleId(askResult.safety?.rule_id)} mono />
-        <MetaRow label="Reason" value={formatSafetyReason(askResult.safety?.reason)} mono />
+        <MetaRow
+          label="Reason"
+          value={
+            <span className="blocked-reason">
+              <span>{reasonLines.summary}</span>
+              {reasonLines.detail && <span>{reasonLines.detail}</span>}
+            </span>
+          }
+          mono
+        />
         <MetaRow label="Validation result" value="BLOCKED - 1 critical violation" tone="danger" />
         <MetaRow label="Query ID" value={askResult.query_id} mono />
         <MetaRow label="Latency" value="<1 ms (guard layer intercept)" mono />

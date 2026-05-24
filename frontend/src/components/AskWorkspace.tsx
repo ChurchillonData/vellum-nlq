@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-import { formatSafetyReason, getDisplayRuleId } from "../safetyDisplay";
+import { getDisplayRuleId, getSafetyReasonLines } from "../safetyDisplay";
 import type { AskResponse, Metric } from "../types";
 import { CleanCheck } from "./CleanCheck";
 import { ResultTable } from "./ResultTable";
@@ -190,6 +190,8 @@ function WorkspaceState({
   }
 
   if (askResult.status === "blocked") {
+    const reasonLines = getSafetyReasonLines(askResult.safety?.reason);
+
     return (
       <section className="state-card red">
         <div className="state-heading">
@@ -203,8 +205,8 @@ function WorkspaceState({
           </span>
           <code>
             Safety rule fired: <strong>{getDisplayRuleId(askResult.safety?.rule_id)}</strong>
-            <span className="safety-rule-separator">·</span>
-            {formatSafetyReason(askResult.safety?.reason)}
+            <span className="safety-rule-summary">{reasonLines.summary}</span>
+            {reasonLines.detail && <span className="safety-rule-detail">{reasonLines.detail}</span>}
           </code>
         </div>
       </section>

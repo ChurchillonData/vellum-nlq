@@ -589,8 +589,19 @@ td {
   white-space: pre-wrap;
 }
 
-.safety-rule-separator {
-  margin: 0 9px;
+.safety-rule-summary,
+.safety-rule-detail,
+.blocked-reason span {
+  display: block;
+}
+
+.safety-rule-summary {
+  margin-top: 8px;
+}
+
+.safety-rule-detail,
+.blocked-reason span + span {
+  margin-top: 5px;
 }
 
 .safety-rule-box strong {

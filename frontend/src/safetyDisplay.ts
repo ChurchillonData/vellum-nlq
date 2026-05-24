@@ -1,16 +1,33 @@
-export function formatSafetyReason(reason?: string): string {
-  const text = reason ?? "";
+type SafetyReasonLines = {
+  detail?: string;
+  summary: string;
+};
+
+export function getSafetyReasonLines(reason?: string): SafetyReasonLines {
+  const text = (reason ?? "").trim();
   const lowerText = text.toLowerCase();
 
   if (lowerText.includes("drop") && lowerText.includes("claims")) {
-    return "Command contains DROP + claims · potential data loss";
+    return {
+      detail: "- potential data loss",
+      summary: "Command contains DROP + claims"
+    };
   }
 
-  if (!text.trim()) {
-    return "Potential data loss";
+  if (!text) {
+    return { summary: "Potential data loss" };
   }
 
-  return text.replace(/\s+-\s+/g, " · ");
+  const splitAt = text.lastIndexOf(" - ");
+
+  if (splitAt === -1) {
+    return { summary: text };
+  }
+
+  return {
+    detail: `- ${text.slice(splitAt + 3)}`,
+    summary: text.slice(0, splitAt)
+  };
 }
 
 export function getDisplayRuleId(ruleId?: string): string {
