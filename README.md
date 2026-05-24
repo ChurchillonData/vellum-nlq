@@ -26,6 +26,7 @@ in-memory demo executor until `VELLUM_EXECUTION_BACKEND=postgres` is set.
 Implemented today:
 
 - FastAPI backend with product-facing `/ask` and development query endpoints.
+- React + Vite frontend shell for the Ask workspace and Catalogue Explorer.
 - Catalogue-backed deterministic paths for all six current metrics:
   `loss_ratio`, `paid_claims`, `claim_frequency`, `decline_rate`,
   `incurred_claims`, and `claim_severity`.
@@ -59,7 +60,7 @@ Implemented today:
 
 Planned next:
 
-- Frontend implementation using the uploaded UI mockups.
+- Frontend polish against live backend responses and browser screenshots.
 - Large portfolio demo dataset and live Postgres performance checks.
 - Pilot-readiness mapping layer for a partner insurer schema.
 
@@ -132,6 +133,17 @@ uvicorn app.main:app --reload
 
 Then open `http://localhost:8000/docs`.
 
+Run the frontend locally.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Then open `http://127.0.0.1:5173`. Set `VITE_API_BASE_URL` if the backend runs
+somewhere other than `http://127.0.0.1:8000`.
+
 ## Repository Layout
 
 ```text
@@ -165,11 +177,16 @@ vellum-nlq/
 |       |-- redteam/
 |       |-- golden/
 |       `-- unit/
+|-- frontend/
+|   |-- src/
+|   |   |-- components/
+|   |   |-- api.ts
+|   |   `-- App.tsx
 `-- Makefile
 ```
 
-Frontend, integration tests, and production deployment are planned phases, not
-finished implementation.
+Live Postgres integration tests, large-data performance work, and production
+deployment are planned phases, not finished implementation.
 
 ## The Catalogue
 

@@ -14,6 +14,7 @@ PIP         := $(PYTHON) -m pip
 PYTEST      := $(PYTHON) -m pytest
 COMPOSE     := docker compose
 BACKEND_DIR := backend
+FRONTEND_DIR := frontend
 CATALOGUE   := health-uk
 
 ifndef NO_COLOR
@@ -198,20 +199,20 @@ typecheck: ## Run mypy only
 # ----------------------------------------------------------------------------
 
 .PHONY: frontend-install
-frontend-install: ## Planned: install frontend dependencies
-	@echo "$(GREEN)Frontend is planned; no frontend package exists yet.$(RESET)"
+frontend-install: ## Install frontend dependencies
+	cd $(FRONTEND_DIR) && npm install
 
 .PHONY: frontend-dev
-frontend-dev: ## Planned: run frontend dev server
-	@echo "$(GREEN)Frontend is planned; no frontend dev server exists yet.$(RESET)"
+frontend-dev: ## Run the frontend dev server
+	cd $(FRONTEND_DIR) && npm run dev
 
 .PHONY: frontend-build
-frontend-build: ## Planned: build the frontend for production
-	@echo "$(GREEN)Frontend is planned; no frontend build exists yet.$(RESET)"
+frontend-build: ## Build the frontend for production
+	cd $(FRONTEND_DIR) && npm run build
 
 .PHONY: frontend-lint
-frontend-lint: ## Planned: lint frontend TypeScript and React
-	@echo "$(GREEN)Frontend is planned; no frontend lint target exists yet.$(RESET)"
+frontend-lint: ## Type-check and build the frontend
+	cd $(FRONTEND_DIR) && npm run build
 
 # ----------------------------------------------------------------------------
 # Setup
@@ -252,7 +253,7 @@ demo-questions: ## Print the canonical demo questions
 # ----------------------------------------------------------------------------
 
 .PHONY: ci
-ci: lint test-all ## Run the implemented CI pipeline locally
+ci: lint test-all frontend-build ## Run the implemented CI pipeline locally
 	@echo "$(GREEN)CI pipeline passed.$(RESET)"
 
 .PHONY: ci-quick

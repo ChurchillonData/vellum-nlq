@@ -1,0 +1,149 @@
+import type { AskResponse, Metric } from "./types";
+
+export const demoQuestions = [
+  "What was loss ratio for the Comprehensive plan tier in Q1 2026?",
+  "Show loss ratio by plan tier in Q1 2026.",
+  "Show paid claims by region for the last six months.",
+  "How are the claims numbers looking?",
+  "Drop all claims from the database."
+];
+
+export const demoAskResponse: AskResponse = {
+  status: "answer",
+  query_id: "q_demo_loss_ratio",
+  question: demoQuestions[0],
+  message: "Resolved to metric: loss_ratio.",
+  resolved_request: {
+    metric_id: "loss_ratio",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31",
+    plan_tier: "Comprehensive",
+    group_by: []
+  },
+  candidates: [
+    {
+      metric_id: "loss_ratio",
+      label: "Loss ratio",
+      confidence: 0.9,
+      reason: "synonym matched: incurred loss ratio"
+    }
+  ],
+  safety: null,
+  scope: null,
+  answer: {
+    query_id: "q_demo_loss_ratio",
+    metric_id: "loss_ratio",
+    answer: "Comprehensive plan tier loss ratio from 2026-01-01 to 2026-03-31 was 0.847 (84.7%).",
+    row_count: 1,
+    rows: [{ loss_ratio: 0.847 }],
+    sql: `WITH claim_totals AS (
+  SELECT claims.member_id, SUM(claims.net_incurred_amount) AS incurred_claims
+  FROM claims
+  JOIN members ON claims.member_id = members.id
+  JOIN plans ON members.plan_id = plans.id
+  WHERE claims.incurred_date BETWEEN %(start_date)s AND %(end_date)s
+    AND plans.plan_tier = %(plan_tier)s
+  GROUP BY claims.member_id
+)
+SELECT SUM(claim_totals.incurred_claims) / NULLIF(SUM(premium_totals.earned_premium), 0) AS loss_ratio
+FROM claim_totals
+JOIN premium_totals ON claim_totals.member_id = premium_totals.member_id;`,
+    parameters: {
+      start_date: "2026-01-01",
+      end_date: "2026-03-31",
+      plan_tier: "Comprehensive"
+    },
+    provenance: {
+      metric_id: "loss_ratio",
+      metric_label: "Loss ratio",
+      metric_version: "0.1.0",
+      metric_description: "Incurred claims divided by earned premium for the selected reporting slice.",
+      formula: "SUM(claims.net_incurred_amount) / NULLIF(SUM(premium.earned_amount), 0)",
+      time_anchor: "claims.incurred_date",
+      tables_used: ["claims", "members", "plans", "premium"],
+      joins_used: [
+        "claims.member_id = members.id",
+        "premium.member_id = members.id",
+        "members.plan_id = plans.id"
+      ],
+      result_shape: {
+        columns: ["loss_ratio"],
+        grain: "single_metric",
+        max_rows: 1
+      }
+    },
+    validation: {
+      passed: true,
+      rules_checked: [
+        "comments_absent",
+        "parseable_sql",
+        "single_statement",
+        "select_only",
+        "table_allowlist",
+        "column_allowlist",
+        "function_allowlist",
+        "join_allowlist",
+        "result_size_control"
+      ],
+      rejections: []
+    },
+    execution_mode: "local_demo"
+  }
+};
+
+export const demoMetrics: Metric[] = [
+  {
+    id: "loss_ratio",
+    label: "Loss ratio",
+    description: "Incurred claims divided by earned premium for the selected reporting slice.",
+    formula: {
+      numerator: "SUM(claims.net_incurred_amount)",
+      denominator: "SUM(premium.earned_amount)",
+      expression: "SUM(claims.net_incurred_amount) / NULLIF(SUM(premium.earned_amount), 0)"
+    },
+    required_tables: ["claims", "premium"],
+    time_anchor: "claims.incurred_date",
+    currency: null,
+    filters_default: ["claims.status != 'void'"],
+    synonyms: ["loss ratio", "incurred loss ratio"],
+    owner: "actuarial",
+    version: "0.1.0",
+    last_reviewed: "2026-05-22"
+  },
+  {
+    id: "paid_claims",
+    label: "Paid claims",
+    description: "Sum of claim line payments posted in the selected period.",
+    formula: {
+      numerator: "SUM(claim_lines.net_paid_amount)",
+      denominator: null,
+      expression: "SUM(claim_lines.net_paid_amount)"
+    },
+    required_tables: ["claim_lines"],
+    time_anchor: "claim_lines.paid_date",
+    currency: "GBP",
+    filters_default: [],
+    synonyms: ["paid claims", "claim payments"],
+    owner: "claims",
+    version: "0.1.0",
+    last_reviewed: "2026-05-22"
+  },
+  {
+    id: "claim_frequency",
+    label: "Claim frequency",
+    description: "Distinct claims per 1,000 member months.",
+    formula: {
+      numerator: "COUNT(DISTINCT claims.id)",
+      denominator: "SUM(enrolment_months.member_months)",
+      expression: "COUNT(DISTINCT claims.id) * 1000 / NULLIF(SUM(enrolment_months.member_months), 0)"
+    },
+    required_tables: ["claims", "enrolment_months"],
+    time_anchor: "claims.incurred_date",
+    currency: null,
+    filters_default: ["claims.status != 'void'"],
+    synonyms: ["claim frequency", "claims per member"],
+    owner: "actuarial",
+    version: "0.1.0",
+    last_reviewed: "2026-05-22"
+  }
+];
