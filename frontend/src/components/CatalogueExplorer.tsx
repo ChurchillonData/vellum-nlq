@@ -13,12 +13,13 @@ import {
   DashboardSpeed02Icon,
   FilterIcon,
   GitBranchIcon,
+  HierarchySquare04Icon,
+  LanguageSkillIcon,
   Layers01Icon,
   LockKeyIcon,
   PresentationLineChart01Icon,
   RefreshIcon,
   Search01Icon,
-  TagsIcon,
   TrendingUpDownIcon,
   UserCircleIcon,
   WalletCardsIcon
@@ -151,7 +152,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
               mono
               wide
             />
-            <CatalogueBlock icon={<Icon icon={TagsIcon} size={17} />} title="Synonyms" tone="amber" wide>
+            <CatalogueBlock icon={<Icon icon={LanguageSkillIcon} size={17} />} title="Synonyms" tone="amber" wide>
               <div className="synonym-preview">
                 <div className="catalogue-chip-row">
                   {getSynonyms(selectedMetric).map((synonym) => (
@@ -163,7 +164,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
                   onClick={() => setIsSynonymCardOpen((isOpen) => !isOpen)}
                   type="button"
                 >
-                  <Icon icon={TagsIcon} size={15} />
+                  <Icon icon={HierarchySquare04Icon} size={15} />
                   {isSynonymCardOpen ? "Hide map" : "View map"}
                 </button>
               </div>
