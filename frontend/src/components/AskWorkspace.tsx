@@ -2,6 +2,7 @@ import {
   AlertTriangle,
   BarChart3,
   BotMessageSquare,
+  Check,
   CircleSlash,
   HelpCircle,
   Play,
@@ -115,7 +116,7 @@ function WorkspaceState({
         <p className="section-label">Result summary</p>
         <div className="answer-card">
           <div className="answer-icon success">
-            <StraightCheck />
+            <Check size={32} strokeWidth={2.3} />
           </div>
           <div className="answer-content">
             <p className="answer-text">
@@ -188,14 +189,6 @@ function WorkspaceState({
       </div>
       <p>{askResult.message}</p>
     </section>
-  );
-}
-
-function StraightCheck() {
-  return (
-    <svg aria-hidden="true" fill="none" height="27" viewBox="0 0 32 27" width="32" xmlns="http://www.w3.org/2000/svg">
-      <path d="M4 14L12.2 22L28 4" stroke="currentColor" strokeLinecap="square" strokeLinejoin="miter" strokeWidth="3.4" />
-    </svg>
   );
 }
 
