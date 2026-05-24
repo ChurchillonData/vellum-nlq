@@ -1,20 +1,24 @@
 import {
   BarChart3,
+  BadgeCheck,
+  BookOpen,
   CalendarDays,
-  CheckCircle2,
   ChevronRight,
   ClipboardList,
+  Calculator,
   Copy,
   Database,
   Download,
   Filter,
+  Gauge,
   Layers3,
-  Link2,
   LockKeyhole,
+  Network,
   RefreshCw,
   Search,
   ShieldCheck,
-  Sparkles,
+  Tags,
+  TrendingUp,
   UserRound,
   WalletCards
 } from "lucide-react";
@@ -60,7 +64,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
       <section className="catalogue-hero">
         <div className="catalogue-primary-panel">
           <div className="catalogue-primary-header">
-            <span className="catalogue-large-icon">
+            <span className="catalogue-large-icon icon-tone-blue">
               <BarChart3 size={42} />
             </span>
             <div className="catalogue-title-copy">
@@ -77,36 +81,37 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
           </div>
 
           <div className="catalogue-detail-grid">
-            <CatalogueBlock title="Definition">{primaryMetric.description}</CatalogueBlock>
-            <CatalogueBlock title="Formula" wide>
+            <CatalogueBlock icon={<BookOpen size={17} />} title="Definition">{primaryMetric.description}</CatalogueBlock>
+            <CatalogueBlock icon={<Calculator size={17} />} title="Formula" tone="blue" wide>
               <div className="catalogue-code-strip">
                 <code>{primaryMetric.formula.expression}</code>
                 <Copy size={16} />
               </div>
             </CatalogueBlock>
-            <CatalogueMeta icon={<UserRound size={21} />} label="Owner" value={formatOwner(primaryMetric.owner)} />
-            <CatalogueMeta icon={<ShieldCheck size={21} />} label="Version" value={primaryMetric.version} mono />
+            <CatalogueMeta icon={<UserRound size={21} />} label="Owner" tone="teal" value={formatOwner(primaryMetric.owner)} />
+            <CatalogueMeta icon={<BadgeCheck size={21} />} label="Version" mono tone="violet" value={primaryMetric.version} />
             <CatalogueMeta
               icon={<CalendarDays size={21} />}
               label="Time anchor"
+              tone="blue"
               value={`${primaryMetric.time_anchor} (monthly aggregation)`}
               mono
             />
-            <CatalogueBlock title="Synonyms">
+            <CatalogueBlock icon={<Tags size={17} />} title="Synonyms" tone="amber">
               <div className="catalogue-chip-row">
                 {getSynonyms(primaryMetric).map((synonym) => (
                   <span className="catalogue-chip" key={synonym}>{synonym}</span>
                 ))}
               </div>
             </CatalogueBlock>
-            <CatalogueBlock title="Allowed dimensions" wide>
+            <CatalogueBlock icon={<Layers3 size={17} />} title="Allowed dimensions" tone="violet" wide>
               <div className="catalogue-chip-row">
                 {defaultDimensions.map((dimension) => (
                   <span className="catalogue-chip accent" key={dimension}>{dimension}</span>
                 ))}
               </div>
             </CatalogueBlock>
-            <CatalogueBlock title="Required joins (preview)" full icon={<Link2 size={17} />}>
+            <CatalogueBlock title="Required joins (preview)" full icon={<Network size={17} />} tone="blue">
               <div className="catalogue-code-strip muted">
                 <code>{formatJoinPreview(primaryMetric)}</code>
                 <Copy size={16} />
@@ -118,8 +123,8 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
         <aside className="catalogue-side-stack">
           <div className="catalogue-side-card">
             <div className="side-card-heading">
-              <span className="side-card-icon">
-                <Sparkles size={24} />
+              <span className="side-card-icon icon-tone-teal">
+                <TrendingUp size={24} />
               </span>
               <div>
                 <h2>{toTitleCase(spotlightMetric.label)}</h2>
@@ -141,7 +146,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
           </div>
 
           <div className="catalogue-about-card">
-            <span className="about-card-icon">
+            <span className="about-card-icon icon-tone-blue">
               <ClipboardList size={22} />
             </span>
             <h2>About the catalogue</h2>
@@ -212,7 +217,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
                   <td>
                     <span className="registry-name">
                       <span className="registry-metric-icon">
-                        {index % 2 === 0 ? <BarChart3 size={17} /> : <WalletCards size={17} />}
+                        {getMetricIcon(metric.id, index)}
                       </span>
                       {toTitleCase(metric.label)}
                     </span>
@@ -258,42 +263,64 @@ function CatalogueBlock({
   full = false,
   icon,
   title,
+  tone = "teal",
   wide = false
 }: {
   children: ReactNode;
   full?: boolean;
   icon?: ReactNode;
   title: string;
+  tone?: IconTone;
   wide?: boolean;
 }) {
   return (
     <div className={["catalogue-block", full ? "full" : "", wide ? "wide" : ""].filter(Boolean).join(" ")}>
-      <h2>{icon}{title}</h2>
+      <h2 className={`icon-label icon-tone-${tone}`}>{icon}{title}</h2>
       <div>{children}</div>
     </div>
   );
 }
 
+type IconTone = "amber" | "blue" | "teal" | "violet";
+
 function CatalogueMeta({
   icon,
   label,
   mono = false,
+  tone = "teal",
   value
 }: {
   icon: ReactNode;
   label: string;
   mono?: boolean;
+  tone?: IconTone;
   value: string;
 }) {
   return (
     <div className="catalogue-meta">
-      <span>{icon}</span>
+      <span className={`icon-tone-${tone}`}>{icon}</span>
       <div>
-        <h2>{label}</h2>
+        <h2 className={`icon-label icon-tone-${tone}`}>{label}</h2>
         <p className={mono ? "mono" : ""}>{value}</p>
       </div>
     </div>
   );
+}
+
+function getMetricIcon(metricId: string, index: number): ReactNode {
+  if (metricId.includes("loss")) {
+    return <Gauge size={17} />;
+  }
+
+  if (metricId.includes("paid")) {
+    return <WalletCards size={17} />;
+  }
+
+  if (metricId.includes("frequency")) {
+    return <TrendingUp size={17} />;
+  }
+
+  return index % 2 === 0 ? <BarChart3 size={17} /> : <Calculator size={17} />;
 }
 
 function findSpotlightMetric(metrics: Metric[], primaryMetric?: Metric): Metric {
@@ -317,7 +344,7 @@ function formatOwner(owner: string): string {
   const normalized = owner.trim();
 
   if (!normalized) {
-    return "Finance Analytics · J. Mercer";
+    return "Finance Analytics - J. Mercer";
   }
 
   if (normalized.length < 16) {
