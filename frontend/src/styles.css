@@ -266,7 +266,7 @@ button:disabled {
   background: #eff6ff;
   color: #1e3a8a;
   padding: 12px 14px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .query-area label,
@@ -278,7 +278,7 @@ button:disabled {
   display: block;
   margin-bottom: 24px;
   color: #475569;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -543,7 +543,7 @@ td {
 
 .state-card p {
   color: #243244;
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.7;
 }
 
@@ -668,7 +668,7 @@ td {
   background: #fff7e8;
   color: #344154;
   padding: 17px 18px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .panel-header,
@@ -706,7 +706,7 @@ td {
   background: #fff;
   color: var(--muted);
   padding: 7px 14px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   white-space: nowrap;
 }
@@ -735,7 +735,7 @@ td {
   gap: 18px;
   border-bottom: 1px solid var(--line);
   padding: 11px 0;
-  font-size: 16px;
+  font-size: 17px;
 }
 
 .metadata-row dt {
@@ -801,7 +801,7 @@ td {
 }
 
 .compact-meta {
-  font-size: 15px;
+  font-size: 16px;
   letter-spacing: 0;
 }
 
@@ -865,7 +865,7 @@ kbd {
   background: #fff;
   color: #334155;
   padding: 7px 12px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .sql-frame {
@@ -886,7 +886,7 @@ kbd {
   gap: 0;
   background: #0d1d31;
   color: #8ba2bd;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.58;
   padding: 14px 16px;
   user-select: none;
@@ -897,7 +897,7 @@ kbd {
 .sql-placeholder {
   margin: 0;
   overflow: auto;
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.58;
   white-space: pre;
 }
@@ -1115,7 +1115,7 @@ kbd {
 .metric-selector-menu strong {
   display: block;
   margin-bottom: 4px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .metric-selector-menu code {
@@ -1123,7 +1123,7 @@ kbd {
   background: transparent;
   color: #5b6b7f;
   padding: 0;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .metric-menu-icon {
@@ -1181,7 +1181,7 @@ kbd {
   align-items: center;
   gap: 8px;
   margin: 0 0 10px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1191,7 +1191,7 @@ kbd {
 .catalogue-meta p {
   margin: 0;
   color: #263449;
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.65;
 }
 
@@ -1266,7 +1266,7 @@ kbd {
   border-radius: 8px;
   background: #fffaf4;
   color: #172033;
-  font-size: 15px;
+  font-size: 16px;
   padding: 13px 14px;
 }
 
@@ -1314,7 +1314,7 @@ kbd {
   background: #fffaf4;
   color: #344458;
   padding: 7px 10px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .catalogue-chip.accent {
@@ -1342,7 +1342,7 @@ kbd {
   background: #fffaf4;
   color: #172033;
   padding: 7px 11px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -1375,7 +1375,7 @@ kbd {
   border-radius: 8px;
   background: rgba(255, 250, 244, 0.82);
   color: #3b4b60;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -1398,7 +1398,7 @@ kbd {
   background: rgba(255, 250, 244, 0.84);
   color: #263449;
   padding: 8px 10px;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.35;
 }
 
@@ -1424,7 +1424,7 @@ kbd {
 .side-card-heading h2 {
   margin: 0 0 6px;
   color: #0d1b35;
-  font-size: 19px;
+  font-size: 20px;
 }
 
 .catalogue-side-card p {
@@ -1450,6 +1450,7 @@ kbd {
   border-radius: 8px;
   background: #fff;
   color: #29394e;
+  font-size: 16px;
   line-height: 1.55;
   padding: 13px 14px 13px 36px;
 }
@@ -1512,7 +1513,7 @@ kbd {
   background: #fff;
   color: var(--blue);
   padding: 5px 9px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -1562,13 +1563,13 @@ kbd {
 .registry-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .registry-table th {
   background: var(--blue-soft);
   color: #536273;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-align: left;
@@ -1634,7 +1635,7 @@ kbd {
   display: inline-flex;
   border-radius: 999px;
   padding: 5px 10px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -1663,7 +1664,7 @@ kbd {
   align-items: center;
   gap: 9px;
   color: #536273;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .catalogue-status-bar svg {
