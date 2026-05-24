@@ -1318,6 +1318,84 @@ kbd {
   font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 }
 
+.synonym-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.synonym-map-button {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: #172033;
+  padding: 7px 11px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.synonym-map-button svg {
+  color: var(--solid-amber);
+}
+
+.synonym-glass-card {
+  margin-top: 16px;
+  border: 1px solid rgba(190, 202, 218, 0.78);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(248, 251, 255, 0.68)),
+    rgba(255, 255, 255, 0.72);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.09);
+  backdrop-filter: blur(16px);
+  padding: 14px;
+}
+
+.synonym-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.synonym-tabs button {
+  min-height: 34px;
+  border: 1px solid rgba(201, 215, 234, 0.9);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #3b4b60;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.synonym-tabs button.active {
+  border-color: rgba(11, 104, 232, 0.72);
+  background: #fff;
+  color: var(--solid-blue);
+  box-shadow: 0 0 0 3px rgba(11, 104, 232, 0.1);
+}
+
+.synonym-term-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.synonym-term-grid span {
+  border: 1px solid rgba(217, 226, 238, 0.88);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #263449;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
 .catalogue-side-stack {
   display: grid;
   align-content: stretch;

@@ -34,17 +34,29 @@ type CatalogueExplorerProps = {
   metrics: Metric[];
 };
 
+type SynonymTab = "business" | "analyst" | "phrasing";
+
+type SynonymGroup = {
+  id: SynonymTab;
+  label: string;
+  terms: string[];
+};
+
 const defaultDimensions = ["plan_tier", "treatment_category", "month", "region"];
 
 export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
   const [isMetricMenuOpen, setIsMetricMenuOpen] = useState(false);
+  const [isSynonymCardOpen, setIsSynonymCardOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedId, setSelectedId] = useState("loss_ratio");
+  const [synonymTab, setSynonymTab] = useState<SynonymTab>("business");
   const selectedMetric = useMemo(
     () => metrics.find((metric) => metric.id === selectedId) ?? metrics.find((metric) => metric.id === "loss_ratio") ?? metrics[0],
     [metrics, selectedId]
   );
   const insights = useMemo(() => getMetricInsights(selectedMetric), [selectedMetric]);
+  const synonymGroups = useMemo(() => getSynonymGroups(selectedMetric), [selectedMetric]);
+  const activeSynonymGroup = synonymGroups.find((group) => group.id === synonymTab) ?? synonymGroups[0];
   const filteredMetrics = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
 
@@ -96,6 +108,8 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
                           onClick={() => {
                             setSelectedId(metric.id);
                             setIsMetricMenuOpen(false);
+                            setIsSynonymCardOpen(false);
+                            setSynonymTab("business");
                           }}
                           role="option"
                           type="button"
@@ -138,11 +152,44 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
               wide
             />
             <CatalogueBlock icon={<Icon icon={TagsIcon} size={17} />} title="Synonyms" tone="amber" wide>
-              <div className="catalogue-chip-row">
-                {getSynonyms(selectedMetric).map((synonym) => (
-                  <span className="catalogue-chip" key={synonym}>{synonym}</span>
-                ))}
+              <div className="synonym-preview">
+                <div className="catalogue-chip-row">
+                  {getSynonyms(selectedMetric).map((synonym) => (
+                    <span className="catalogue-chip" key={synonym}>{synonym}</span>
+                  ))}
+                </div>
+                <button
+                  className="synonym-map-button"
+                  onClick={() => setIsSynonymCardOpen((isOpen) => !isOpen)}
+                  type="button"
+                >
+                  <Icon icon={TagsIcon} size={15} />
+                  {isSynonymCardOpen ? "Hide map" : "View map"}
+                </button>
               </div>
+              {isSynonymCardOpen ? (
+                <div className="synonym-glass-card">
+                  <div className="synonym-tabs" role="tablist">
+                    {synonymGroups.map((group) => (
+                      <button
+                        aria-selected={group.id === activeSynonymGroup.id}
+                        className={group.id === activeSynonymGroup.id ? "active" : ""}
+                        key={group.id}
+                        onClick={() => setSynonymTab(group.id)}
+                        role="tab"
+                        type="button"
+                      >
+                        {group.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="synonym-term-grid" role="tabpanel">
+                    {activeSynonymGroup.terms.map((term) => (
+                      <span key={term}>{term}</span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </CatalogueBlock>
             <CatalogueBlock icon={<Icon icon={Layers01Icon} size={17} />} title="Allowed dimensions" tone="violet" wide>
               <div className="catalogue-chip-row">
@@ -227,7 +274,11 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
                 <tr
                   className={metric.id === selectedMetric.id ? "selected" : ""}
                   key={metric.id}
-                  onClick={() => setSelectedId(metric.id)}
+                  onClick={() => {
+                    setSelectedId(metric.id);
+                    setIsSynonymCardOpen(false);
+                    setSynonymTab("business");
+                  }}
                 >
                   <td>
                     <span className="registry-name">
@@ -407,6 +458,165 @@ function getMetricInsights(metric: Metric): string[] {
     "Best grouped by plan tier, month, region, or treatment category.",
     "Uses incurred date, so it is suited to underwriting and actuarial views.",
     "Sensitive to late claims and premium alignment across the same period."
+  ];
+}
+
+function getSynonymGroups(metric: Metric): SynonymGroup[] {
+  if (metric.id === "paid_claims") {
+    return [
+      {
+        id: "business",
+        label: "Business terms",
+        terms: [
+          "paid claims",
+          "claims paid",
+          "claim payments",
+          "settled claims",
+          "paid loss",
+          "claims payout",
+          "payment volume",
+          "benefit payments",
+          "reimbursed claims",
+          "cash claims"
+        ]
+      },
+      {
+        id: "analyst",
+        label: "Analyst language",
+        terms: [
+          "net paid amount",
+          "paid claim amount",
+          "claim line payments",
+          "posted payments",
+          "paid loss amount",
+          "settlement value",
+          "paid date total",
+          "claims cash flow",
+          "net claim paid",
+          "payment run total"
+        ]
+      },
+      {
+        id: "phrasing",
+        label: "User phrasing",
+        terms: [
+          "how much did we pay in claims",
+          "show claims paid",
+          "total payouts last month",
+          "claims money paid out",
+          "what did claims cost in cash",
+          "payments by region",
+          "settled claims by plan",
+          "claims paid over time",
+          "how much was reimbursed",
+          "paid claims trend"
+        ]
+      }
+    ];
+  }
+
+  if (metric.id === "claim_frequency") {
+    return [
+      {
+        id: "business",
+        label: "Business terms",
+        terms: [
+          "claim frequency",
+          "claims per member",
+          "claim rate",
+          "utilisation rate",
+          "claims incidence",
+          "member claim activity",
+          "claim volume rate",
+          "claims usage",
+          "service utilisation",
+          "claim count rate"
+        ]
+      },
+      {
+        id: "analyst",
+        label: "Analyst language",
+        terms: [
+          "claims per 1,000 member months",
+          "distinct claims per exposure",
+          "claim count normalized",
+          "incidence per member month",
+          "member-month frequency",
+          "utilisation per exposure",
+          "frequency numerator",
+          "exposure adjusted claims",
+          "claim density",
+          "normalized claim volume"
+        ]
+      },
+      {
+        id: "phrasing",
+        label: "User phrasing",
+        terms: [
+          "how often are members claiming",
+          "claims per member this quarter",
+          "are people claiming more",
+          "claim activity by region",
+          "usage by plan tier",
+          "how frequent are claims",
+          "member claims trend",
+          "claims volume per member",
+          "where is utilisation rising",
+          "claim frequency by month"
+        ]
+      }
+    ];
+  }
+
+  return [
+    {
+      id: "business",
+      label: "Business terms",
+      terms: [
+        "loss ratio",
+        "loss rate",
+        "claims ratio",
+        "claims leverage",
+        "underwriting ratio",
+        "plan profitability",
+        "premium loss ratio",
+        "incurred loss ratio",
+        "claims to premium",
+        "medical loss ratio"
+      ]
+    },
+    {
+      id: "analyst",
+      label: "Analyst language",
+      terms: [
+        "incurred claims over earned premium",
+        "net incurred divided by premium",
+        "claims-to-premium ratio",
+        "incurred loss over premium",
+        "premium adequacy ratio",
+        "loss ratio KPI",
+        "financial KPI loss ratio",
+        "claims cost ratio",
+        "earned premium denominator",
+        "incurred amount numerator"
+      ]
+    },
+    {
+      id: "phrasing",
+      label: "User phrasing",
+      terms: [
+        "how profitable was the plan",
+        "claims compared to premium",
+        "did premiums cover claims",
+        "loss ratio by plan tier",
+        "claims versus premium",
+        "how much premium was used by claims",
+        "which plan has high losses",
+        "underwriting performance by month",
+        "show loss rate for Q1",
+        "how is claims leverage trending"
+      ]
+    }
   ];
 }
 
