@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { formatSafetyReason, getDisplayRuleId } from "../safetyDisplay";
 import type { AskResponse, Metric } from "../types";
 import { CleanCheck } from "./CleanCheck";
 import { ResultTable } from "./ResultTable";
@@ -201,10 +202,9 @@ function WorkspaceState({
             <ShieldAlert size={25} />
           </span>
           <code>
-            <span>
-              Safety rule fired: <strong>{askResult.safety?.rule_id}</strong>
-            </span>
-            <span className="safety-rule-reason">- {askResult.safety?.reason}</span>
+            Safety rule fired: <strong>{getDisplayRuleId(askResult.safety?.rule_id)}</strong>
+            <span className="safety-rule-separator">·</span>
+            {formatSafetyReason(askResult.safety?.reason)}
           </code>
         </div>
       </section>

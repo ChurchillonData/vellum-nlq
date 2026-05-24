@@ -1,6 +1,7 @@
 import { AlertCircle, ClipboardList, Code2, Copy, Shield } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { formatSafetyReason, getDisplayRuleId } from "../safetyDisplay";
 import type { AskResponse, Metric } from "../types";
 import { CleanCheck } from "./CleanCheck";
 
@@ -130,8 +131,8 @@ function BlockedPanel({ askResult }: { askResult: AskResponse }) {
       </div>
 
       <dl className="metadata-list">
-        <MetaRow label="Rule ID" value={askResult.safety?.rule_id ?? "SQL_GUARD_07"} mono />
-        <MetaRow label="Reason" value={<BlockedReason reason={askResult.safety?.reason} />} mono />
+        <MetaRow label="Rule ID" value={getDisplayRuleId(askResult.safety?.rule_id)} mono />
+        <MetaRow label="Reason" value={formatSafetyReason(askResult.safety?.reason)} mono />
         <MetaRow label="Validation result" value="BLOCKED - 1 critical violation" tone="danger" />
         <MetaRow label="Query ID" value={askResult.query_id} mono />
         <MetaRow label="Latency" value="<1 ms (guard layer intercept)" mono />
@@ -143,22 +144,6 @@ Rule: DROP_DETECT - severity: CRITICAL - action: ABORT
 "DROP all claims" classified as malicious intent / data destruction
 No SQL compiled - read-only policy enforced.`}</pre>
     </aside>
-  );
-}
-
-function BlockedReason({ reason }: { reason?: string }) {
-  const text = reason ?? "Potential data loss";
-  const splitAt = text.lastIndexOf(" - ");
-
-  if (splitAt === -1) {
-    return <span>{text}</span>;
-  }
-
-  return (
-    <span className="blocked-reason">
-      <span>{text.slice(0, splitAt)}</span>
-      <span>- {text.slice(splitAt + 3)}</span>
-    </span>
   );
 }
 
