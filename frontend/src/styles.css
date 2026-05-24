@@ -982,7 +982,7 @@ kbd {
   display: grid;
   grid-template-columns: 74px minmax(0, 1fr) auto;
   gap: 20px;
-  align-items: start;
+  align-items: center;
   border-bottom: 1px solid var(--line);
   background: #fff;
   padding: 24px 28px;
