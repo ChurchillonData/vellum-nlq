@@ -928,6 +928,10 @@ kbd {
   color: #dcdcaa;
 }
 
+.sql-identifier {
+  color: #9cdcfe;
+}
+
 .sql-placeholder {
   border: 1px solid #d6e2f2;
   border-left: 4px solid var(--blue);
@@ -1258,6 +1262,34 @@ kbd {
   color: #172033;
   font-size: 15px;
   padding: 13px 14px;
+}
+
+.catalogue-code-strip.formula-sql {
+  border-color: #c9d7ea;
+  background: #f8fbff;
+  color: #172033;
+}
+
+.catalogue-code-strip.formula-sql code {
+  color: inherit;
+  white-space: normal;
+}
+
+.catalogue-code-strip.formula-sql svg {
+  color: #607086;
+}
+
+.catalogue-code-strip.formula-sql .sql-function {
+  color: #795e26;
+  font-weight: 700;
+}
+
+.catalogue-code-strip.formula-sql .sql-identifier {
+  color: #001080;
+}
+
+.catalogue-code-strip.formula-sql .sql-number {
+  color: #098658;
 }
 
 .catalogue-code-strip.muted {

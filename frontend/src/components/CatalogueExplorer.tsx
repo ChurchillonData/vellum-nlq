@@ -122,8 +122,8 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
           <div className="catalogue-detail-grid">
             <CatalogueBlock icon={<Icon icon={BookOpenTextIcon} size={17} />} title="Definition" wide>{selectedMetric.description}</CatalogueBlock>
             <CatalogueBlock icon={<Icon icon={Calculator01Icon} size={17} />} title="Formula" tone="blue" wide>
-              <div className="catalogue-code-strip">
-                <code>{selectedMetric.formula.expression}</code>
+              <div className="catalogue-code-strip formula-sql">
+                <code>{renderFormulaSql(selectedMetric.formula.expression)}</code>
                 <Icon icon={ClipboardCopyIcon} size={16} />
               </div>
             </CatalogueBlock>
@@ -350,6 +350,37 @@ function formatJoinPreview(metric: Metric): string {
   }
 
   return `${metric.required_tables.join(" -> ")} (approved join path)`;
+}
+
+function renderFormulaSql(expression: string): ReactNode[] {
+  const tokenPattern = /(SUM|AVG|COUNT|DISTINCT|NULLIF|MIN|MAX)|(\b\d+(?:\.\d+)?\b)|([a-z_]+\.[a-z_]+)/gi;
+  const nodes: ReactNode[] = [];
+  let lastIndex = 0;
+
+  for (const match of expression.matchAll(tokenPattern)) {
+    const token = match[0];
+    const index = match.index ?? 0;
+
+    if (index > lastIndex) {
+      nodes.push(expression.slice(lastIndex, index));
+    }
+
+    if (match[1]) {
+      nodes.push(<span className="sql-function" key={`${token}-${index}`}>{token}</span>);
+    } else if (match[2]) {
+      nodes.push(<span className="sql-number" key={`${token}-${index}`}>{token}</span>);
+    } else {
+      nodes.push(<span className="sql-identifier" key={`${token}-${index}`}>{token}</span>);
+    }
+
+    lastIndex = index + token.length;
+  }
+
+  if (lastIndex < expression.length) {
+    nodes.push(expression.slice(lastIndex));
+  }
+
+  return nodes;
 }
 
 function getMetricInsights(metric: Metric): string[] {
