@@ -6,10 +6,10 @@
   --line-soft: #eaf0f7;
   --text: #071529;
   --muted: #526173;
-  --teal: #16a085;
-  --teal-soft: #effcf8;
-  --teal-border: #a7e2d3;
-  --teal-hover: #e7f8f2;
+  --teal: #10b981;
+  --teal-soft: #ecfdf5;
+  --teal-border: #8ee8c4;
+  --teal-hover: #dffbec;
   --blue: #0b68e8;
   --blue-soft: #eef6ff;
   --amber: #d58a00;
@@ -291,7 +291,7 @@ button:disabled {
   gap: 18px;
   border: 1px solid var(--teal-border);
   border-radius: 8px;
-  background: #f3fbf8;
+  background: var(--teal-soft);
   color: var(--teal);
   padding: 20px 32px;
 }
