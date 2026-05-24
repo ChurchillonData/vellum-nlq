@@ -1024,7 +1024,7 @@ kbd {
   border-radius: 8px;
   background: #fff;
   color: #08152f;
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 800;
   line-height: 1.15;
   padding: 8px 40px 8px 12px;
@@ -1040,6 +1040,8 @@ kbd {
   max-width: 760px;
   margin: 10px 0 0;
   color: #44566c;
+  font-size: 17px;
+  line-height: 1.55;
 }
 
 .catalogue-approved {
@@ -1079,7 +1081,7 @@ kbd {
   align-items: center;
   gap: 8px;
   margin: 0 0 10px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1089,7 +1091,8 @@ kbd {
 .catalogue-meta p {
   margin: 0;
   color: #263449;
-  line-height: 1.6;
+  font-size: 16px;
+  line-height: 1.65;
 }
 
 .catalogue-meta {
@@ -1163,6 +1166,7 @@ kbd {
   border-radius: 8px;
   background: #fff;
   color: #172033;
+  font-size: 15px;
   padding: 13px 14px;
 }
 
@@ -1182,7 +1186,7 @@ kbd {
   background: #fff;
   color: #344458;
   padding: 7px 10px;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .catalogue-chip.accent {
