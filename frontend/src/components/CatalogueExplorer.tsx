@@ -112,7 +112,6 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
                   ) : null}
                 </div>
               </div>
-              <p>{selectedMetric.description}</p>
             </div>
             <span className="approved-pill catalogue-approved">
               <Icon icon={CheckmarkBadge02Icon} size={17} />
