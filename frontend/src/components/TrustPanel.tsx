@@ -165,7 +165,7 @@ function SqlBlock({ sql }: { sql: string }) {
     <div className="sql-status">
       <div className="sql-header">
         <span>
-          <Code2 size={18} />
+          <Code2 className="sql-generated-icon" size={24} />
           Generated SQL (parameterised)
         </span>
         <button

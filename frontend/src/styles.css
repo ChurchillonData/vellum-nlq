@@ -850,6 +850,10 @@ kbd {
   justify-content: flex-start;
 }
 
+.sql-generated-icon {
+  flex: 0 0 auto;
+}
+
 .icon-button {
   display: inline-flex;
   align-items: center;
