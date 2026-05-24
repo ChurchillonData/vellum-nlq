@@ -375,8 +375,7 @@ function getMetricInsights(metric: Metric): string[] {
   return [
     "Connects incurred claims to earned premium for a clear profitability signal.",
     "Best grouped by plan tier, month, region, or treatment category.",
-    "Uses incurred date, so it is suited to underwriting and actuarial views.",
-    "Sensitive to late claims and premium alignment across the same period."
+    "Uses incurred date, so it is suited to underwriting and actuarial views."
   ];
 }
 
