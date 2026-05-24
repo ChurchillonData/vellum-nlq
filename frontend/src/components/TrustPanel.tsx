@@ -31,7 +31,7 @@ export function TrustPanel({ askResult, metric }: TrustPanelProps) {
 function AnswerPanel({ askResult, metric }: TrustPanelProps) {
   const answer = askResult.answer;
   const validation = answer?.validation;
-  const joins = answer?.provenance.joins_used?.join("; ") ?? "claims -> premium (member_id)";
+  const joins = formatJoinDisplay(answer?.provenance.joins_used);
 
   return (
     <aside className="trust-panel">
@@ -41,7 +41,7 @@ function AnswerPanel({ askResult, metric }: TrustPanelProps) {
           Trust & transparency
         </h2>
         <span className="validation-pill ok">
-          <CheckCircle2 size={15} />
+          <span className="validation-check" aria-hidden="true">✓</span>
           validated
         </span>
       </div>
@@ -232,6 +232,16 @@ function highlightSqlLine(line: string): ReactNode[] {
 
     return part;
   });
+}
+
+function formatJoinDisplay(joins?: string[]) {
+  const joined = joins?.join("; ") ?? "claims -> premium (member_id)";
+
+  if (joined.includes("claims") && joined.includes("premium")) {
+    return "claims ⟕ premium (member_id)";
+  }
+
+  return joined.replace(/->|→/g, "⟕");
 }
 
 function MetaRow({

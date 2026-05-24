@@ -1,4 +1,4 @@
-import { CheckCircle2, Database } from "lucide-react";
+import { Database } from "lucide-react";
 
 type ActiveView = "ask" | "catalogue" | "audit";
 
@@ -35,10 +35,11 @@ export function TopBar({ activeView, onChangeView }: TopBarProps) {
         <span className="catalogue-pill">
           <Database size={16} />
           health-uk
+          <span className="active-dot" aria-hidden="true" />
           <strong>active</strong>
         </span>
         <span className="operational-pill">
-          <CheckCircle2 size={16} />
+          <span className="operational-check" aria-hidden="true">✓</span>
           operational
         </span>
       </div>
