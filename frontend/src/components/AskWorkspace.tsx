@@ -5,10 +5,12 @@ import {
   CircleSlash,
   HelpCircle,
   Play,
+  ShieldAlert,
   Sparkles,
   Users,
   WalletCards
 } from "lucide-react";
+import { useState } from "react";
 
 import type { AskResponse, Metric } from "../types";
 import { CleanCheck } from "./CleanCheck";
@@ -38,8 +40,10 @@ export function AskWorkspace({
 }: AskWorkspaceProps) {
   const isBlocked = askResult.status === "blocked";
   const isClarifying = askResult.status === "clarification_required";
+  const [showExamples, setShowExamples] = useState(false);
   const actionLabel = isBlocked ? "Blocked" : isClarifying ? "Clarify" : "Run";
   const ActionIcon = isBlocked ? CircleSlash : isClarifying ? Sparkles : Play;
+  const extraExamples = demoQuestions.slice(2);
 
   return (
     <main className="ask-layout">
@@ -71,27 +75,45 @@ export function AskWorkspace({
           </div>
 
           {!isBlocked && (
-            <div className="suggestion-row">
-              {[
-                { icon: <BarChart3 size={16} />, label: "loss ratio by plan tier", question: demoQuestions[1] },
-                {
-                  icon: <Users size={16} />,
-                  label: "average claim amount per member",
-                  question: "average claim amount per member"
-                },
-                { icon: <span className="suggestion-plus">+</span>, label: "More examples", question: demoQuestions[2] }
-              ].map((item) => (
+            <>
+              <div className="suggestion-row">
+                <button className="suggestion" onClick={() => onRun(demoQuestions[1])} type="button">
+                  <BarChart3 size={16} />
+                  loss ratio by plan tier
+                </button>
+                <button className="suggestion" onClick={() => onRun("average claim amount per member")} type="button">
+                  <Users size={16} />
+                  average claim amount per member
+                </button>
                 <button
+                  aria-expanded={showExamples}
                   className="suggestion"
-                  key={item.label}
-                  onClick={() => onRun(item.question)}
+                  onClick={() => setShowExamples((isOpen) => !isOpen)}
                   type="button"
                 >
-                  {item.icon}
-                  {item.label}
+                  <span className="suggestion-plus">{showExamples ? "-" : "+"}</span>
+                  More examples
                 </button>
-              ))}
-            </div>
+              </div>
+
+              {showExamples && (
+                <div className="more-examples">
+                  {extraExamples.map((item) => (
+                    <button
+                      className="example-option"
+                      key={item}
+                      onClick={() => {
+                        setShowExamples(false);
+                        onRun(item);
+                      }}
+                      type="button"
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -174,9 +196,14 @@ function WorkspaceState({
           Request refused
         </div>
         <p>{askResult.message}</p>
-        <code>
-          Safety rule fired: {askResult.safety?.rule_id} - {askResult.safety?.reason}
-        </code>
+        <div className="safety-rule-box">
+          <span className="safety-rule-icon" aria-hidden="true">
+            <ShieldAlert size={25} />
+          </span>
+          <code>
+            Safety rule fired: <strong>{askResult.safety?.rule_id}</strong> - {askResult.safety?.reason}
+          </code>
+        </div>
       </section>
     );
   }
