@@ -666,6 +666,22 @@ td {
   color: currentColor;
 }
 
+.validation-result-check {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--teal);
+  border-radius: 999px;
+  background: #effaf7;
+  color: var(--teal);
+}
+
+.validation-result-check .clean-check-sm {
+  transform: scale(0.72);
+}
+
 .normal-meta {
   font-weight: 400;
 }

@@ -56,7 +56,11 @@ function AnswerPanel({ askResult, metric }: TrustPanelProps) {
               ? `${validation.rules_checked.length} rules checked - no violations`
               : "pending"
           }
-          icon={<CleanCheck size="sm" />}
+          icon={
+            <span className="validation-result-check">
+              <CleanCheck size="sm" />
+            </span>
+          }
           tone="success"
         />
         <MetaRow label="Audit / Query ID" value={askResult.query_id} mono />
