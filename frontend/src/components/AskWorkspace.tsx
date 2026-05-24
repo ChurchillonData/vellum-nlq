@@ -201,7 +201,10 @@ function WorkspaceState({
             <ShieldAlert size={25} />
           </span>
           <code>
-            Safety rule fired: <strong>{askResult.safety?.rule_id}</strong> - {askResult.safety?.reason}
+            <span>
+              Safety rule fired: <strong>{askResult.safety?.rule_id}</strong>
+            </span>
+            <span className="safety-rule-reason">- {askResult.safety?.reason}</span>
           </code>
         </div>
       </section>

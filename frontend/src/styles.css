@@ -589,6 +589,19 @@ td {
   white-space: pre-wrap;
 }
 
+.safety-rule-reason,
+.blocked-reason span {
+  display: block;
+}
+
+.safety-rule-reason {
+  margin-top: 6px;
+}
+
+.blocked-reason span + span {
+  margin-top: 5px;
+}
+
 .safety-rule-box strong {
   color: #b45309;
 }
