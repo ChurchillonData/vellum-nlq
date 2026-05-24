@@ -168,7 +168,6 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
               </span>
               <div>
                 <h2>Insights</h2>
-                <code>{selectedMetric.id}</code>
               </div>
             </div>
             <ul className="insight-list">
@@ -375,7 +374,8 @@ function getMetricInsights(metric: Metric): string[] {
   return [
     "Connects incurred claims to earned premium for a clear profitability signal.",
     "Best grouped by plan tier, month, region, or treatment category.",
-    "Uses incurred date, so it is suited to underwriting and actuarial views."
+    "Uses incurred date, so it is suited to underwriting and actuarial views.",
+    "Sensitive to late claims and premium alignment across the same period."
   ];
 }
 
