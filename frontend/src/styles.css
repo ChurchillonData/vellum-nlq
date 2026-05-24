@@ -461,6 +461,10 @@ button:disabled {
   color: var(--blue);
 }
 
+.answer-text .answer-number {
+  color: #071529;
+}
+
 .table-frame {
   overflow-x: auto;
   border: 1px solid var(--line);
