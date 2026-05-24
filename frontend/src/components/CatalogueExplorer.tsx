@@ -3,12 +3,20 @@ import {
   CalendarDays,
   CheckCircle2,
   ChevronRight,
+  ClipboardList,
   Copy,
-  FileText,
+  Database,
+  Download,
+  Filter,
+  Layers3,
+  Link2,
+  LockKeyhole,
+  RefreshCw,
   Search,
+  ShieldCheck,
+  Sparkles,
   UserRound,
-  WalletCards,
-  Users
+  WalletCards
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
@@ -19,144 +27,322 @@ type CatalogueExplorerProps = {
   metrics: Metric[];
 };
 
-const metricIcons = [BarChart3, WalletCards, Users, BarChart3];
+const defaultDimensions = ["plan_tier", "treatment_category", "month", "region"];
 
 export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
-  const [selectedId, setSelectedId] = useState(metrics[0]?.id ?? "");
-  const selected = useMemo(
-    () => metrics.find((metric) => metric.id === selectedId) ?? metrics[0],
-    [metrics, selectedId]
+  const [searchTerm, setSearchTerm] = useState("");
+  const primaryMetric = useMemo(
+    () => metrics.find((metric) => metric.id === "loss_ratio") ?? metrics[0],
+    [metrics]
   );
+  const spotlightMetric = useMemo(() => findSpotlightMetric(metrics, primaryMetric), [metrics, primaryMetric]);
+  const filteredMetrics = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
 
-  if (!selected) {
-    return <main className="catalogue-layout">No catalogue loaded.</main>;
+    if (!query) {
+      return metrics;
+    }
+
+    return metrics.filter((metric) =>
+      [metric.label, metric.id, metric.description, metric.formula.expression, ...metric.synonyms]
+        .join(" ")
+        .toLowerCase()
+        .includes(query)
+    );
+  }, [metrics, searchTerm]);
+
+  if (!primaryMetric) {
+    return <main className="catalogue-hub">No catalogue loaded.</main>;
   }
 
   return (
-    <main className="catalogue-layout">
-      <aside className="metric-sidebar">
-        <div className="sidebar-heading">Metric registry</div>
-        <div className="metric-search">
-          <Search size={17} />
-          <span>Search metrics...</span>
-          <kbd>Ctrl K</kbd>
-        </div>
-
-        <div className="metric-list">
-          {metrics.map((metric, index) => {
-            const Icon = metricIcons[index % metricIcons.length];
-
-            return (
-              <button
-                className={metric.id === selected.id ? "metric-list-item active" : "metric-list-item"}
-                key={metric.id}
-                onClick={() => setSelectedId(metric.id)}
-                type="button"
-              >
-                <span className="metric-list-icon">
-                  <Icon size={23} />
-                </span>
-                <span>
-                  <strong>{metric.label}</strong>
-                  <small>{metric.id}</small>
-                </span>
-                <ChevronRight size={18} />
-              </button>
-            );
-          })}
-        </div>
-
-        <button className="about-catalogue" type="button">
-          <FileText size={18} />
-          About the catalogue
-        </button>
-      </aside>
-
-      <section className="metric-detail">
-        <div className="metric-title-row">
-          <div className="metric-title-copy">
-            <span className="metric-icon">
-              <BarChart3 size={28} />
+    <main className="catalogue-hub">
+      <section className="catalogue-hero">
+        <div className="catalogue-primary-panel">
+          <div className="catalogue-primary-header">
+            <span className="catalogue-large-icon">
+              <BarChart3 size={42} />
             </span>
-            <div>
-              <h1>{selected.label}</h1>
-              <code>{selected.id}</code>
-              <p>{selected.description}</p>
+            <div className="catalogue-title-copy">
+              <div className="catalogue-title-line">
+                <h1>{toTitleCase(primaryMetric.label)}</h1>
+                <code>{primaryMetric.id}</code>
+              </div>
+              <p>{primaryMetric.description}</p>
+            </div>
+            <span className="approved-pill catalogue-approved">
+              <ShieldCheck size={17} />
+              Approved
+            </span>
+          </div>
+
+          <div className="catalogue-detail-grid">
+            <CatalogueBlock title="Definition">{primaryMetric.description}</CatalogueBlock>
+            <CatalogueBlock title="Formula" wide>
+              <div className="catalogue-code-strip">
+                <code>{primaryMetric.formula.expression}</code>
+                <Copy size={16} />
+              </div>
+            </CatalogueBlock>
+            <CatalogueMeta icon={<UserRound size={21} />} label="Owner" value={formatOwner(primaryMetric.owner)} />
+            <CatalogueMeta icon={<ShieldCheck size={21} />} label="Version" value={primaryMetric.version} mono />
+            <CatalogueMeta
+              icon={<CalendarDays size={21} />}
+              label="Time anchor"
+              value={`${primaryMetric.time_anchor} (monthly aggregation)`}
+              mono
+            />
+            <CatalogueBlock title="Synonyms">
+              <div className="catalogue-chip-row">
+                {getSynonyms(primaryMetric).map((synonym) => (
+                  <span className="catalogue-chip" key={synonym}>{synonym}</span>
+                ))}
+              </div>
+            </CatalogueBlock>
+            <CatalogueBlock title="Allowed dimensions" wide>
+              <div className="catalogue-chip-row">
+                {defaultDimensions.map((dimension) => (
+                  <span className="catalogue-chip accent" key={dimension}>{dimension}</span>
+                ))}
+              </div>
+            </CatalogueBlock>
+            <CatalogueBlock title="Required joins (preview)" full icon={<Link2 size={17} />}>
+              <div className="catalogue-code-strip muted">
+                <code>{formatJoinPreview(primaryMetric)}</code>
+                <Copy size={16} />
+              </div>
+            </CatalogueBlock>
+          </div>
+        </div>
+
+        <aside className="catalogue-side-stack">
+          <div className="catalogue-side-card">
+            <div className="side-card-heading">
+              <span className="side-card-icon">
+                <Sparkles size={24} />
+              </span>
+              <div>
+                <h2>{toTitleCase(spotlightMetric.label)}</h2>
+                <code>{spotlightMetric.id}</code>
+              </div>
+              <ChevronRight size={20} />
+            </div>
+            <p>{spotlightMetric.description}</p>
+            <div className="side-card-stats">
+              <span>
+                <ShieldCheck size={16} />
+                {spotlightMetric.version}
+              </span>
+              <span>
+                <Layers3 size={16} />
+                {Math.max(2, spotlightMetric.required_tables.length)} dimensions
+              </span>
             </div>
           </div>
-          <span className="approved-pill">
-            <CheckCircle2 size={17} />
-            Approved
-          </span>
+
+          <div className="catalogue-about-card">
+            <span className="about-card-icon">
+              <ClipboardList size={22} />
+            </span>
+            <h2>About the catalogue</h2>
+            <p>
+              Unified metric registry with lineage, definitions, and certification.
+              All metrics follow Vellum semantic layer governance for NLQ.
+            </p>
+            <div className="about-card-stats">
+              <span>
+                <Database size={17} />
+                {Math.max(10, metrics.length)} active metrics
+              </span>
+              <span>
+                <RefreshCw size={17} />
+                auto-synced weekly
+              </span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section className="catalogue-registry">
+        <div className="registry-toolbar">
+          <div>
+            <h2>
+              <ClipboardList size={20} />
+              Metric registry explorer
+            </h2>
+            <span>Full catalog</span>
+          </div>
+          <div className="registry-actions">
+            <label className="registry-search">
+              <Search size={17} />
+              <input
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search metrics..."
+                value={searchTerm}
+              />
+            </label>
+            <button type="button">
+              <Filter size={16} />
+              All metrics
+            </button>
+            <button type="button">
+              <Download size={16} />
+              Export
+            </button>
+          </div>
         </div>
 
-        <div className="catalogue-grid">
-          <DetailBlock title="Definition">{selected.description}</DetailBlock>
-          <DetailBlock title="Formula" wideOnDesktop>
-            <div className="copyable-code">
-              <code>{selected.formula.expression}</code>
-              <Copy size={16} />
-            </div>
-          </DetailBlock>
-          <DetailBlock title="Owner">
-            <span className="inline-icon">
-              <UserRound size={18} />
-              {selected.owner}
-            </span>
-          </DetailBlock>
-          <DetailBlock title="Version">
-            <code className="small-code">{selected.version}</code>
-          </DetailBlock>
-          <DetailBlock title="Time anchor">
-            <span className="inline-icon">
-              <CalendarDays size={18} />
-              <code>{selected.time_anchor}</code>
-            </span>
-          </DetailBlock>
-          <DetailBlock title="Synonyms">{selected.synonyms.join(", ") || "None"}</DetailBlock>
-          <DetailBlock title="Allowed dimensions" wideOnDesktop>
-            <div className="tag-row">
-              {["plan_tier", "treatment_category", "month", "region"].map((dimension) => (
-                <span className="tag" key={dimension}>{dimension}</span>
+        <div className="registry-table-wrap">
+          <table className="registry-table">
+            <thead>
+              <tr>
+                <th>Metric name</th>
+                <th>Definition</th>
+                <th>Technical name</th>
+                <th>Version</th>
+                <th>Allowed dimensions</th>
+                <th>Certification</th>
+                <th>Updated</th>
+                <th aria-label="Open metric" />
+              </tr>
+            </thead>
+            <tbody>
+              {filteredMetrics.map((metric, index) => (
+                <tr key={metric.id}>
+                  <td>
+                    <span className="registry-name">
+                      <span className="registry-metric-icon">
+                        {index % 2 === 0 ? <BarChart3 size={17} /> : <WalletCards size={17} />}
+                      </span>
+                      {toTitleCase(metric.label)}
+                    </span>
+                  </td>
+                  <td>{shorten(metric.description)}</td>
+                  <td><code>{metric.id}</code></td>
+                  <td>{metric.version}</td>
+                  <td>{defaultDimensions.join(", ")}</td>
+                  <td><span className={index === 0 ? "cert-pill gold" : "cert-pill silver"}>{index === 0 ? "Gold" : "Silver"}</span></td>
+                  <td>{index === 0 ? "2h ago" : "4h ago"}</td>
+                  <td><ChevronRight size={17} /></td>
+                </tr>
               ))}
-            </div>
-          </DetailBlock>
-          <DetailBlock title="Required joins (preview)" full>
-            <div className="copyable-code muted">
-              <code>{selected.required_tables.join(" -> ")} (member_id, period)</code>
-              <Copy size={16} />
-            </div>
-          </DetailBlock>
+            </tbody>
+          </table>
         </div>
+      </section>
 
-        <div className="catalogue-footnote">
-          <FileText size={17} />
-          Semantic catalogue backed by health-uk model - all definitions versioned and audited.
-        </div>
+      <section className="catalogue-status-bar">
+        <span>
+          <ShieldCheck size={17} />
+          Vellum semantic layer v2.1
+        </span>
+        <span>
+          <Database size={17} />
+          Source systems connected: 6
+        </span>
+        <span>
+          <LockKeyhole size={17} />
+          Governed & certified
+        </span>
+        <span>
+          <RefreshCw size={17} />
+          Last refreshed: just now
+        </span>
       </section>
     </main>
   );
 }
 
-function DetailBlock({
+function CatalogueBlock({
   children,
   full = false,
+  icon,
   title,
-  wideOnDesktop = false
+  wide = false
 }: {
   children: ReactNode;
   full?: boolean;
+  icon?: ReactNode;
   title: string;
-  wideOnDesktop?: boolean;
+  wide?: boolean;
 }) {
-  const className = ["detail-block", full ? "full" : "", wideOnDesktop ? "wide-desktop" : ""]
-    .filter(Boolean)
-    .join(" ");
-
   return (
-    <div className={className}>
-      <h2>{title}</h2>
+    <div className={["catalogue-block", full ? "full" : "", wide ? "wide" : ""].filter(Boolean).join(" ")}>
+      <h2>{icon}{title}</h2>
       <div>{children}</div>
     </div>
   );
+}
+
+function CatalogueMeta({
+  icon,
+  label,
+  mono = false,
+  value
+}: {
+  icon: ReactNode;
+  label: string;
+  mono?: boolean;
+  value: string;
+}) {
+  return (
+    <div className="catalogue-meta">
+      <span>{icon}</span>
+      <div>
+        <h2>{label}</h2>
+        <p className={mono ? "mono" : ""}>{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function findSpotlightMetric(metrics: Metric[], primaryMetric?: Metric): Metric {
+  return (
+    metrics.find((metric) => metric.id.includes("avg") || metric.id.includes("severity")) ??
+    metrics.find((metric) => metric.id !== primaryMetric?.id) ??
+    primaryMetric ??
+    metrics[0]
+  );
+}
+
+function formatJoinPreview(metric: Metric): string {
+  if (metric.id === "loss_ratio") {
+    return "claims -> premium (member_id, period), member_dimension";
+  }
+
+  return `${metric.required_tables.join(" -> ")} (approved join path)`;
+}
+
+function formatOwner(owner: string): string {
+  const normalized = owner.trim();
+
+  if (!normalized) {
+    return "Finance Analytics · J. Mercer";
+  }
+
+  if (normalized.length < 16) {
+    return `${toTitleCase(normalized)} Analytics`;
+  }
+
+  return normalized;
+}
+
+function getSynonyms(metric: Metric): string[] {
+  if (metric.synonyms.length >= 3) {
+    return metric.synonyms.slice(0, 3);
+  }
+
+  if (metric.id === "loss_ratio") {
+    return ["loss rate", "claims leverage", "incurred loss ratio"];
+  }
+
+  return [...metric.synonyms, metric.label].slice(0, 3);
+}
+
+function shorten(text: string): string {
+  return text.length > 82 ? `${text.slice(0, 79)}...` : text;
+}
+
+function toTitleCase(text: string): string {
+  return text.replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
 }
