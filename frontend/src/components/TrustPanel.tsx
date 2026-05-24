@@ -6,6 +6,7 @@ import {
   Copy,
   Shield
 } from "lucide-react";
+import type { ReactNode } from "react";
 
 import type { AskResponse, Metric } from "../types";
 
@@ -167,10 +168,68 @@ function SqlBlock({ sql }: { sql: string }) {
             <span key={index}>{index + 1}</span>
           ))}
         </div>
-        <pre className="sql-block">{sql}</pre>
+        <pre className="sql-block">
+          {lines.map((line, index) => (
+            <span className="sql-line" key={`${line}-${index}`}>
+              {highlightSqlLine(line)}
+              {index < lines.length - 1 ? "\n" : ""}
+            </span>
+          ))}
+        </pre>
       </div>
     </div>
   );
+}
+
+const sqlKeywords = new Set([
+  "AND",
+  "AS",
+  "BETWEEN",
+  "BY",
+  "FROM",
+  "GROUP",
+  "JOIN",
+  "ON",
+  "SELECT",
+  "SUM",
+  "USING",
+  "WHERE",
+  "WITH"
+]);
+
+function highlightSqlLine(line: string): ReactNode[] {
+  const commentStart = line.indexOf("--");
+
+  if (commentStart === 0) {
+    return [<span className="sql-comment" key="comment">{line}</span>];
+  }
+
+  if (commentStart > 0) {
+    return [
+      ...highlightSqlLine(line.slice(0, commentStart)),
+      <span className="sql-comment" key="comment">{line.slice(commentStart)}</span>
+    ];
+  }
+
+  return line.split(/('[^']*'|\b\d+(?:\.\d+)?\b|\b[A-Za-z_][A-Za-z0-9_]*\b)/g).map((part, index) => {
+    if (!part) {
+      return part;
+    }
+
+    if (/^'[^']*'$/.test(part)) {
+      return <span className="sql-string" key={`${part}-${index}`}>{part}</span>;
+    }
+
+    if (/^\d+(?:\.\d+)?$/.test(part)) {
+      return <span className="sql-number" key={`${part}-${index}`}>{part}</span>;
+    }
+
+    if (sqlKeywords.has(part.toUpperCase())) {
+      return <span className="sql-keyword" key={`${part}-${index}`}>{part}</span>;
+    }
+
+    return part;
+  });
 }
 
 function MetaRow({

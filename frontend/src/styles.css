@@ -637,6 +637,27 @@ kbd {
   padding: 16px;
 }
 
+.sql-line {
+  display: inline;
+}
+
+.sql-comment {
+  color: #6fbd73;
+}
+
+.sql-keyword {
+  color: #c084fc;
+  font-weight: 700;
+}
+
+.sql-string {
+  color: #f6c66b;
+}
+
+.sql-number {
+  color: #7dd3fc;
+}
+
 .sql-placeholder {
   border: 1px solid #d6e2f2;
   border-left: 4px solid var(--blue);
