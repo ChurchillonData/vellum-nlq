@@ -104,7 +104,7 @@ button:disabled {
   background: transparent;
   color: #162236;
   font-size: 20px;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: 0;
   padding: 0 2px;
 }
@@ -142,8 +142,7 @@ button:disabled {
   display: grid;
   grid-template-columns: minmax(0, 57%) minmax(430px, 43%);
   min-height: calc(100vh - 72px);
-  max-width: 1600px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 .ask-main {
@@ -154,7 +153,7 @@ button:disabled {
 
 .trust-panel {
   background: var(--panel-soft);
-  padding: 40px 32px;
+  padding: 40px 24px 40px 32px;
 }
 
 .notice {
@@ -496,7 +495,7 @@ td {
   margin: 0;
   color: #071529;
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .panel-header h2 svg,
@@ -515,7 +514,7 @@ td {
   color: var(--muted);
   padding: 8px 20px;
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -547,6 +546,7 @@ td {
 
 .metadata-row dt {
   color: var(--muted);
+  font-weight: 400;
 }
 
 .metadata-row dd {
@@ -554,7 +554,7 @@ td {
   margin: 0;
   overflow-wrap: anywhere;
   color: var(--text);
-  font-weight: 650;
+  font-weight: 500;
 }
 
 .tone-success {
@@ -605,6 +605,7 @@ kbd {
   overflow: hidden;
   border-radius: 8px;
   background: var(--code);
+  width: 100%;
 }
 
 .line-numbers {
@@ -647,7 +648,7 @@ kbd {
 
 .sql-keyword {
   color: #c084fc;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .sql-string {
