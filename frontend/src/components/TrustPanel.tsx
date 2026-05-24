@@ -32,7 +32,7 @@ function AnswerPanel({ askResult, metric }: TrustPanelProps) {
           Trust & transparency
         </h2>
         <span className="validation-pill ok">
-          <span aria-hidden="true">{"\u2713"}</span>
+          <StraightCheck size={13} />
           validated
         </span>
       </div>
@@ -49,7 +49,7 @@ function AnswerPanel({ askResult, metric }: TrustPanelProps) {
               ? `${validation.rules_checked.length} rules checked - no violations`
               : "pending"
           }
-          icon={<span aria-hidden="true">{"\u2713"}</span>}
+          icon={<StraightCheck size={15} />}
           tone="success"
         />
         <MetaRow label="Audit / Query ID" value={askResult.query_id} mono />
@@ -262,6 +262,21 @@ function JoinBranchMark() {
       <circle cx="4" cy="3" fill="currentColor" r="1.8" />
       <circle cx="18" cy="8" fill="currentColor" r="1.8" />
       <circle cx="4" cy="13" fill="currentColor" r="1.8" />
+    </svg>
+  );
+}
+
+function StraightCheck({ size }: { size: number }) {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      height={size}
+      viewBox="0 0 14 13"
+      width={size + 1}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M2 6.6L5.35 10L12 2.4" stroke="currentColor" strokeLinecap="square" strokeLinejoin="miter" strokeWidth="2" />
     </svg>
   );
 }

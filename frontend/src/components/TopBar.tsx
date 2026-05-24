@@ -39,10 +39,20 @@ export function TopBar({ activeView, onChangeView }: TopBarProps) {
           <strong>active</strong>
         </span>
         <span className="operational-pill">
-          <span className="operational-check" aria-hidden="true">✓</span>
+          <span className="operational-check" aria-hidden="true">
+            <StraightCheck />
+          </span>
           operational
         </span>
       </div>
     </header>
+  );
+}
+
+function StraightCheck() {
+  return (
+    <svg fill="none" height="13" viewBox="0 0 14 13" width="14" xmlns="http://www.w3.org/2000/svg">
+      <path d="M2 6.6L5.35 10L12 2.4" stroke="currentColor" strokeLinecap="square" strokeLinejoin="miter" strokeWidth="2" />
+    </svg>
   );
 }
