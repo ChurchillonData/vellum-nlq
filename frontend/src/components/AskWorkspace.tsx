@@ -115,7 +115,7 @@ function WorkspaceState({
         <p className="section-label">Result summary</p>
         <div className="answer-card">
           <div className="answer-icon success">
-            <span className="answer-check" aria-hidden="true">✓</span>
+            <span aria-hidden="true">{"\u2713"}</span>
           </div>
           <div className="answer-content">
             <p className="answer-text">

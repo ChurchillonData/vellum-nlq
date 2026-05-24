@@ -1,12 +1,4 @@
-import {
-  AlertCircle,
-  CheckCircle2,
-  ClipboardList,
-  Code2,
-  Copy,
-  Info,
-  Shield
-} from "lucide-react";
+import { AlertCircle, ClipboardList, Code2, Copy, Info, Shield } from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { AskResponse, Metric } from "../types";
@@ -40,7 +32,7 @@ function AnswerPanel({ askResult, metric }: TrustPanelProps) {
           Trust & transparency
         </h2>
         <span className="validation-pill ok">
-          <span className="validation-check" aria-hidden="true">✓</span>
+          <span aria-hidden="true">{"\u2713"}</span>
           validated
         </span>
       </div>
@@ -57,7 +49,7 @@ function AnswerPanel({ askResult, metric }: TrustPanelProps) {
               ? `${validation.rules_checked.length} rules checked - no violations`
               : "pending"
           }
-          icon={<CheckCircle2 size={17} />}
+          icon={<span aria-hidden="true">{"\u2713"}</span>}
           tone="success"
         />
         <MetaRow label="Audit / Query ID" value={askResult.query_id} mono />
@@ -192,11 +184,12 @@ const sqlKeywords = new Set([
   "JOIN",
   "ON",
   "SELECT",
-  "SUM",
   "USING",
   "WHERE",
   "WITH"
 ]);
+
+const sqlFunctions = new Set(["COUNT", "SUM", "AVG", "MIN", "MAX", "NULLIF"]);
 
 function highlightSqlLine(line: string): ReactNode[] {
   const commentStart = line.indexOf("--");
@@ -229,6 +222,10 @@ function highlightSqlLine(line: string): ReactNode[] {
       return <span className="sql-keyword" key={`${part}-${index}`}>{part}</span>;
     }
 
+    if (sqlFunctions.has(part.toUpperCase())) {
+      return <span className="sql-function" key={`${part}-${index}`}>{part}</span>;
+    }
+
     return part;
   });
 }
@@ -240,14 +237,33 @@ function JoinDisplay({ joins }: { joins?: string[] }) {
     return (
       <span className="join-display">
         <span>claims</span>
-        <span className="join-branch" aria-label="left join">{"\u27D5"}</span>
+        <JoinBranchMark />
         <span>premium</span>
         <span className="join-key">(member_id)</span>
       </span>
     );
   }
 
-  return <span>{joined.replace(/->|→/g, "\u27D5")}</span>;
+  return <span>{joined.replace(/->|→/g, "⟕")}</span>;
+}
+
+function JoinBranchMark() {
+  return (
+    <svg
+      aria-label="left join"
+      className="join-branch-mark"
+      fill="none"
+      height="16"
+      viewBox="0 0 22 16"
+      width="22"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M4 3v10M4 8h14" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+      <circle cx="4" cy="3" fill="currentColor" r="1.8" />
+      <circle cx="18" cy="8" fill="currentColor" r="1.8" />
+      <circle cx="4" cy="13" fill="currentColor" r="1.8" />
+    </svg>
+  );
 }
 
 function MetaRow({
