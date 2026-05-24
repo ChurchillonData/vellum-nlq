@@ -950,11 +950,8 @@ kbd {
 
 .catalogue-hub {
   min-height: calc(100vh - 72px);
-  max-width: 1600px;
-  margin: 0 auto;
-  background:
-    radial-gradient(circle at 8% 12%, rgba(236, 253, 245, 0.84), transparent 28%),
-    linear-gradient(180deg, #f8fbff 0%, #f2f7fb 100%);
+  width: 100%;
+  background: var(--bg);
   padding: 32px 40px;
 }
 
@@ -969,10 +966,10 @@ kbd {
 .catalogue-about-card,
 .catalogue-registry,
 .catalogue-status-bar {
-  border: 1px solid #dbe8f0;
+  border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 18px 32px -28px rgba(15, 23, 42, 0.42);
+  background: #fff;
+  box-shadow: none;
 }
 
 .catalogue-primary-panel {
@@ -984,8 +981,8 @@ kbd {
   grid-template-columns: 92px minmax(0, 1fr) auto;
   gap: 22px;
   align-items: start;
-  border-bottom: 1px solid #dce8ef;
-  background: linear-gradient(135deg, #ecfdf5 0%, #fff 48%, #eef7ff 100%);
+  border-bottom: 1px solid var(--line);
+  background: #fff;
   padding: 30px;
 }
 
@@ -995,9 +992,9 @@ kbd {
   height: 88px;
   place-items: center;
   border-radius: 8px;
-  background: linear-gradient(135deg, #0f766e 0%, #0ea5e9 100%);
+  background: var(--blue);
   color: #fff;
-  box-shadow: 0 16px 28px -18px rgba(15, 118, 110, 0.9);
+  box-shadow: 0 14px 24px -18px rgba(11, 104, 232, 0.8);
 }
 
 .catalogue-title-copy {
@@ -1021,10 +1018,10 @@ kbd {
 .catalogue-title-line code,
 .side-card-heading code,
 .registry-table code {
-  border: 1px solid #dbe8f0;
+  border: 1px solid var(--line);
   border-radius: 7px;
-  background: #f8fafc;
-  color: #25645d;
+  background: var(--blue-soft);
+  color: var(--blue);
   padding: 5px 9px;
 }
 
@@ -1037,7 +1034,7 @@ kbd {
 .catalogue-approved {
   border-color: var(--teal-border);
   background: var(--teal-soft);
-  color: #087f5b;
+  color: var(--teal);
 }
 
 .catalogue-detail-grid {
@@ -1048,8 +1045,8 @@ kbd {
 .catalogue-block,
 .catalogue-meta {
   min-height: 112px;
-  border-right: 1px solid #e1eaf1;
-  border-bottom: 1px solid #e1eaf1;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
   padding: 24px;
 }
 
@@ -1067,7 +1064,7 @@ kbd {
   align-items: center;
   gap: 8px;
   margin: 0 0 12px;
-  color: #087f5b;
+  color: var(--teal);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -1108,8 +1105,8 @@ kbd {
   gap: 12px;
   border: 1px solid var(--teal-border);
   border-radius: 8px;
-  background: #f7fffb;
-  color: #0f766e;
+  background: var(--teal-soft);
+  color: var(--teal);
   padding: 13px 14px;
 }
 
@@ -1124,7 +1121,7 @@ kbd {
 }
 
 .catalogue-chip {
-  border: 1px solid #dbe8f0;
+  border: 1px solid var(--line);
   border-radius: 7px;
   background: #fff;
   color: #344458;
@@ -1135,7 +1132,7 @@ kbd {
 .catalogue-chip.accent {
   border-color: var(--teal-border);
   background: var(--teal-soft);
-  color: #087f5b;
+  color: var(--teal);
   font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 }
 
@@ -1178,7 +1175,7 @@ kbd {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin-top: 20px;
-  border-top: 1px solid #e1eaf1;
+  border-top: 1px solid var(--line);
   padding-top: 16px;
 }
 
@@ -1192,7 +1189,7 @@ kbd {
 }
 
 .catalogue-about-card {
-  background: linear-gradient(135deg, rgba(236, 253, 245, 0.86), rgba(239, 248, 255, 0.9));
+  background: var(--panel-soft);
 }
 
 .catalogue-registry {
@@ -1205,7 +1202,7 @@ kbd {
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  border-bottom: 1px solid #dbe8f0;
+  border-bottom: 1px solid var(--line);
   padding: 18px 22px;
 }
 
@@ -1222,7 +1219,7 @@ kbd {
   margin-left: 12px;
   border-radius: 7px;
   background: var(--teal-soft);
-  color: #087f5b;
+  color: var(--teal);
   padding: 5px 9px;
   font-size: 12px;
   font-weight: 700;
@@ -1240,7 +1237,7 @@ kbd {
   min-width: 240px;
   align-items: center;
   gap: 9px;
-  border: 1px solid #dbe8f0;
+  border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
   color: #708197;
@@ -1260,7 +1257,7 @@ kbd {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid #dbe8f0;
+  border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
   color: #2a3a50;
@@ -1278,7 +1275,7 @@ kbd {
 }
 
 .registry-table th {
-  background: #f1f6fa;
+  background: var(--blue-soft);
   color: #536273;
   font-size: 12px;
   font-weight: 800;
@@ -1289,7 +1286,7 @@ kbd {
 
 .registry-table th,
 .registry-table td {
-  border-bottom: 1px solid #e1eaf1;
+  border-bottom: 1px solid var(--line);
   padding: 14px 16px;
   vertical-align: middle;
 }
