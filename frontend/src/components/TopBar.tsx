@@ -1,4 +1,6 @@
-import { Check, Database } from "lucide-react";
+import { Database } from "lucide-react";
+
+import { CleanCheck } from "./CleanCheck";
 
 type ActiveView = "ask" | "catalogue" | "audit";
 
@@ -40,7 +42,7 @@ export function TopBar({ activeView, onChangeView }: TopBarProps) {
         </span>
         <span className="operational-pill">
           <span className="operational-check" aria-hidden="true">
-            <Check size={14} strokeWidth={2.5} />
+            <CleanCheck size="sm" />
           </span>
           operational
         </span>

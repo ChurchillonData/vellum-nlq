@@ -1,7 +1,8 @@
-import { AlertCircle, Check, ClipboardList, Code2, Copy, Shield } from "lucide-react";
+import { AlertCircle, ClipboardList, Code2, Copy, Shield } from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { AskResponse, Metric } from "../types";
+import { CleanCheck } from "./CleanCheck";
 
 type TrustPanelProps = {
   askResult: AskResponse;
@@ -32,7 +33,7 @@ function AnswerPanel({ askResult, metric }: TrustPanelProps) {
           Trust & transparency
         </h2>
         <span className="validation-pill ok">
-          <Check size={15} strokeWidth={2.2} />
+          <CleanCheck size="sm" />
           validated
         </span>
       </div>
@@ -55,7 +56,7 @@ function AnswerPanel({ askResult, metric }: TrustPanelProps) {
               ? `${validation.rules_checked.length} rules checked - no violations`
               : "pending"
           }
-          icon={<Check size={17} strokeWidth={2.2} />}
+          icon={<CleanCheck size="sm" />}
           tone="success"
         />
         <MetaRow label="Audit / Query ID" value={askResult.query_id} mono />

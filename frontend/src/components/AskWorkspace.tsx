@@ -2,7 +2,6 @@ import {
   AlertTriangle,
   BarChart3,
   BotMessageSquare,
-  Check,
   CircleSlash,
   HelpCircle,
   Play,
@@ -12,6 +11,7 @@ import {
 } from "lucide-react";
 
 import type { AskResponse, Metric } from "../types";
+import { CleanCheck } from "./CleanCheck";
 import { ResultTable } from "./ResultTable";
 import { TrustPanel } from "./TrustPanel";
 
@@ -116,7 +116,7 @@ function WorkspaceState({
         <p className="section-label">Result summary</p>
         <div className="answer-card">
           <div className="answer-icon success">
-            <Check size={32} strokeWidth={2.3} />
+            <CleanCheck size="lg" />
           </div>
           <div className="answer-content">
             <p className="answer-text">

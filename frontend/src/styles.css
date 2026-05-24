@@ -156,6 +156,76 @@ button:disabled {
   color: #fff;
 }
 
+.clean-check {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 16px;
+  height: 12px;
+}
+
+.clean-check::before,
+.clean-check::after {
+  position: absolute;
+  display: block;
+  height: 2px;
+  background: currentColor;
+  content: "";
+  transform-origin: left center;
+}
+
+.clean-check::before {
+  width: 6px;
+  left: 1px;
+  top: 6px;
+  transform: rotate(45deg);
+}
+
+.clean-check::after {
+  width: 13px;
+  left: 5px;
+  top: 10px;
+  transform: rotate(-45deg);
+}
+
+.clean-check-sm {
+  width: 13px;
+  height: 10px;
+}
+
+.clean-check-sm::before {
+  width: 5px;
+  top: 5px;
+}
+
+.clean-check-sm::after {
+  width: 10px;
+  left: 4px;
+  top: 8px;
+}
+
+.clean-check-lg {
+  width: 32px;
+  height: 24px;
+}
+
+.clean-check-lg::before,
+.clean-check-lg::after {
+  height: 3px;
+}
+
+.clean-check-lg::before {
+  width: 12px;
+  left: 3px;
+  top: 12px;
+}
+
+.clean-check-lg::after {
+  width: 24px;
+  left: 12px;
+  top: 20px;
+}
+
 .ask-layout {
   display: grid;
   grid-template-columns: minmax(0, 57%) minmax(430px, 43%);
