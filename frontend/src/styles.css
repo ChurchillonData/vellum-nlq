@@ -15,7 +15,7 @@
   --blue: #0b68e8;
   --blue-soft: #f1f4f8;
   --amber: #d58a00;
-  --amber-soft: #faf4e8;
+  --amber-soft: #f6f4ee;
   --red: #b42318;
   --red-soft: #fff4f2;
   --code: #071426;
@@ -421,7 +421,7 @@ button:disabled {
 .state-card {
   border: 1px solid #cfe0f4;
   border-radius: 8px;
-  background: #fff7ec;
+  background: var(--panel);
   padding: 32px;
 }
 
@@ -1034,7 +1034,7 @@ kbd {
 .registry-table code {
   border: 1px solid var(--line);
   border-radius: 7px;
-  background: #fffaf4;
+  background: var(--panel);
   color: var(--blue);
   padding: 5px 9px;
 }
@@ -1060,7 +1060,7 @@ kbd {
   gap: 9px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fffaf4;
+  background: var(--panel);
   color: var(--blue);
   padding: 5px 10px 5px 12px;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
@@ -1154,7 +1154,7 @@ kbd {
 
 .catalogue-approved {
   border-color: var(--teal-border);
-  background: #fffaf4;
+  background: var(--panel);
   color: var(--teal);
 }
 
@@ -1272,7 +1272,7 @@ kbd {
   gap: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fffaf4;
+  background: var(--panel);
   color: #172033;
   font-size: 16px;
   padding: 13px 14px;
@@ -1280,7 +1280,7 @@ kbd {
 
 .catalogue-code-strip.formula-sql {
   border-color: #c9d7ea;
-  background: #fffaf4;
+  background: var(--panel);
   color: #172033;
 }
 
@@ -1319,7 +1319,7 @@ kbd {
 .catalogue-chip {
   border: 1px solid var(--line);
   border-radius: 7px;
-  background: #fffaf4;
+  background: var(--panel);
   color: #344458;
   padding: 7px 10px;
   font-size: 15px;
@@ -1327,7 +1327,7 @@ kbd {
 
 .catalogue-chip.accent {
   border-color: var(--line);
-  background: #fffaf4;
+  background: var(--panel);
   color: var(--blue);
   font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 }
@@ -1347,7 +1347,7 @@ kbd {
   gap: 8px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fffaf4;
+  background: var(--panel);
   color: #172033;
   padding: 7px 11px;
   font-size: 14px;
@@ -1363,8 +1363,8 @@ kbd {
   border: 1px solid rgba(190, 202, 218, 0.78);
   border-radius: 8px;
   background:
-    linear-gradient(135deg, rgba(255, 248, 239, 0.86), rgba(250, 239, 226, 0.72)),
-    rgba(255, 248, 239, 0.72);
+    linear-gradient(135deg, rgba(253, 253, 251, 0.9), rgba(246, 246, 242, 0.76)),
+    rgba(253, 253, 251, 0.74);
   box-shadow: 0 18px 36px rgba(15, 23, 42, 0.09);
   backdrop-filter: blur(16px);
   padding: 14px;
@@ -1381,7 +1381,7 @@ kbd {
   min-height: 34px;
   border: 1px solid rgba(201, 215, 234, 0.9);
   border-radius: 8px;
-  background: rgba(255, 250, 244, 0.82);
+  background: rgba(253, 253, 251, 0.86);
   color: #3b4b60;
   font-size: 13px;
   font-weight: 800;
@@ -1389,7 +1389,7 @@ kbd {
 
 .synonym-tabs button.active {
   border-color: rgba(11, 104, 232, 0.72);
-  background: #fffaf4;
+  background: var(--panel);
   color: var(--solid-blue);
   box-shadow: 0 0 0 3px rgba(11, 104, 232, 0.1);
 }
@@ -1403,7 +1403,7 @@ kbd {
 .synonym-term-grid span {
   border: 1px solid rgba(217, 226, 238, 0.88);
   border-radius: 7px;
-  background: rgba(255, 250, 244, 0.84);
+  background: rgba(253, 253, 251, 0.88);
   color: #263449;
   padding: 8px 10px;
   font-size: 14px;
@@ -1539,7 +1539,7 @@ kbd {
   gap: 9px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fffaf4;
+  background: var(--panel);
   color: #708197;
   padding: 0 12px;
 }
@@ -1559,7 +1559,7 @@ kbd {
   gap: 8px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fffaf4;
+  background: var(--panel);
   color: #2a3a50;
   padding: 10px 13px;
 }
