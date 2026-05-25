@@ -1,11 +1,11 @@
 @import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800,900&display=swap");
 
 :root {
-  --bg: #fbf7f2;
-  --panel: #fffdf9;
-  --panel-soft: #fbf5ed;
-  --line: #e8dacb;
-  --line-soft: #f1e7dc;
+  --bg: #f7f7f4;
+  --panel: #fdfdfb;
+  --panel-soft: #f6f6f2;
+  --line: #deded7;
+  --line-soft: #ecece6;
   --text: #071529;
   --muted: #526173;
   --teal: #10b981;
@@ -13,9 +13,9 @@
   --teal-border: #8ee8c4;
   --teal-hover: #dffbec;
   --blue: #0b68e8;
-  --blue-soft: #fbf1e7;
+  --blue-soft: #f1f4f8;
   --amber: #d58a00;
-  --amber-soft: #fff3df;
+  --amber-soft: #faf4e8;
   --red: #b42318;
   --red-soft: #fff4f2;
   --code: #071426;
@@ -38,7 +38,7 @@
 body {
   margin: 0;
   min-width: 320px;
-  background: linear-gradient(180deg, #fbf7f2 0%, #fffaf4 46%, #fbf5ed 100%);
+  background: #f7f7f4;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
 }
@@ -58,7 +58,7 @@ button:disabled {
 
 .app-shell {
   min-height: 100vh;
-  background: linear-gradient(180deg, #fbf7f2 0%, #fffaf4 46%, #fbf5ed 100%);
+  background: #f7f7f4;
 }
 
 .top-bar {
@@ -71,7 +71,7 @@ button:disabled {
   justify-content: space-between;
   gap: 32px;
   border-bottom: 1px solid var(--line);
-  background: rgba(255, 253, 249, 0.97);
+  background: rgba(253, 253, 251, 0.97);
   padding: 0 40px;
 }
 
@@ -975,7 +975,7 @@ kbd {
 .catalogue-hub {
   min-height: calc(100vh - 72px);
   width: 100%;
-  background: linear-gradient(180deg, #fbf7f2 0%, #fffaf4 48%, #fbf5ed 100%);
+  background: #f7f7f4;
   padding: 40px 48px;
 }
 
