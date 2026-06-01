@@ -120,6 +120,10 @@ db-shell-seed: ## Open a psql shell with the seed-data role
 db-shell-admin: ## Open a psql shell with admin privileges
 	$(COMPOSE) exec postgres psql -U vellum_admin -d vellum
 
+.PHONY: db-check
+db-check: ## Check local Postgres URLs and roles before seeding/execution
+	cd $(BACKEND_DIR) && $(PYTHON) -m app.dbcheck
+
 # ----------------------------------------------------------------------------
 # Catalogue
 # ----------------------------------------------------------------------------

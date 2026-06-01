@@ -227,3 +227,5 @@ Current frontend slice:
 - The synthetic seed loader now supports a portfolio profile of 200,000 members
   across 18 months, loaded in chunks so large demo preparation does not require
   building the full dataset in memory at once.
+- A `make db-check` readiness command validates admin, seeder, read-only, and
+  audit Postgres role connections before local or portfolio seeding begins.

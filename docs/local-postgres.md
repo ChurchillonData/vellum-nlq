@@ -31,11 +31,16 @@ Useful commands:
 ```bash
 make up-detached
 make migrate
+make db-check
 make seed-data
 make db-shell
 make db-shell-admin
 make db-shell-seed
 ```
+
+Run `make db-check` before portfolio seeding. It verifies the admin, seeder,
+read-only, and audit connection URLs separately, so password or role mistakes
+show up before a large load begins.
 
 ## Connection URLs
 
