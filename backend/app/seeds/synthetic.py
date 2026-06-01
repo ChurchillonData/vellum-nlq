@@ -27,19 +27,28 @@ def build_seed_data(
     member_count: int,
     month_count: int = 18,
     start_month: date = date(2025, 1, 1),
+    start_member_index: int = 0,
+    include_reference_data: bool = True,
 ) -> SeedData:
     """Build deterministic UK PMI-shaped data for local development."""
     if member_count < 1:
         raise ValueError("member_count must be at least 1")
     if month_count < 1:
         raise ValueError("month_count must be at least 1")
+    if start_member_index < 0:
+        raise ValueError("start_member_index must be at least 0")
 
-    data = SeedData(plans=_plan_rows(), providers=_provider_rows())
+    reference_plans = _plan_rows()
+    reference_providers = _provider_rows()
+    data = SeedData(
+        plans=reference_plans if include_reference_data else [],
+        providers=reference_providers if include_reference_data else [],
+    )
     coverage_months = _coverage_months(start_month, month_count)
 
-    for member_index in range(member_count):
+    for member_index in range(start_member_index, start_member_index + member_count):
         member_id = _row_id("member", member_index)
-        plan = data.plans[member_index % len(data.plans)]
+        plan = reference_plans[member_index % len(reference_plans)]
         data.members.append(_member_row(member_id, plan["id"], member_index, start_month))
 
         for coverage_month in coverage_months:
@@ -62,11 +71,25 @@ def build_seed_data(
 
         if member_index % 4 == 0:
             incurred_month = coverage_months[(member_index + 8) % len(coverage_months)]
-            _append_claim_rows(data, member_id, member_index, incurred_month, claim_number=1)
+            _append_claim_rows(
+                data,
+                reference_providers,
+                member_id,
+                member_index,
+                incurred_month,
+                claim_number=1,
+            )
 
         if member_index % 15 == 0:
             incurred_month = coverage_months[(member_index + 3) % len(coverage_months)]
-            _append_claim_rows(data, member_id, member_index, incurred_month, claim_number=2)
+            _append_claim_rows(
+                data,
+                reference_providers,
+                member_id,
+                member_index,
+                incurred_month,
+                claim_number=2,
+            )
 
     return data
 
@@ -131,6 +154,7 @@ def _member_row(member_id: UUID, plan_id: object, member_index: int, start_month
 
 def _append_claim_rows(
     data: SeedData,
+    providers: list[Row],
     member_id: UUID,
     member_index: int,
     incurred_month: date,
@@ -138,7 +162,7 @@ def _append_claim_rows(
 ) -> None:
     claim_id = _row_id("claim", member_index, claim_number)
     line_id = _row_id("claim-line", member_index, claim_number)
-    provider = data.providers[(member_index + claim_number) % len(data.providers)]
+    provider = providers[(member_index + claim_number) % len(providers)]
     incurred_date = incurred_month + timedelta(days=(member_index % 20) + 1)
     received_date = incurred_date + timedelta(days=2)
     adjudicated_date = received_date + timedelta(days=5)

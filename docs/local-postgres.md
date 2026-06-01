@@ -74,3 +74,42 @@ VELLUM_AUDIT_BACKEND=postgres
 
 That path uses `VELLUM_AUDIT_DATABASE_URL` and writes to `audit_events` through
 the `vellum_auditor` role. The local grant is SELECT and INSERT only.
+
+## Synthetic Data Profiles
+
+The default seed command uses the small local profile:
+
+```bash
+make seed-data
+```
+
+That generates 2,000 members across 18 months. It is intentionally quick and is
+the right profile for normal development and tests.
+
+For the portfolio demo, use:
+
+```bash
+make seed-portfolio-data
+```
+
+That runs `backend/seeds/generate.py --profile portfolio`, which generates
+200,000 members across 18 months. The portfolio profile loads data in 10,000
+member chunks so the seeding process does not need to hold millions of premium
+and enrolment rows in memory at once.
+
+You can override the profile values when needed:
+
+```bash
+cd backend
+python seeds/generate.py --profile portfolio --member-count 50000 --chunk-size 5000
+```
+
+To verify the expected volume without touching the database, add `--dry-run`:
+
+```bash
+cd backend
+python seeds/generate.py --profile portfolio --dry-run
+```
+
+Use the portfolio profile for demo/performance preparation, not for ordinary
+inner-loop development.

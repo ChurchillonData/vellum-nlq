@@ -224,3 +224,6 @@ Current frontend slice:
 - The Catalogue Explorer now consumes the richer `/metrics` payload for all
   active metrics, including catalogue-owned formulas, versions, owners,
   allowed dimensions, join previews, synonyms, and review dates.
+- The synthetic seed loader now supports a portfolio profile of 200,000 members
+  across 18 months, loaded in chunks so large demo preparation does not require
+  building the full dataset in memory at once.

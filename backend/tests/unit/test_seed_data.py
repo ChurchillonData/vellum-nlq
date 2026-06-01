@@ -20,6 +20,33 @@ def test_seed_data_builds_related_claims_rows() -> None:
     assert {row["claim_line_id"] for row in seed_data.declines} <= claim_line_ids
 
 
+def test_seed_data_supports_chunked_portfolio_generation() -> None:
+    first_chunk = build_seed_data(
+        member_count=10,
+        month_count=3,
+        start_member_index=0,
+        include_reference_data=True,
+    )
+    second_chunk = build_seed_data(
+        member_count=10,
+        month_count=3,
+        start_member_index=10,
+        include_reference_data=False,
+    )
+    full_seed = build_seed_data(member_count=20, month_count=3)
+
+    chunked_member_ids = {row["id"] for row in first_chunk.members + second_chunk.members}
+    full_member_ids = {row["id"] for row in full_seed.members}
+
+    assert chunked_member_ids == full_member_ids
+    assert len(first_chunk.plans) == 3
+    assert len(first_chunk.providers) == 4
+    assert second_chunk.plans == []
+    assert second_chunk.providers == []
+    assert len(first_chunk.premium) + len(second_chunk.premium) == len(full_seed.premium)
+    assert len(first_chunk.claims) + len(second_chunk.claims) == len(full_seed.claims)
+
+
 def test_seed_data_supports_q1_comprehensive_loss_ratio_demo() -> None:
     seed_data = build_seed_data(member_count=120, month_count=18)
     plans = {row["id"]: row for row in seed_data.plans}

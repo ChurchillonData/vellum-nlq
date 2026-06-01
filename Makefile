@@ -103,6 +103,11 @@ seed-data: ## Generate synthetic development data
 	cd $(BACKEND_DIR) && $(PYTHON) seeds/generate.py
 	@echo "$(GREEN)Synthetic development data generated.$(RESET)"
 
+.PHONY: seed-portfolio-data
+seed-portfolio-data: ## Generate the large portfolio demo dataset
+	cd $(BACKEND_DIR) && $(PYTHON) seeds/generate.py --profile portfolio
+	@echo "$(GREEN)Synthetic portfolio demo data generated.$(RESET)"
+
 .PHONY: db-shell
 db-shell: ## Open a psql shell with the read-only application role
 	$(COMPOSE) exec postgres psql -U vellum_readonly -d vellum
