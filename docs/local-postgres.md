@@ -78,6 +78,40 @@ To preview the reset commands without deleting anything:
 python scripts/reset_local_postgres.py
 ```
 
+## Postgres Smoke Test
+
+After seeding, run:
+
+```bash
+make postgres-smoke
+```
+
+On Windows machines without `make`, use:
+
+```bash
+cd backend
+python -m app.postgres_smoke
+```
+
+The smoke test checks:
+
+- all configured Postgres roles can connect,
+- required analytics tables have rows,
+- the audit table exists,
+- guarded generated SQL can execute through the read-only Postgres role for
+  representative metrics.
+
+Recommended local sequence:
+
+```bash
+python scripts/reset_local_postgres.py --yes
+make seed-data
+make postgres-smoke
+```
+
+For portfolio preparation, replace `make seed-data` with
+`make seed-portfolio-data`.
+
 ## Connection URLs
 
 The backend has separate URLs for each database responsibility:

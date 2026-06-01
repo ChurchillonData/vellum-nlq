@@ -232,3 +232,5 @@ Current frontend slice:
 - A local-only `make db-reset-local` workflow can recreate the Docker Postgres
   volume, rerun migrations, and verify role credentials when a stale local
   volume causes password mismatches.
+- A `make postgres-smoke` command verifies seeded Postgres table counts and
+  representative guarded query execution through the read-only role.
