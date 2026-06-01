@@ -218,3 +218,6 @@ Current frontend slice:
   `metric_id` is sent back to `/ask` and still goes through catalogue
   resolution, deterministic planning, SQL guard validation, execution, and
   audit.
+- The Audit view can inspect the latest query ID or a pasted query ID through
+  `GET /queries/{query_id}` and render request, resolution, SQL, validation,
+  provenance, safety/scope notes, and execution summary.

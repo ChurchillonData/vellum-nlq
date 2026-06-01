@@ -108,3 +108,25 @@ export type MetricsResponse = {
   catalogue: string;
   metrics: Metric[];
 };
+
+export type AuditRecord = {
+  query_id: string;
+  event_type: string;
+  created_at?: string;
+  status?: AskStatus | string;
+  request?: Record<string, unknown>;
+  resolved_request?: Record<string, unknown> | null;
+  candidates?: Candidate[];
+  safety?: { rule_id: string; severity: string; reason: string } | null;
+  scope?: { reason_id: string; reason: string } | null;
+  metric_id?: string | null;
+  sql?: string | null;
+  parameters?: Record<string, unknown> | null;
+  provenance?: Provenance | null;
+  validation?: Validation | null;
+  execution?: {
+    mode?: string;
+    row_count?: number;
+    answer?: string;
+  } | null;
+};

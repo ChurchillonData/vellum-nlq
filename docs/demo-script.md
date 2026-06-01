@@ -31,8 +31,9 @@ Current backend does not yet support:
 - The large portfolio demo dataset and performance-tuning pass.
 
 Current frontend supports the Ask workspace, Catalogue Explorer, backend-backed
-demo examples, and live `/ask` state rendering with saved demo fallback when the
-API is unavailable.
+demo examples, live `/ask` state rendering, and an Audit view that retrieves
+records through `GET /queries/{query_id}`. Saved demo fallback remains available
+when the API is unavailable.
 
 The five-question script below is still the target demo arc. For today, use the
 current API examples for live verification.

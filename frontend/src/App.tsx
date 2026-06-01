@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { askQuestion, fetchAskExamples, fetchMetrics } from "./api";
 import { AskWorkspace } from "./components/AskWorkspace";
+import { AuditExplorer } from "./components/AuditExplorer";
 import { CatalogueExplorer } from "./components/CatalogueExplorer";
 import { TopBar } from "./components/TopBar";
 import {
@@ -92,19 +93,7 @@ export default function App() {
 
       {activeView === "catalogue" && <CatalogueExplorer metrics={metrics} />}
 
-      {activeView === "audit" && (
-        <main className="audit-page">
-          <section>
-            <p className="eyebrow">Audit trace</p>
-            <h1>Query provenance is built into every answer.</h1>
-            <p>
-              Use an answer query ID from the Ask workspace to inspect the backend
-              audit payload. The frontend shell is ready for the audit browser view
-              once the demo needs it.
-            </p>
-          </section>
-        </main>
-      )}
+      {activeView === "audit" && <AuditExplorer latestQueryId={askResult.query_id} />}
     </div>
   );
 }
