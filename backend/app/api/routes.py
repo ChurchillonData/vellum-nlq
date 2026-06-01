@@ -83,7 +83,7 @@ def ask(request: AskApiRequest) -> AskResponse:
         parsed_fields = parse_ask_fields(request.question)
         ask_request = AskServiceRequest(
             question=request.question,
-            metric_id=intent.metric_id,
+            metric_id=request.metric_id or intent.metric_id,
             start_date=(
                 request.start_date or intent.start_date or parsed_fields.start_date
             ),

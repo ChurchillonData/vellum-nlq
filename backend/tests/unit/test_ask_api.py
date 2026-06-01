@@ -82,6 +82,28 @@ def test_ask_endpoint_infers_supported_filters_from_question(tmp_path) -> None:
     assert body["answer"]["parameters"]["plan_tier"] == "Comprehensive"
 
 
+def test_ask_endpoint_accepts_selected_catalogue_metric(tmp_path) -> None:
+    response, records = _post_ask_with_audit(
+        tmp_path,
+        {
+            "question": "How are the claims numbers looking?",
+            "metric_id": "paid_claims",
+            "start_date": "2026-01-01",
+            "end_date": "2026-03-31",
+            "plan_tier": "Comprehensive",
+        },
+    )
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["status"] == "answer"
+    assert body["resolved_request"]["metric_id"] == "paid_claims"
+    assert body["answer"]["metric_id"] == "paid_claims"
+    assert body["answer"]["validation"]["passed"] is True
+    assert records[0]["request"]["metric_id"] == "paid_claims"
+
+
 def test_ask_endpoint_infers_decline_rate_grouping(tmp_path) -> None:
     settings = get_settings()
     original_path = settings.audit_log_path

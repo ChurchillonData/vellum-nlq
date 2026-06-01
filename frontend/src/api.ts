@@ -1,12 +1,14 @@
-import type { AskResponse, MetricsResponse } from "./types";
+import type { AskExamplesResponse, AskRequestPayload, AskResponse, MetricsResponse } from "./types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
-export async function askQuestion(question: string): Promise<AskResponse> {
+export async function askQuestion(payload: AskRequestPayload | string): Promise<AskResponse> {
+  const body = typeof payload === "string" ? { question: payload } : payload;
+
   const response = await fetch(`${API_BASE_URL}/ask`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question })
+    body: JSON.stringify(body)
   });
 
   if (!response.ok) {
@@ -14,6 +16,15 @@ export async function askQuestion(question: string): Promise<AskResponse> {
   }
 
   return response.json() as Promise<AskResponse>;
+}
+
+export async function fetchAskExamples(): Promise<AskExamplesResponse> {
+  const response = await fetch(`${API_BASE_URL}/ask/examples`);
+  if (!response.ok) {
+    throw new Error(`Ask examples request failed with status ${response.status}`);
+  }
+
+  return response.json() as Promise<AskExamplesResponse>;
 }
 
 export async function fetchMetrics(): Promise<MetricsResponse> {

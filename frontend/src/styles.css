@@ -398,7 +398,9 @@ button:disabled {
 }
 
 .example-option {
-  min-height: 44px;
+  display: grid;
+  min-height: 62px;
+  gap: 3px;
   border: 1px solid var(--line-soft);
   border-radius: 7px;
   background: #f8fafc;
@@ -407,10 +409,27 @@ button:disabled {
   text-align: left;
 }
 
+.example-option span {
+  font-weight: 800;
+}
+
+.example-option small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .example-option:hover {
   border-color: var(--teal-border);
   background: var(--teal-soft);
   color: var(--teal);
+}
+
+.example-option:hover small {
+  color: #0f7c5d;
 }
 
 .result-section {

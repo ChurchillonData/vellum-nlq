@@ -66,6 +66,25 @@ export type AskResponse = {
   answer: AskAnswer | null;
 };
 
+export type AskRequestPayload = {
+  question: string;
+  metric_id?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  plan_tier?: string | null;
+  group_by?: string[];
+};
+
+export type AskExample = AskRequestPayload & {
+  id: string;
+  label: string;
+  expected_status: AskStatus;
+};
+
+export type AskExamplesResponse = {
+  examples: AskExample[];
+};
+
 export type Metric = {
   id: string;
   label: string;

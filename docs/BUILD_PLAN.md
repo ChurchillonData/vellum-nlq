@@ -197,6 +197,8 @@ Remaining production hardening:
 
 ## Phase 5: Frontend And Demo
 
+Status: in progress
+
 - Build the analyst-facing query UI.
 - Show metric provenance, SQL, joins, validation state, and audit IDs.
 - Scale the synthetic seed data from the small development slice to the
@@ -205,3 +207,14 @@ Remaining production hardening:
   decline metrics look plausible in the demo dataset.
 - Expand golden questions, demo data polish, and reviewer-friendly
   documentation.
+
+Current frontend slice:
+
+- The React Ask workspace calls the real `/ask` endpoint and renders answer,
+  clarification, blocked, out-of-scope, and date-range-required states.
+- Demo question controls load from `/ask/examples` when the backend is
+  available, with saved demo fallbacks for no-API local viewing.
+- Clarification candidates can be selected in the UI; the selected
+  `metric_id` is sent back to `/ask` and still goes through catalogue
+  resolution, deterministic planning, SQL guard validation, execution, and
+  audit.

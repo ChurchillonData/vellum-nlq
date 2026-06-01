@@ -13,30 +13,32 @@ import {
 import { useState } from "react";
 
 import { getDisplayRuleId, getSafetyReasonLines } from "../safetyDisplay";
-import type { AskResponse, Metric } from "../types";
+import type { AskExample, AskRequestPayload, AskResponse, Candidate, Metric } from "../types";
 import { CleanCheck } from "./CleanCheck";
 import { ResultTable } from "./ResultTable";
 import { TrustPanel } from "./TrustPanel";
 
 type AskWorkspaceProps = {
   askResult: AskResponse;
-  demoQuestions: string[];
+  askExamples: AskExample[];
   isRunning: boolean;
   metric: Metric;
   notice: string | null;
   onQuestionChange: (question: string) => void;
-  onRun: (question?: string) => void;
+  onRun: (question?: string, overrides?: Partial<AskRequestPayload>) => void;
+  onRunExample: (example: AskExample) => void;
   question: string;
 };
 
 export function AskWorkspace({
   askResult,
-  demoQuestions,
+  askExamples,
   isRunning,
   metric,
   notice,
   onQuestionChange,
   onRun,
+  onRunExample,
   question
 }: AskWorkspaceProps) {
   const isBlocked = askResult.status === "blocked";
@@ -44,7 +46,11 @@ export function AskWorkspace({
   const [showExamples, setShowExamples] = useState(false);
   const actionLabel = isBlocked ? "Blocked" : isClarifying ? "Clarify" : "Run";
   const ActionIcon = isBlocked ? CircleSlash : isClarifying ? Sparkles : Play;
-  const extraExamples = demoQuestions.slice(2);
+  const planTierExample =
+    askExamples.find((example) => example.id === "answer_loss_ratio_by_plan_tier") ??
+    askExamples.find((example) => example.expected_status === "answer");
+  const clarificationDefaults = getClarificationDefaults(askResult);
+  const extraExamples = askExamples.slice(2);
 
   return (
     <main className="ask-layout">
@@ -78,11 +84,25 @@ export function AskWorkspace({
           {!isBlocked && (
             <>
               <div className="suggestion-row">
-                <button className="suggestion" onClick={() => onRun(demoQuestions[1])} type="button">
+                <button
+                  className="suggestion"
+                  onClick={() => {
+                    if (planTierExample) {
+                      onRunExample(planTierExample);
+                    }
+                  }}
+                  type="button"
+                >
                   <BarChart3 size={16} />
                   loss ratio by plan tier
                 </button>
-                <button className="suggestion" onClick={() => onRun("average claim amount per member")} type="button">
+                <button
+                  className="suggestion"
+                  onClick={() =>
+                    onRun("Show claim severity for the Comprehensive plan tier in Q1 2026.")
+                  }
+                  type="button"
+                >
                   <Users size={16} />
                   average claim amount per member
                 </button>
@@ -102,14 +122,15 @@ export function AskWorkspace({
                   {extraExamples.map((item) => (
                     <button
                       className="example-option"
-                      key={item}
+                      key={item.id}
                       onClick={() => {
                         setShowExamples(false);
-                        onRun(item);
+                        onRunExample(item);
                       }}
                       type="button"
                     >
-                      {item}
+                      <span>{item.label}</span>
+                      <small>{item.question}</small>
                     </button>
                   ))}
                 </div>
@@ -118,7 +139,16 @@ export function AskWorkspace({
           )}
         </div>
 
-        <WorkspaceState askResult={askResult} metric={metric} />
+        <WorkspaceState
+          askResult={askResult}
+          metric={metric}
+          onSelectCandidate={(candidate) =>
+            onRun(question, {
+              ...clarificationDefaults,
+              metric_id: candidate.metric_id
+            })
+          }
+        />
       </section>
 
       <TrustPanel askResult={askResult} metric={metric} />
@@ -128,10 +158,12 @@ export function AskWorkspace({
 
 function WorkspaceState({
   askResult,
-  metric
+  metric,
+  onSelectCandidate
 }: {
   askResult: AskResponse;
   metric: Metric;
+  onSelectCandidate: (candidate: Candidate) => void;
 }) {
   if (askResult.status === "answer" && askResult.answer) {
     return (
@@ -167,7 +199,12 @@ function WorkspaceState({
         <p>{askResult.message}</p>
         <div className="candidate-grid">
           {askResult.candidates.map((candidate, index) => (
-            <button className="candidate-card" key={candidate.metric_id} type="button">
+            <button
+              className="candidate-card"
+              key={candidate.metric_id}
+              onClick={() => onSelectCandidate(candidate)}
+              type="button"
+            >
               <span className="candidate-icon">
                 {index === 1 ? (
                   <WalletCards size={24} />
@@ -222,6 +259,14 @@ function WorkspaceState({
       <p>{askResult.message}</p>
     </section>
   );
+}
+
+function getClarificationDefaults(askResult: AskResponse): Partial<AskRequestPayload> {
+  return {
+    end_date: askResult.resolved_request?.end_date ?? "2026-03-31",
+    plan_tier: askResult.resolved_request?.plan_tier ?? "Comprehensive",
+    start_date: askResult.resolved_request?.start_date ?? "2026-01-01"
+  };
 }
 
 function HighlightedAnswer({ text }: { text: string }) {

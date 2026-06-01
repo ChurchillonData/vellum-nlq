@@ -14,6 +14,7 @@ class AskRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     question: str = Field(min_length=1)
+    metric_id: str | None = Field(default=None, min_length=1)
     start_date: date | None = None
     end_date: date | None = None
     plan_tier: str | None = Field(default=None, min_length=1)

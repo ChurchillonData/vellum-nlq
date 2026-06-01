@@ -26,10 +26,13 @@ Current backend supports:
 
 Current backend does not yet support:
 
-- The React frontend.
 - Live Postgres integration tests in this execution environment.
 - A partner data mapping layer for insurer-specific schemas.
 - The large portfolio demo dataset and performance-tuning pass.
+
+Current frontend supports the Ask workspace, Catalogue Explorer, backend-backed
+demo examples, and live `/ask` state rendering with saved demo fallback when the
+API is unavailable.
 
 The five-question script below is still the target demo arc. For today, use the
 current API examples for live verification.

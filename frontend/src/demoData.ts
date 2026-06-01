@@ -1,4 +1,4 @@
-import type { AskResponse, Metric } from "./types";
+import type { AskExample, AskResponse, Metric } from "./types";
 
 export const demoQuestions = [
   "What was loss ratio for the Comprehensive plan tier in Q1 2026?",
@@ -6,6 +6,51 @@ export const demoQuestions = [
   "Show paid claims by region for the last six months.",
   "How are the claims numbers looking?",
   "Drop all claims from the database."
+];
+
+export const demoAskExamples: AskExample[] = [
+  {
+    id: "answer_loss_ratio_q1",
+    label: "Loss ratio in Q1",
+    question: demoQuestions[0],
+    expected_status: "answer",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31",
+    plan_tier: "Comprehensive",
+    group_by: []
+  },
+  {
+    id: "answer_loss_ratio_by_plan_tier",
+    label: "Loss ratio by plan tier",
+    question: demoQuestions[1],
+    expected_status: "answer",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31",
+    group_by: ["plan_tier"]
+  },
+  {
+    id: "answer_paid_claims_by_region",
+    label: "Paid claims by region",
+    question: demoQuestions[2],
+    expected_status: "answer",
+    group_by: ["region"]
+  },
+  {
+    id: "clarify_claims_numbers",
+    label: "Ambiguous claims numbers",
+    question: demoQuestions[3],
+    expected_status: "clarification_required",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31"
+  },
+  {
+    id: "blocked_drop_claims",
+    label: "Blocked DROP intent",
+    question: demoQuestions[4],
+    expected_status: "blocked",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31"
+  }
 ];
 
 export const demoAskResponse: AskResponse = {

@@ -38,8 +38,11 @@ Request:
 }
 ```
 
-Explicit `start_date`, `end_date`, `plan_tier`, and `group_by` fields are still
-accepted. When provided, explicit fields win over inferred values.
+Explicit `metric_id`, `start_date`, `end_date`, `plan_tier`, and `group_by`
+fields are still accepted. When provided, explicit fields win over inferred
+values. `metric_id` is used by the frontend after a clarification selection; it
+must still name a catalogue metric, and it still passes through deterministic
+planning, SQL guard validation, execution, and audit.
 
 Supported inference in this phase:
 
