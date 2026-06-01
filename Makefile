@@ -124,6 +124,10 @@ db-shell-admin: ## Open a psql shell with admin privileges
 db-check: ## Check local Postgres URLs and roles before seeding/execution
 	cd $(BACKEND_DIR) && $(PYTHON) -m app.dbcheck
 
+.PHONY: db-reset-local
+db-reset-local: ## Destructive: recreate the local Postgres volume, migrate, and check roles
+	$(PYTHON) scripts/reset_local_postgres.py --yes
+
 # ----------------------------------------------------------------------------
 # Catalogue
 # ----------------------------------------------------------------------------

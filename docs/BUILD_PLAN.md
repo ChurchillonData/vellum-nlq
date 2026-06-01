@@ -229,3 +229,6 @@ Current frontend slice:
   building the full dataset in memory at once.
 - A `make db-check` readiness command validates admin, seeder, read-only, and
   audit Postgres role connections before local or portfolio seeding begins.
+- A local-only `make db-reset-local` workflow can recreate the Docker Postgres
+  volume, rerun migrations, and verify role credentials when a stale local
+  volume causes password mismatches.

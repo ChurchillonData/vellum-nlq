@@ -30,6 +30,7 @@ Useful commands:
 
 ```bash
 make up-detached
+make db-reset-local
 make migrate
 make db-check
 make seed-data
@@ -41,6 +42,41 @@ make db-shell-seed
 Run `make db-check` before portfolio seeding. It verifies the admin, seeder,
 read-only, and audit connection URLs separately, so password or role mistakes
 show up before a large load begins.
+
+## Fresh Local Reset
+
+If `make db-check` reports password authentication failures for the local roles,
+the usual cause is an old Docker volume that was created before the current role
+passwords existed.
+
+Use this local-only reset:
+
+```bash
+make db-reset-local
+```
+
+On Windows machines without `make`, use the Python script directly:
+
+```bash
+python scripts/reset_local_postgres.py --yes
+```
+
+This command is destructive for the local Docker database volume. It runs:
+
+1. `docker compose down -v`
+2. `docker compose up -d postgres`
+3. `python -m alembic upgrade head` from `backend/`
+4. `python -m app.dbcheck` from `backend/`
+
+It does not touch cloud databases or any files in the repository. After it
+passes, run `make seed-data` for the small local dataset or
+`make seed-portfolio-data` for the large demo dataset.
+
+To preview the reset commands without deleting anything:
+
+```bash
+python scripts/reset_local_postgres.py
+```
 
 ## Connection URLs
 
