@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { askQuestion, fetchAskExamples, fetchMetrics } from "./api";
+import { askQuestion, fetchAskExamples, fetchHealth, fetchMetrics } from "./api";
 import { AskWorkspace } from "./components/AskWorkspace";
 import { AuditExplorer } from "./components/AuditExplorer";
 import { CatalogueExplorer } from "./components/CatalogueExplorer";
@@ -12,7 +12,7 @@ import {
   demoQuestions,
   getDemoAskResponse
 } from "./demoData";
-import type { AskExample, AskRequestPayload, AskResponse, Metric } from "./types";
+import type { AskExample, AskRequestPayload, AskResponse, HealthResponse, Metric } from "./types";
 
 type ActiveView = "ask" | "catalogue" | "audit";
 
@@ -21,9 +21,18 @@ export default function App() {
   const [question, setQuestion] = useState(demoQuestions[0]);
   const [askResult, setAskResult] = useState<AskResponse>(demoAskResponse);
   const [askExamples, setAskExamples] = useState<AskExample[]>(demoAskExamples);
+  const [health, setHealth] = useState<HealthResponse | null>(null);
   const [metrics, setMetrics] = useState<Metric[]>(demoMetrics);
   const [isRunning, setIsRunning] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchHealth()
+      .then(setHealth)
+      .catch(() => {
+        setHealth({ catalogue: "health-uk", status: "offline" });
+      });
+  }, []);
 
   useEffect(() => {
     fetchMetrics()
@@ -75,7 +84,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <TopBar activeView={activeView} onChangeView={setActiveView} />
+      <TopBar activeView={activeView} health={health} onChangeView={setActiveView} />
 
       {activeView === "ask" && (
         <AskWorkspace

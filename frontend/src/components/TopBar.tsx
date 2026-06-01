@@ -1,11 +1,13 @@
 import { Database } from "lucide-react";
 
+import type { HealthResponse } from "../types";
 import { CleanCheck } from "./CleanCheck";
 
 type ActiveView = "ask" | "catalogue" | "audit";
 
 type TopBarProps = {
   activeView: ActiveView;
+  health: HealthResponse | null;
   onChangeView: (view: ActiveView) => void;
 };
 
@@ -15,7 +17,10 @@ const navItems: Array<{ id: ActiveView; label: string }> = [
   { id: "audit", label: "Audit" }
 ];
 
-export function TopBar({ activeView, onChangeView }: TopBarProps) {
+export function TopBar({ activeView, health, onChangeView }: TopBarProps) {
+  const isOperational = health?.status === "ok";
+  const catalogueName = health?.catalogue ?? "health-uk";
+
   return (
     <header className="top-bar">
       <div className="brand-group">
@@ -34,17 +39,17 @@ export function TopBar({ activeView, onChangeView }: TopBarProps) {
         </nav>
       </div>
       <div className="status-group">
-        <span className="catalogue-pill">
+        <span className={isOperational ? "catalogue-pill" : "catalogue-pill offline"}>
           <Database size={16} />
-          health-uk
-          <span className="active-dot" aria-hidden="true" />
-          <strong>active</strong>
+          {catalogueName}
+          <span className={isOperational ? "active-dot" : "active-dot offline"} aria-hidden="true" />
+          <strong>{isOperational ? "active" : "offline"}</strong>
         </span>
-        <span className="operational-pill">
+        <span className={isOperational ? "operational-pill" : "operational-pill offline"}>
           <span className="operational-check" aria-hidden="true">
             <CleanCheck size="sm" />
           </span>
-          operational
+          {isOperational ? "operational" : "backend offline"}
         </span>
       </div>
     </header>

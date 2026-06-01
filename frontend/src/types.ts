@@ -111,6 +111,11 @@ export type MetricsResponse = {
   metrics: Metric[];
 };
 
+export type HealthResponse = {
+  status: string;
+  catalogue: string;
+};
+
 export type AuditRecord = {
   query_id: string;
   event_type: string;

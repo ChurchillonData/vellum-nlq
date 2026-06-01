@@ -148,11 +148,23 @@ button:disabled {
   font-weight: 500;
 }
 
+.catalogue-pill.offline strong {
+  color: var(--solid-amber);
+}
+
 .active-dot {
   width: 9px;
   height: 9px;
   border-radius: 999px;
   background: var(--teal);
+}
+
+.active-dot.offline {
+  background: var(--solid-amber);
+}
+
+.operational-pill.offline {
+  color: #7c4a03;
 }
 
 .operational-check {
@@ -164,6 +176,10 @@ button:disabled {
   border-radius: 999px;
   background: var(--teal);
   color: #fff;
+}
+
+.operational-pill.offline .operational-check {
+  background: var(--solid-amber);
 }
 
 .clean-check {

@@ -224,6 +224,9 @@ Current frontend slice:
 - The Catalogue Explorer now consumes the richer `/metrics` payload for all
   active metrics, including catalogue-owned formulas, versions, owners,
   allowed dimensions, join previews, synonyms, and review dates.
+- The top-bar catalogue and operational badges now read `/health`, so the
+  frontend shows the active catalogue and backend availability instead of a
+  hardcoded status.
 - The synthetic seed loader now supports a portfolio profile of 200,000 members
   across 18 months, loaded in chunks so large demo preparation does not require
   building the full dataset in memory at once.

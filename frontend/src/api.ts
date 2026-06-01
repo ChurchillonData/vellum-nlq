@@ -3,6 +3,7 @@ import type {
   AskRequestPayload,
   AskResponse,
   AuditRecord,
+  HealthResponse,
   MetricsResponse
 } from "./types";
 
@@ -40,6 +41,15 @@ export async function fetchMetrics(): Promise<MetricsResponse> {
   }
 
   return response.json() as Promise<MetricsResponse>;
+}
+
+export async function fetchHealth(): Promise<HealthResponse> {
+  const response = await fetch(`${API_BASE_URL}/health`);
+  if (!response.ok) {
+    throw new Error(`Health request failed with status ${response.status}`);
+  }
+
+  return response.json() as Promise<HealthResponse>;
 }
 
 export async function fetchAuditRecord(queryId: string): Promise<AuditRecord> {
