@@ -43,8 +43,6 @@ type SynonymGroup = {
   terms: string[];
 };
 
-const defaultDimensions = ["plan_tier", "treatment_category", "month", "region"];
-
 export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
   const [isMetricMenuOpen, setIsMetricMenuOpen] = useState(false);
   const [isSynonymCardOpen, setIsSynonymCardOpen] = useState(false);
@@ -55,6 +53,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
     () => metrics.find((metric) => metric.id === selectedId) ?? metrics.find((metric) => metric.id === "loss_ratio") ?? metrics[0],
     [metrics, selectedId]
   );
+  const allowedDimensions = useMemo(() => getAllowedDimensions(selectedMetric), [selectedMetric]);
   const insights = useMemo(() => getMetricInsights(selectedMetric), [selectedMetric]);
   const synonymGroups = useMemo(() => getSynonymGroups(selectedMetric), [selectedMetric]);
   const activeSynonymGroup = synonymGroups.find((group) => group.id === synonymTab) ?? synonymGroups[0];
@@ -155,7 +154,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
             <CatalogueBlock icon={<Icon icon={LanguageSkillIcon} size={17} />} title="Synonyms" tone="amber" wide>
               <div className="synonym-preview">
                 <div className="catalogue-chip-row">
-                  {getSynonyms(selectedMetric).map((synonym) => (
+                {getSynonyms(selectedMetric).map((synonym) => (
                     <span className="catalogue-chip" key={synonym}>{synonym}</span>
                   ))}
                 </div>
@@ -194,7 +193,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
             </CatalogueBlock>
             <CatalogueBlock icon={<Icon icon={Layers01Icon} size={17} />} title="Allowed dimensions" tone="violet" wide>
               <div className="catalogue-chip-row">
-                {defaultDimensions.map((dimension) => (
+                {allowedDimensions.map((dimension) => (
                   <span className="catalogue-chip accent" key={dimension}>{dimension}</span>
                 ))}
               </div>
@@ -292,9 +291,9 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
                   <td>{shorten(metric.description)}</td>
                   <td><code>{metric.id}</code></td>
                   <td>{metric.version}</td>
-                  <td>{defaultDimensions.join(", ")}</td>
+                  <td>{getAllowedDimensions(metric).join(", ")}</td>
                   <td><span className={index === 0 ? "cert-pill gold" : "cert-pill silver"}>{index === 0 ? "Gold" : "Silver"}</span></td>
-                  <td>{index === 0 ? "2h ago" : "4h ago"}</td>
+                  <td>{formatReviewedDate(metric.last_reviewed)}</td>
                   <td><Icon icon={ArrowRight01Icon} size={17} /></td>
                 </tr>
               ))}
@@ -310,7 +309,7 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
         </span>
         <span>
           <Icon icon={PresentationLineChart01Icon} size={17} />
-          Source systems connected: 6
+          Source systems connected: {metrics.length}
         </span>
         <span>
           <Icon icon={LockKeyIcon} size={17} />
@@ -397,11 +396,19 @@ function getMetricIcon(metricId: string, index: number): ReactNode {
 }
 
 function formatJoinPreview(metric: Metric): string {
-  if (metric.id === "loss_ratio") {
-    return "claims -> premium (member_id, period), member_dimension";
+  if (metric.join_preview.length > 0) {
+    return metric.join_preview.join("; ");
   }
 
-  return `${metric.required_tables.join(" -> ")} (approved join path)`;
+  return `${metric.required_tables.join(" -> ")} (catalogue-approved path)`;
+}
+
+function getAllowedDimensions(metric: Metric): string[] {
+  if (metric.allowed_dimensions.length > 0) {
+    return metric.allowed_dimensions;
+  }
+
+  return ["plan_tier", "region"];
 }
 
 function renderFormulaSql(expression: string): ReactNode[] {
@@ -454,15 +461,44 @@ function getMetricInsights(metric: Metric): string[] {
     ];
   }
 
+  if (metric.id === "decline_rate") {
+    return [
+      "Tracks the share of billed service value that was declined.",
+      "Best grouped by consultant specialty, plan tier, or region.",
+      "Useful for spotting provider behaviour and adjudication pressure.",
+      "Requires claim line and decline reason lineage for defensible review."
+    ];
+  }
+
+  if (metric.id === "claim_severity") {
+    return [
+      "Measures average incurred cost per claim in the selected period.",
+      "Best grouped by plan tier, region, or treatment category.",
+      "Useful for identifying expensive claim mixes and outlier patterns.",
+      "Should be interpreted alongside frequency to separate cost from usage."
+    ];
+  }
+
+  if (metric.id === "incurred_claims") {
+    return [
+      "Shows total incurred claim value anchored by incurred date.",
+      "Best grouped by plan tier, region, or month.",
+      "Useful for underwriting reviews and reserve-aware performance analysis.",
+      "Complements paid claims by capturing exposure before final cash settlement."
+    ];
+  }
+
   return [
-    "Connects incurred claims to earned premium for a clear profitability signal.",
-    "Best grouped by plan tier, month, region, or treatment category.",
-    "Uses incurred date, so it is suited to underwriting and actuarial views.",
-    "Sensitive to late claims and premium alignment across the same period."
+    `${toTitleCase(metric.label)} is governed by the ${formatOwner(metric.owner)} catalogue owner.`,
+    `Anchored on ${metric.time_anchor} for consistent period filtering.`,
+    `Supports grouping by ${getAllowedDimensions(metric).join(", ")}.`,
+    "Returns SQL provenance, validation results, and audit trace metadata."
   ];
 }
 
 function getSynonymGroups(metric: Metric): SynonymGroup[] {
+  const catalogueSynonyms = Array.from(new Set([metric.label, metric.id, ...metric.synonyms]));
+
   if (metric.id === "paid_claims") {
     return [
       {
@@ -569,56 +605,98 @@ function getSynonymGroups(metric: Metric): SynonymGroup[] {
     ];
   }
 
+  if (metric.id === "loss_ratio") {
+    return [
+      {
+        id: "business",
+        label: "Business terms",
+        terms: [
+          "loss ratio",
+          "loss rate",
+          "claims ratio",
+          "claims leverage",
+          "underwriting ratio",
+          "plan profitability",
+          "premium loss ratio",
+          "incurred loss ratio",
+          "claims to premium",
+          "medical loss ratio"
+        ]
+      },
+      {
+        id: "analyst",
+        label: "Analyst language",
+        terms: [
+          "incurred claims over earned premium",
+          "net incurred divided by premium",
+          "claims-to-premium ratio",
+          "incurred loss over premium",
+          "premium adequacy ratio",
+          "loss ratio KPI",
+          "financial KPI loss ratio",
+          "claims cost ratio",
+          "earned premium denominator",
+          "incurred amount numerator"
+        ]
+      },
+      {
+        id: "phrasing",
+        label: "User phrasing",
+        terms: [
+          "how profitable was the plan",
+          "claims compared to premium",
+          "did premiums cover claims",
+          "loss ratio by plan tier",
+          "claims versus premium",
+          "how much premium was used by claims",
+          "which plan has high losses",
+          "underwriting performance by month",
+          "show loss rate for Q1",
+          "how is claims leverage trending"
+        ]
+      }
+    ];
+  }
+
   return [
     {
       id: "business",
       label: "Business terms",
-      terms: [
-        "loss ratio",
-        "loss rate",
-        "claims ratio",
-        "claims leverage",
-        "underwriting ratio",
-        "plan profitability",
-        "premium loss ratio",
-        "incurred loss ratio",
-        "claims to premium",
-        "medical loss ratio"
-      ]
+      terms: expandTerms(catalogueSynonyms, [
+        `${metric.label} KPI`,
+        `${metric.label} measure`,
+        `${metric.label} metric`,
+        `${metric.label} trend`,
+        `${metric.label} by plan`
+      ])
     },
     {
       id: "analyst",
       label: "Analyst language",
-      terms: [
-        "incurred claims over earned premium",
-        "net incurred divided by premium",
-        "claims-to-premium ratio",
-        "incurred loss over premium",
-        "premium adequacy ratio",
-        "loss ratio KPI",
-        "financial KPI loss ratio",
-        "claims cost ratio",
-        "earned premium denominator",
-        "incurred amount numerator"
-      ]
+      terms: expandTerms(catalogueSynonyms, [
+        metric.formula.expression,
+        metric.formula.numerator,
+        metric.formula.denominator ?? metric.time_anchor,
+        `${metric.time_anchor} anchored metric`,
+        `${metric.owner} owned metric`
+      ])
     },
     {
       id: "phrasing",
       label: "User phrasing",
-      terms: [
-        "how profitable was the plan",
-        "claims compared to premium",
-        "did premiums cover claims",
-        "loss ratio by plan tier",
-        "claims versus premium",
-        "how much premium was used by claims",
-        "which plan has high losses",
-        "underwriting performance by month",
-        "show loss rate for Q1",
-        "how is claims leverage trending"
-      ]
+      terms: expandTerms(catalogueSynonyms, [
+        `show ${metric.label}`,
+        `${metric.label} for Q1`,
+        `${metric.label} by region`,
+        `${metric.label} by plan tier`,
+        `what changed in ${metric.label}`
+      ])
     }
   ];
+}
+
+function expandTerms(primaryTerms: string[], fallbackTerms: string[]): string[] {
+  return Array.from(new Set([...primaryTerms, ...fallbackTerms])).slice(0, 10);
 }
 
 function formatOwner(owner: string): string {
@@ -640,11 +718,20 @@ function getSynonyms(metric: Metric): string[] {
     return metric.synonyms.slice(0, 3);
   }
 
-  if (metric.id === "loss_ratio") {
-    return ["loss rate", "claims leverage", "incurred loss ratio"];
+  return [...metric.synonyms, metric.label].slice(0, 3);
+}
+
+function formatReviewedDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
   }
 
-  return [...metric.synonyms, metric.label].slice(0, 3);
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  }).format(date);
 }
 
 function shorten(text: string): string {

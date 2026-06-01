@@ -52,7 +52,7 @@ def list_metrics() -> MetricsResponse:
     return MetricsResponse(
         catalogue=catalogue.name,
         metrics=[
-            MetricResponse.from_metric(metric)
+            MetricResponse.from_metric(metric, catalogue)
             for metric in sorted(catalogue.metrics.values(), key=lambda item: item.id)
         ],
     )

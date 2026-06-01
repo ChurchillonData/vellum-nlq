@@ -102,6 +102,8 @@ export type Metric = {
   owner: string;
   version: string;
   last_reviewed: string;
+  allowed_dimensions: string[];
+  join_preview: string[];
 };
 
 export type MetricsResponse = {

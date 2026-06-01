@@ -217,7 +217,12 @@ export const demoMetrics: Metric[] = [
     synonyms: ["loss ratio", "incurred loss ratio"],
     owner: "actuarial",
     version: "Vellum 2.5",
-    last_reviewed: "2026-05-22"
+    last_reviewed: "2026-05-22",
+    allowed_dimensions: ["plan_tier", "region"],
+    join_preview: [
+      "claims.member_id -> members.id (many_to_one)",
+      "premium.member_id -> members.id (many_to_one)"
+    ]
   },
   {
     id: "paid_claims",
@@ -235,7 +240,12 @@ export const demoMetrics: Metric[] = [
     synonyms: ["paid claims", "claim payments"],
     owner: "claims",
     version: "Vellum 2.5",
-    last_reviewed: "2026-05-22"
+    last_reviewed: "2026-05-22",
+    allowed_dimensions: ["plan_tier", "region"],
+    join_preview: [
+      "claim_lines.claim_id -> claims.id (many_to_one)",
+      "claims.member_id -> members.id (many_to_one)"
+    ]
   },
   {
     id: "claim_frequency",
@@ -253,6 +263,11 @@ export const demoMetrics: Metric[] = [
     synonyms: ["claim frequency", "claims per member"],
     owner: "actuarial",
     version: "Vellum 2.5",
-    last_reviewed: "2026-05-22"
+    last_reviewed: "2026-05-22",
+    allowed_dimensions: ["plan_tier", "region"],
+    join_preview: [
+      "enrolment_months.member_id -> members.id (many_to_one)",
+      "claims.member_id -> members.id (many_to_one)"
+    ]
   }
 ];

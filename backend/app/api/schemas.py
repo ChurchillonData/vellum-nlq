@@ -4,7 +4,8 @@ from pydantic import BaseModel
 
 from app.analytics.models import AnalyticsRequest, QueryBuildResult
 from app.execution.models import ExecutionResult
-from app.semantic.models import MetricSpec
+from app.planner.grouping import COMMON_GROUPINGS
+from app.semantic.models import Catalogue, JoinEdge, MetricSpec
 from app.sql.guard import SqlGuardResult
 
 
@@ -31,9 +32,15 @@ class MetricResponse(BaseModel):
     owner: str
     version: str
     last_reviewed: str
+    allowed_dimensions: list[str]
+    join_preview: list[str]
 
     @classmethod
-    def from_metric(cls, metric: MetricSpec) -> "MetricResponse":
+    def from_metric(
+        cls,
+        metric: MetricSpec,
+        catalogue: Catalogue | None = None,
+    ) -> "MetricResponse":
         """Convert a catalogue metric into the public API shape."""
         return cls(
             id=metric.id,
@@ -52,6 +59,12 @@ class MetricResponse(BaseModel):
             owner=metric.owner,
             version=metric.version,
             last_reviewed=metric.last_reviewed,
+            allowed_dimensions=_allowed_dimensions(metric),
+            join_preview=(
+                _join_preview(metric, catalogue.joins)
+                if catalogue is not None
+                else []
+            ),
         )
 
 
@@ -60,6 +73,43 @@ class MetricsResponse(BaseModel):
 
     catalogue: str
     metrics: list[MetricResponse]
+
+
+def _allowed_dimensions(metric: MetricSpec) -> list[str]:
+    """Return the frontend-safe grouping dimensions for one metric."""
+    dimensions = sorted(COMMON_GROUPINGS)
+    if metric.id == "decline_rate":
+        dimensions.append("consultant_specialty")
+    return dimensions
+
+
+def _join_preview(metric: MetricSpec, joins: list[JoinEdge]) -> list[str]:
+    """Return a readable preview of catalogue join edges relevant to a metric."""
+    relevant_tables = set(metric.required_tables)
+    relevant_tables.add(metric.time_anchor_parts[0])
+
+    if "claim_lines" in relevant_tables:
+        relevant_tables.add("claims")
+
+    if {"claims", "premium", "enrolment_months"} & relevant_tables:
+        relevant_tables.add("members")
+
+    if {"plan_tier", "region"} & set(_allowed_dimensions(metric)):
+        relevant_tables.update({"members", "plans"})
+
+    if metric.id == "decline_rate":
+        relevant_tables.update({"claim_lines", "providers", "declines"})
+
+    previews = [
+        (
+            f"{join.left_table}.{join.left_column} -> "
+            f"{join.right_table}.{join.right_column} ({join.cardinality})"
+        )
+        for join in joins
+        if join.left_table in relevant_tables and join.right_table in relevant_tables
+    ]
+
+    return previews
 
 
 class QueryPreviewRequest(AnalyticsRequest):

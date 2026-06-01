@@ -242,7 +242,12 @@ Returns metric definitions from the active semantic catalogue.
       "synonyms": ["loss ratio", "incurred loss ratio"],
       "owner": "actuarial",
       "version": "Vellum 2.5",
-      "last_reviewed": "2026-05-22"
+      "last_reviewed": "2026-05-22",
+      "allowed_dimensions": ["plan_tier", "region"],
+      "join_preview": [
+        "claims.member_id -> members.id (many_to_one)",
+        "premium.member_id -> members.id (many_to_one)"
+      ]
     }
   ]
 }

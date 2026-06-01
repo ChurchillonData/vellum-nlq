@@ -221,3 +221,6 @@ Current frontend slice:
 - The Audit view can inspect the latest query ID or a pasted query ID through
   `GET /queries/{query_id}` and render request, resolution, SQL, validation,
   provenance, safety/scope notes, and execution summary.
+- The Catalogue Explorer now consumes the richer `/metrics` payload for all
+  active metrics, including catalogue-owned formulas, versions, owners,
+  allowed dimensions, join previews, synonyms, and review dates.
