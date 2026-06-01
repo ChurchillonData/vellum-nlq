@@ -1,7 +1,7 @@
 import type { AskExample, AskResponse, Metric } from "./types";
 
 export const demoQuestions = [
-  "What was loss ratio for the Comprehensive plan tier in Q1 2026?",
+  "What was incurred loss ratio in Q1?",
   "Show loss ratio by plan tier in Q1 2026.",
   "Show paid claims by region for the last six months.",
   "How are the claims numbers looking?",
@@ -20,6 +20,66 @@ export const demoAskExamples: AskExample[] = [
     group_by: []
   },
   {
+    id: "answer_paid_claims_plan_tier",
+    label: "Paid claims by plan tier filter",
+    question: "Show paid claims for the Comprehensive plan tier.",
+    expected_status: "answer",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31",
+    plan_tier: "Comprehensive",
+    group_by: []
+  },
+  {
+    id: "answer_claim_frequency_plan_tier",
+    label: "Claim frequency by plan tier filter",
+    question: "Show claim frequency for the Comprehensive plan tier.",
+    expected_status: "answer",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31",
+    plan_tier: "Comprehensive",
+    group_by: []
+  },
+  {
+    id: "answer_incurred_claims_plan_tier",
+    label: "Incurred claims by plan tier filter",
+    question: "Show incurred claims for the Comprehensive plan tier.",
+    expected_status: "answer",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31",
+    plan_tier: "Comprehensive",
+    group_by: []
+  },
+  {
+    id: "answer_claim_severity_plan_tier",
+    label: "Claim severity by plan tier filter",
+    question: "Show claim severity for the Comprehensive plan tier.",
+    expected_status: "answer",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31",
+    plan_tier: "Comprehensive",
+    group_by: []
+  },
+  {
+    id: "answer_decline_rate_q1",
+    label: "Decline rate in Q1",
+    question: "What was decline rate for the Comprehensive plan tier in Q1 2026?",
+    expected_status: "answer",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31",
+    plan_tier: "Comprehensive",
+    group_by: []
+  },
+  {
+    id: "answer_decline_rate_by_specialty",
+    label: "Decline rate by specialty",
+    question: "What was decline rate by consultant specialty for the Comprehensive plan tier in Q1 2026?",
+    expected_status: "answer",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31",
+    plan_tier: "Comprehensive",
+    group_by: ["consultant_specialty"]
+  },
+  {
     id: "answer_loss_ratio_by_plan_tier",
     label: "Loss ratio by plan tier",
     question: demoQuestions[1],
@@ -36,9 +96,40 @@ export const demoAskExamples: AskExample[] = [
     group_by: ["region"]
   },
   {
+    id: "answer_claim_frequency_ytd",
+    label: "Claim frequency YTD",
+    question: "Show claim frequency year to date.",
+    expected_status: "answer",
+    group_by: []
+  },
+  {
+    id: "date_required_loss_ratio",
+    label: "Date range required",
+    question: "What was loss ratio for the Comprehensive plan tier?",
+    expected_status: "date_range_required",
+    plan_tier: "Comprehensive",
+    group_by: []
+  },
+  {
     id: "clarify_claims_numbers",
     label: "Ambiguous claims numbers",
     question: demoQuestions[3],
+    expected_status: "clarification_required",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31"
+  },
+  {
+    id: "clarify_claims_performance",
+    label: "Ambiguous claims performance",
+    question: "Show me claims performance.",
+    expected_status: "clarification_required",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31"
+  },
+  {
+    id: "clarify_claims_happening",
+    label: "Ambiguous claims trend wording",
+    question: "What is happening with claims?",
     expected_status: "clarification_required",
     start_date: "2026-01-01",
     end_date: "2026-03-31"
@@ -48,6 +139,46 @@ export const demoAskExamples: AskExample[] = [
     label: "Blocked DROP intent",
     question: demoQuestions[4],
     expected_status: "blocked",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31"
+  },
+  {
+    id: "blocked_delete_premium",
+    label: "Blocked DELETE intent",
+    question: "Delete all premium records.",
+    expected_status: "blocked",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31"
+  },
+  {
+    id: "blocked_update_claims",
+    label: "Blocked UPDATE intent",
+    question: "Update every claim status to closed.",
+    expected_status: "blocked",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31"
+  },
+  {
+    id: "out_of_scope_loss_ratio_forecast",
+    label: "Out-of-scope forecast",
+    question: "What will loss ratio be next quarter?",
+    expected_status: "out_of_scope",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31"
+  },
+  {
+    id: "out_of_scope_claims_prediction",
+    label: "Out-of-scope claims prediction",
+    question: "Predict paid claims for Q2.",
+    expected_status: "out_of_scope",
+    start_date: "2026-01-01",
+    end_date: "2026-03-31"
+  },
+  {
+    id: "out_of_scope_future_projection",
+    label: "Out-of-scope future projection",
+    question: "Forecast claim frequency next month.",
+    expected_status: "out_of_scope",
     start_date: "2026-01-01",
     end_date: "2026-03-31"
   }
@@ -186,15 +317,73 @@ export const demoBlockedResponse: AskResponse = {
   answer: null
 };
 
+export const demoOutOfScopeResponse: AskResponse = {
+  status: "out_of_scope",
+  query_id: "vellum:scope:forecast_4a2b",
+  question: "What will loss ratio be next quarter?",
+  message:
+    "Forecasting is outside the current Vellum-NLQ analytics catalogue. Ask for a historical period instead.",
+  resolved_request: null,
+  candidates: [],
+  safety: null,
+  scope: {
+    reason_id: "FORECASTING_NOT_SUPPORTED",
+    reason: "The current demo supports governed historical analytics, not prediction."
+  },
+  answer: null
+};
+
+export const demoDateRequiredResponse: AskResponse = {
+  status: "date_range_required",
+  query_id: "vellum:date:loss_ratio_2b1f",
+  question: "What was loss ratio for the Comprehensive plan tier?",
+  message: "A date range is required before Vellum can calculate this metric.",
+  resolved_request: {
+    metric_id: "loss_ratio",
+    start_date: "",
+    end_date: "",
+    plan_tier: "Comprehensive",
+    group_by: []
+  },
+  candidates: [],
+  safety: null,
+  scope: null,
+  answer: null
+};
+
 export function getDemoAskResponse(question: string): AskResponse {
   const normalized = question.toLowerCase();
 
-  if (normalized.includes("drop") || normalized.includes("delete")) {
+  if (
+    normalized.includes("drop") ||
+    normalized.includes("delete") ||
+    normalized.includes("update") ||
+    normalized.includes("truncate") ||
+    normalized.includes("alter") ||
+    normalized.includes("insert")
+  ) {
     return { ...demoBlockedResponse, question };
   }
 
-  if (normalized.includes("claims numbers")) {
+  if (
+    normalized.includes("forecast") ||
+    normalized.includes("predict") ||
+    normalized.includes("next quarter") ||
+    normalized.includes("next month")
+  ) {
+    return { ...demoOutOfScopeResponse, question };
+  }
+
+  if (
+    normalized.includes("claims numbers") ||
+    normalized.includes("claims performance") ||
+    normalized.includes("happening with claims")
+  ) {
     return { ...demoClarificationResponse, question };
+  }
+
+  if (normalized.includes("loss ratio") && !normalized.match(/q\d|quarter|2026|last|year to date|ytd/)) {
+    return { ...demoDateRequiredResponse, question };
   }
 
   return { ...demoAskResponse, question };
@@ -269,5 +458,68 @@ export const demoMetrics: Metric[] = [
       "enrolment_months.member_id -> members.id (many_to_one)",
       "claims.member_id -> members.id (many_to_one)"
     ]
+  },
+  {
+    id: "decline_rate",
+    label: "Decline rate",
+    description: "Declined claim value divided by billed claim value for the selected reporting slice.",
+    formula: {
+      numerator: "SUM(claim_lines.declined_amount)",
+      denominator: "SUM(claim_lines.billed_amount)",
+      expression: "SUM(claim_lines.declined_amount) / NULLIF(SUM(claim_lines.billed_amount), 0)"
+    },
+    required_tables: ["claim_lines", "claims"],
+    time_anchor: "claim_lines.service_date",
+    currency: null,
+    filters_default: ["claim_lines.billed_amount > 0"],
+    synonyms: ["decline rate", "denial rate", "rejection rate"],
+    owner: "claims governance",
+    version: "Vellum 2.5",
+    last_reviewed: "2026-05-22",
+    allowed_dimensions: ["consultant_specialty", "plan_tier", "region"],
+    join_preview: [
+      "claim_lines.claim_id -> claims.id (many_to_one)",
+      "claim_lines.provider_id -> providers.id (many_to_one)"
+    ]
+  },
+  {
+    id: "incurred_claims",
+    label: "Incurred claims",
+    description: "Total incurred claim value anchored on the date the claim was incurred.",
+    formula: {
+      numerator: "SUM(claims.net_incurred_amount)",
+      denominator: null,
+      expression: "SUM(claims.net_incurred_amount)"
+    },
+    required_tables: ["claims"],
+    time_anchor: "claims.incurred_date",
+    currency: "GBP",
+    filters_default: ["claims.status != 'void'"],
+    synonyms: ["incurred claims", "incurred loss", "claim cost"],
+    owner: "actuarial",
+    version: "Vellum 2.5",
+    last_reviewed: "2026-05-22",
+    allowed_dimensions: ["plan_tier", "region"],
+    join_preview: ["claims.member_id -> members.id (many_to_one)"]
+  },
+  {
+    id: "claim_severity",
+    label: "Claim severity",
+    description: "Average incurred value per distinct claim in the selected reporting period.",
+    formula: {
+      numerator: "SUM(claims.net_incurred_amount)",
+      denominator: "COUNT(DISTINCT claims.id)",
+      expression: "SUM(claims.net_incurred_amount) / NULLIF(COUNT(DISTINCT claims.id), 0)"
+    },
+    required_tables: ["claims"],
+    time_anchor: "claims.incurred_date",
+    currency: "GBP",
+    filters_default: ["claims.status != 'void'"],
+    synonyms: ["claim severity", "average claim size", "average claim amount"],
+    owner: "actuarial",
+    version: "Vellum 2.5",
+    last_reviewed: "2026-05-22",
+    allowed_dimensions: ["plan_tier", "region"],
+    join_preview: ["claims.member_id -> members.id (many_to_one)"]
   }
 ];

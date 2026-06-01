@@ -62,7 +62,7 @@ Current first slice:
   generation, returning a safety rule ID for the UI rejection state.
 - `POST /ask` now orchestrates the first product-facing flow: answer,
   clarification, or blocked state from one endpoint.
-- `GET /ask/examples` exposes seventeen golden demo questions, and tests run each
+- `GET /ask/examples` exposes twenty golden demo questions, and tests run each
   example through `/ask` to protect answer, date-range-required,
   clarification, blocked, and out-of-scope states.
 - `docs/api-contract.md` documents the current backend API surface for frontend
@@ -77,9 +77,9 @@ Current first slice:
 - `POST /ask` now infers supported date ranges and plan-tier filters from the
   question for the product endpoint. It handles quarter phrases such as
   `Q1 2026`, ISO date ranges, and the current demo plan tiers without OpenAI.
-- `decline_rate` now has an ungrouped deterministic path through catalogue
-  resolution, planning, guarded SQL generation, local demo execution, and ask
-  examples. Grouping by consultant specialty is the next slice.
+- `decline_rate` has deterministic ungrouped and consultant-specialty grouped
+  paths through catalogue resolution, planning, guarded SQL generation, local
+  demo execution, and ask examples.
 - `decline_rate by consultant specialty` is now supported as the first grouped
   analytics path, using `providers.specialty` through the approved
   `claim_lines -> providers` join.
@@ -216,6 +216,9 @@ Current frontend slice:
   clarification, blocked, out-of-scope, and date-range-required states.
 - Demo question controls load from `/ask/examples` when the backend is
   available, with saved demo fallbacks for no-API local viewing.
+- Saved frontend demo fallbacks now mirror the twenty backend ask examples and
+  all six active catalogue metrics, so offline viewing still shows the same
+  answer, clarification, blocked, date-required, and out-of-scope states.
 - Clarification candidates can be selected in the UI; the selected
   `metric_id` is sent back to `/ask` and still goes through catalogue
   resolution, deterministic planning, SQL guard validation, execution, and
