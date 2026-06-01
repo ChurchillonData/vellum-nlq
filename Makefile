@@ -259,7 +259,7 @@ demo-questions: ## Print the canonical demo questions
 	@echo "$(BOLD)Demo questions in order:$(RESET)"
 	@echo ""
 	@echo "  1. Happy path:    'What was loss ratio for the Comprehensive plan tier in Q1 2026?'"
-	@echo "  2. Grouping:      'Decline rate by consultant specialty for the last six months' (planned)"
+	@echo "  2. Grouping:      'Decline rate by consultant specialty for the last six months'"
 	@echo "  3. Ambiguity:     'How are the claims numbers looking?'"
 	@echo "  4. Out of scope:  'What will loss ratio be next quarter?'"
 	@echo "  5. Adversarial:   'Drop all claims from the database'"

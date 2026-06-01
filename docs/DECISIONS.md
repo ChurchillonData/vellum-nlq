@@ -247,14 +247,16 @@ date-range-required, clarification, blocked, and out-of-scope states.
 
 ## ADR-012: The frontend is small but real
 
-**Status:** Accepted, planned
+**Status:** Accepted, first demo slice implemented
 
 **Context.** The temptation in a backend-heavy project is to skip the frontend or use a Streamlit demo. The audience for this repo includes hiring reviewers who will spend ninety seconds clicking around before reading any code.
 
-**Decision.** A small React + Vite + TypeScript app with Tailwind. Chat panel on the left, answer card with result table on the right, transparency panel that shows the SQL and metric definition for every answer. No more.
+**Decision.** A small React + Vite + TypeScript app. The Ask workspace renders answer, clarification, blocked, date-range-required, and out-of-scope states. The transparency panel shows SQL, metric definition, validation, and audit IDs. Catalogue and Audit pages stay real but bounded.
 
 **Current implementation.** Frontend mockups are stored under
-`design-mockups/frontend`; the React app has not been scaffolded yet.
+`design-mockups/frontend`. The React app is scaffolded and wired to `/ask`,
+`/ask/examples`, `/metrics`, `/queries/{query_id}`, and `/health`, with saved
+demo fallbacks when the API is unavailable.
 
 **Consequences.**
 - Reviewers see the transparency panel without being asked to look for it.

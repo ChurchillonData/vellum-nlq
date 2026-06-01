@@ -26,7 +26,8 @@ in-memory demo executor until `VELLUM_EXECUTION_BACKEND=postgres` is set.
 Implemented today:
 
 - FastAPI backend with product-facing `/ask` and development query endpoints.
-- React + Vite frontend shell for the Ask workspace and Catalogue Explorer.
+- React + Vite frontend shell for the Ask workspace, Catalogue Explorer, and
+  Audit view.
 - Catalogue-backed deterministic paths for all six current metrics:
   `loss_ratio`, `paid_claims`, `claim_frequency`, `decline_rate`,
   `incurred_claims`, and `claim_severity`.
@@ -57,10 +58,12 @@ Implemented today:
 - Twenty `/ask/examples` items covered by unit tests.
 - YAML golden question suite covering the core demo contract.
 - First red-team suite for destructive questions and unsafe SQL guard cases.
+- GitHub Actions CI for backend unit, golden, red-team tests, and frontend
+  production build.
 
 Planned next:
 
-- Frontend polish against live backend responses and browser screenshots.
+- Browser-verified frontend polish against live backend responses.
 - Large portfolio demo dataset and live Postgres performance checks.
 - Pilot-readiness mapping layer for a partner insurer schema.
 
@@ -263,6 +266,9 @@ The current suite covers catalogue loading, deterministic resolution, planning,
 SQL generation, SQL guard checks, demo execution, ask audit coverage, audit
 lookup, `/ask` examples, the YAML golden question contract, and the first
 red-team suite.
+
+GitHub Actions runs the implemented backend test suites and the frontend build
+on pushes to `main` and on pull requests.
 
 ## Current API Surface
 

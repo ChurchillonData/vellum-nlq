@@ -201,6 +201,8 @@ Status: in progress
 
 - Build the analyst-facing query UI.
 - Show metric provenance, SQL, joins, validation state, and audit IDs.
+- Run implemented backend and frontend checks in GitHub Actions on every push
+  and pull request.
 - Scale the synthetic seed data from the small development slice to the
   portfolio demo target of 200,000 members across 18 months.
 - Review the synthetic distributions so loss ratio, frequency, severity, and
@@ -237,3 +239,5 @@ Current frontend slice:
   volume causes password mismatches.
 - A `make postgres-smoke` command verifies seeded Postgres table counts and
   representative guarded query execution through the read-only role.
+- GitHub Actions CI now runs backend unit tests, golden question tests,
+  red-team tests, and the frontend production build.
