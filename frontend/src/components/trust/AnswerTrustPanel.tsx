@@ -1,4 +1,4 @@
-import { Shield } from "lucide-react";
+import { AlertTriangle, Shield } from "lucide-react";
 
 import type { AskResponse, Metric } from "../../types";
 import { CleanCheck } from "../CleanCheck";
@@ -6,6 +6,7 @@ import { JoinDisplay } from "./JoinDisplay";
 import { MetaRow } from "./MetaRow";
 import { MetricInfoMark } from "./MetricInfoMark";
 import { SqlBlock } from "./SqlBlock";
+import { ValidationResult, ValidationStatusIcon } from "./ValidationResult";
 
 export function AnswerTrustPanel({
   askResult,
@@ -22,6 +23,7 @@ export function AnswerTrustPanel({
   const timeAnchor = answer?.provenance.time_anchor ?? metric?.time_anchor ?? "n/a";
   const queryId = answer?.query_id ?? askResult.query_id;
   const latency = answer?.latency ? formatLatency(answer.latency) : "pending";
+  const validationPassed = validation?.passed !== false;
 
   return (
     <aside className="trust-panel">
@@ -30,9 +32,9 @@ export function AnswerTrustPanel({
           <Shield size={26} />
           Trust & transparency
         </h2>
-        <span className="validation-pill ok">
-          <CleanCheck size="sm" />
-          validated
+        <span className={`validation-pill ${validationPassed ? "ok" : "danger"}`}>
+          {validationPassed ? <CleanCheck size="sm" /> : <AlertTriangle size={15} />}
+          {validationPassed ? "validated" : "validation failed"}
         </span>
       </div>
 
@@ -54,27 +56,32 @@ export function AnswerTrustPanel({
         />
         <MetaRow
           label="Validation result"
-          value={
-            validation?.passed
-              ? `${validation.rules_checked.length} rules checked - no violations`
-              : "pending"
-          }
-          icon={
-            <span className="validation-result-check">
-              <CleanCheck size="sm" />
-            </span>
-          }
-          tone="success"
+          value={<ValidationResult validation={validation} />}
+          icon={<ValidationStatusIcon validation={validation} />}
+          tone={validationPassed ? "success" : "danger"}
         />
         <MetaRow label="Audit / Query ID" value={queryId} mono />
         <MetaRow label="Latency" value={latency} mono />
       </dl>
 
-      <SqlBlock
-        compactSql={answer?.compact_sql}
-        sql={answer?.sql ?? "-- No SQL generated for this state."}
-      />
+      {validationPassed ? (
+        <SqlBlock
+          compactSql={answer?.compact_sql}
+          sql={answer?.sql ?? "-- No SQL generated for this state."}
+        />
+      ) : (
+        <UnsafeSqlNotice />
+      )}
     </aside>
+  );
+}
+
+function UnsafeSqlNotice() {
+  return (
+    <div className="unsafe-sql-notice" role="status">
+      <AlertTriangle size={18} />
+      <span>Generated SQL hidden because validation failed.</span>
+    </div>
   );
 }
 

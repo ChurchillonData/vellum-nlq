@@ -221,6 +221,9 @@ Current frontend slice:
 - The Ask trust panel now reads metric, time anchor, joins, query ID, and
   latency from the live answer payload, so repeated or changed questions update
   the full transparency panel.
+- Validation results now show a live checked-rule count, enumerate the rules
+  that passed, render violation details when validation fails, and hide unsafe
+  generated SQL from the answer panel.
 - Demo question controls load from `/ask/examples` when the backend is
   available, with saved demo fallbacks for no-API local viewing.
 - Saved frontend demo fallbacks now mirror the twenty backend ask examples and

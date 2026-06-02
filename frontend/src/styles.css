@@ -767,6 +767,12 @@ td {
   color: #b76a00;
 }
 
+.validation-pill.danger {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: var(--red);
+}
+
 .metadata-list {
   flex: 0 0 auto;
   margin: 20px 0 16px;
@@ -822,6 +828,60 @@ td {
 
 .validation-result-check .clean-check-sm {
   transform: scale(0.72);
+}
+
+.validation-result-alert {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #fecaca;
+  border-radius: 999px;
+  background: #fff1f2;
+  color: var(--red);
+}
+
+.validation-result-detail {
+  display: inline-flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.validation-rule-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 22px;
+  color: #475569;
+  font-family: "Nunito Sans", Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.validation-rule-list li::marker {
+  color: currentColor;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-weight: 700;
+}
+
+.violation-list {
+  color: var(--red);
+}
+
+.unsafe-sql-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fff1f2;
+  color: var(--red);
+  font-size: 16px;
+  font-weight: 700;
+  padding: 14px 16px;
 }
 
 .normal-meta {

@@ -16,6 +16,19 @@ describe("AnswerTrustPanel", () => {
     ).toBeInTheDocument();
     expect(screen.queryByText("loss_ratio (financial_kpi)")).not.toBeInTheDocument();
   });
+
+  it("shows validation violations and hides unsafe SQL", () => {
+    render(<AnswerTrustPanel askResult={failedValidationResult} metric={staleMetric} />);
+
+    expect(screen.getByText("validation failed")).toBeInTheDocument();
+    expect(screen.getByText(/blocked - 2 violations/i)).toBeInTheDocument();
+    expect(screen.getByText(/unknown_table/i)).toBeInTheDocument();
+    expect(screen.getByText(/unsafe_function/i)).toBeInTheDocument();
+    expect(
+      screen.getByText("Generated SQL hidden because validation failed.")
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Generated SQL \(parameterised\)/i)).not.toBeInTheDocument();
+  });
 });
 
 const askResult: AskResponse = {
@@ -93,4 +106,25 @@ const staleMetric: Metric = {
   synonyms: [],
   time_anchor: "claims.incurred_date",
   version: "Vellum 2.5"
+};
+
+const failedValidationResult: AskResponse = {
+  ...askResult,
+  answer: {
+    ...askResult.answer!,
+    validation: {
+      passed: false,
+      rejections: [
+        {
+          message: "Unknown table users is not allowed.",
+          rule: "unknown_table"
+        },
+        {
+          message: "Function pg_sleep is not allowed.",
+          rule: "unsafe_function"
+        }
+      ],
+      rules_checked: ["select_only", "table_allowlist"]
+    }
+  }
 };
