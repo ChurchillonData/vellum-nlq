@@ -335,15 +335,17 @@ Response includes:
 - `query_id`
 - `metric_id`
 - parameterised `sql`
-- parameterised `compact_sql` for a shorter display option when available
+- parameterised `compact_sql` for a shorter semantic-layer display option
 - bound `parameters`
 - `provenance`
 - SQL guard `validation`
 
 `provenance.result_shape.max_rows` is part of the result-size safety contract.
 The explainable `sql` remains the primary planned and guarded query. The
-`compact_sql` field is for UI display and demos; it does not let callers submit
-or execute arbitrary SQL.
+`compact_sql` field is for UI display and demos; it may reference clean
+`semantic.*` views so physical joins, CTEs, and supporting aggregation details
+stay hidden from non-specialist SQL readers. It does not let callers submit or
+execute arbitrary SQL.
 
 ### POST `/queries/execute`
 

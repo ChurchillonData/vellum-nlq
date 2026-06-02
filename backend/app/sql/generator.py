@@ -92,14 +92,9 @@ def generate_loss_ratio_query(plan: LogicalPlan) -> GeneratedQuery:
         )
 
     compiled = statement.compile(dialect=postgresql.dialect())
-    compact_compiled = _compact_loss_ratio_statement(
-        plan=plan,
-        claim_totals_query=claim_totals_query,
-        premium_totals_query=premium_totals_query,
-    ).compile(dialect=postgresql.dialect())
     return GeneratedQuery(
         sql=str(compiled),
-        compact_sql=str(compact_compiled),
+        compact_sql=_compact_metric_sql(plan, "loss_ratio"),
         parameters=compiled.params,
     )
 
@@ -129,7 +124,7 @@ def generate_paid_claims_query(plan: LogicalPlan) -> GeneratedQuery:
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())
-    return _generated_query(compiled)
+    return _generated_query(compiled, _compact_metric_sql(plan, "paid_claims"))
 
 
 def generate_incurred_claims_query(plan: LogicalPlan) -> GeneratedQuery:
@@ -159,7 +154,7 @@ def generate_incurred_claims_query(plan: LogicalPlan) -> GeneratedQuery:
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())
-    return _generated_query(compiled)
+    return _generated_query(compiled, _compact_metric_sql(plan, "incurred_claims"))
 
 
 def generate_claim_frequency_query(plan: LogicalPlan) -> GeneratedQuery:
@@ -235,7 +230,7 @@ def generate_claim_frequency_query(plan: LogicalPlan) -> GeneratedQuery:
         statement = select(claim_frequency).select_from(source)
 
     compiled = statement.compile(dialect=postgresql.dialect())
-    return _generated_query(compiled)
+    return _generated_query(compiled, _compact_metric_sql(plan, "claim_frequency"))
 
 
 def generate_claim_severity_query(plan: LogicalPlan) -> GeneratedQuery:
@@ -270,7 +265,7 @@ def generate_claim_severity_query(plan: LogicalPlan) -> GeneratedQuery:
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())
-    return _generated_query(compiled)
+    return _generated_query(compiled, _compact_metric_sql(plan, "claim_severity"))
 
 
 def generate_decline_rate_query(plan: LogicalPlan) -> GeneratedQuery:
@@ -306,48 +301,93 @@ def generate_decline_rate_query(plan: LogicalPlan) -> GeneratedQuery:
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())
-    return _generated_query(compiled)
+    return _generated_query(compiled, _compact_metric_sql(plan, "decline_rate"))
 
 
-def _generated_query(compiled) -> GeneratedQuery:
-    """Return a generated query when compact SQL matches the full SQL."""
+def _generated_query(compiled, compact_sql: str | None = None) -> GeneratedQuery:
+    """Return generated SQL with an optional semantic-layer display query."""
     sql = str(compiled)
-    return GeneratedQuery(sql=sql, compact_sql=sql, parameters=compiled.params)
+    return GeneratedQuery(
+        sql=sql,
+        compact_sql=compact_sql or sql,
+        parameters=compiled.params,
+    )
 
 
-def _compact_loss_ratio_statement(
-    plan: LogicalPlan,
-    claim_totals_query,
-    premium_totals_query,
-):
-    """Build a shorter loss-ratio statement with the same aggregation grain."""
+def _compact_metric_sql(plan: LogicalPlan, metric_id: str) -> str:
+    """Build display SQL over semantic views, keeping physical joins hidden."""
     group_key = _group_key(plan)
-    claim_totals = claim_totals_query.subquery("claim_totals")
-    premium_totals = premium_totals_query.subquery("premium_totals")
+    metric = _compact_metric_definition(metric_id)
+    filters = [f"{metric['date_column']} BETWEEN %(start_date)s AND %(end_date)s"]
 
-    loss_ratio = (
-        func.sum(claim_totals.c.incurred_claims)
-        / func.nullif(func.sum(premium_totals.c.earned_premium), 0)
-    ).label("loss_ratio")
+    if metric_id in {"loss_ratio", "incurred_claims", "claim_frequency"}:
+        filters.append("status != %(excluded_status)s")
+    if metric_id == "claim_severity":
+        filters.append("status = %(closed_status)s")
+    if plan.plan_tier:
+        filters.append("plan_tier = %(plan_tier)s")
 
+    select_lines = ["SELECT"]
     if group_key is None:
-        source = claim_totals.join(
-            premium_totals,
-            claim_totals.c.member_id == premium_totals.c.member_id,
-        )
-        return select(loss_ratio).select_from(source)
+        select_lines.append(f"    {metric['expression']} AS {metric_id}")
+    else:
+        select_lines.append(f"    {group_key},")
+        select_lines.append(f"    {metric['expression']} AS {metric_id}")
 
-    source = claim_totals.join(
-        premium_totals,
-        claim_totals.c[group_key] == premium_totals.c[group_key],
-    )
-    return (
-        select(claim_totals.c[group_key], loss_ratio)
-        .select_from(source)
-        .group_by(claim_totals.c[group_key])
-        .order_by(loss_ratio.element.desc())
-        .limit(_result_limit(plan))
-    )
+    lines = [
+        *select_lines,
+        f"FROM {metric['source']}",
+        "WHERE " + filters[0],
+        *[f"  AND {item}" for item in filters[1:]],
+    ]
+
+    if group_key is not None:
+        lines.extend(
+            [
+                f"GROUP BY {group_key}",
+                f"ORDER BY {metric_id} DESC",
+                "LIMIT %(result_limit)s",
+            ]
+        )
+
+    return "\n".join(lines)
+
+
+def _compact_metric_definition(metric_id: str) -> dict[str, str]:
+    """Return trusted display metadata for the compact SQL view."""
+    definitions = {
+        "loss_ratio": {
+            "source": "semantic.loss_ratio_base",
+            "date_column": "reporting_date",
+            "expression": "SUM(incurred_claims) / NULLIF(SUM(earned_premium), 0)",
+        },
+        "paid_claims": {
+            "source": "semantic.claim_payments",
+            "date_column": "paid_date",
+            "expression": "SUM(net_paid_amount)",
+        },
+        "incurred_claims": {
+            "source": "semantic.claims",
+            "date_column": "incurred_date",
+            "expression": "SUM(net_incurred_amount)",
+        },
+        "claim_frequency": {
+            "source": "semantic.claim_activity",
+            "date_column": "reporting_date",
+            "expression": "COUNT(DISTINCT claim_id) * 1000 / NULLIF(SUM(member_months), 0)",
+        },
+        "claim_severity": {
+            "source": "semantic.claim_payments",
+            "date_column": "paid_date",
+            "expression": "SUM(net_paid_amount) / NULLIF(COUNT(DISTINCT claim_id), 0)",
+        },
+        "decline_rate": {
+            "source": "semantic.claim_lines",
+            "date_column": "service_date",
+            "expression": "SUM(declined_line_count) / NULLIF(COUNT(*), 0)",
+        },
+    }
+    return definitions[metric_id]
 
 
 def _aggregate_statement(plan: LogicalPlan, source, filters, metric_column):
