@@ -104,6 +104,11 @@ def test_preview_endpoint_returns_loss_ratio_sql_and_provenance() -> None:
     assert "Comprehensive" not in body["compact_sql"]
     assert body["parameters"]["plan_tier"] == "Comprehensive"
     assert body["provenance"]["time_anchor"] == "claims.incurred_date"
+    assert body["provenance"]["joins_used"] == [
+        "claims.member_id = members.id (many_to_one)",
+        "premium.member_id = members.id (many_to_one)",
+        "members.plan_id = plans.id (many_to_one)",
+    ]
     assert body["provenance"]["result_shape"] == {
         "columns": ["loss_ratio"],
         "grain": "single_metric",
@@ -138,3 +143,25 @@ def test_preview_endpoint_rejects_reverse_date_range() -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_preview_endpoint_returns_question_specific_join_path() -> None:
+    response = TestClient(app).post(
+        "/queries/preview",
+        json={
+            "metric_id": "decline_rate",
+            "start_date": "2026-01-01",
+            "end_date": "2026-03-31",
+            "group_by": ["consultant_specialty"],
+        },
+    )
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["provenance"]["joins_used"] == [
+        "claim_lines.claim_id = claims.id (many_to_one)",
+        "claims.member_id = members.id (many_to_one)",
+        "members.plan_id = plans.id (many_to_one)",
+        "claim_lines.provider_id = providers.id (many_to_one)",
+    ]

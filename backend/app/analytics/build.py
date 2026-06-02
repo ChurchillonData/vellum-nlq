@@ -65,5 +65,6 @@ def build_query(catalogue: Catalogue, request: AnalyticsRequest) -> QueryBuildRe
 def _describe_join(join: JoinEdge) -> str:
     return (
         f"{join.left_table}.{join.left_column} = "
-        f"{join.right_table}.{join.right_column}"
+        f"{join.right_table}.{join.right_column} "
+        f"({join.cardinality})"
     )

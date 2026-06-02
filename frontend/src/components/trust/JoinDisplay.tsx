@@ -1,24 +1,60 @@
-export function JoinDisplay({ joins }: { joins?: string[] }) {
-  const joined = joins?.join("; ") ?? "claims -> premium (member_id)";
+type ParsedJoin = {
+  left: string;
+  right: string;
+  cardinality: string | null;
+};
 
-  if (joined.includes("claims") && joined.includes("premium")) {
-    return (
-      <span className="join-display">
-        <span>claims</span>
-        <JoinBranchMark />
-        <span>premium</span>
-        <span className="join-key">(member_id)</span>
-      </span>
-    );
+export function JoinDisplay({ joins }: { joins?: string[] }) {
+  if (!joins || joins.length === 0) {
+    return <span className="join-empty">No joins used</span>;
   }
 
-  return <span>{joined.replace(/->|â†’/g, "âŸ•")}</span>;
+  return (
+    <span className="join-list">
+      {joins.map((join) => (
+        <JoinEdgeDisplay join={join} key={join} />
+      ))}
+    </span>
+  );
+}
+
+function JoinEdgeDisplay({ join }: { join: string }) {
+  const parsed = parseJoin(join);
+
+  if (!parsed) {
+    return <span className="join-edge">{join}</span>;
+  }
+
+  return (
+    <span className="join-edge">
+      <span>{parsed.left}</span>
+      <JoinBranchMark />
+      <span>{parsed.right}</span>
+      {parsed.cardinality ? (
+        <span className="join-cardinality">{parsed.cardinality}</span>
+      ) : null}
+    </span>
+  );
+}
+
+function parseJoin(join: string): ParsedJoin | null {
+  const match = join.match(/^(.+?)\s=\s(.+?)(?:\s\((.+)\))?$/);
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    left: match[1],
+    right: match[2],
+    cardinality: match[3] ?? null
+  };
 }
 
 function JoinBranchMark() {
   return (
     <svg
-      aria-label="left join"
+      aria-label="join link"
       className="join-branch-mark"
       fill="none"
       height="16"
