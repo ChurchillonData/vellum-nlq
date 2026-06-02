@@ -44,7 +44,7 @@ export function SqlBlock({
           <button
             className="icon-button"
             disabled={!activeSql.trim()}
-            onClick={() => navigator.clipboard.writeText(activeSql)}
+            onClick={() => void copyText(activeSql)}
             type="button"
           >
             <Copy size={16} />
@@ -69,6 +69,27 @@ export function SqlBlock({
       </div>
     </div>
   );
+}
+
+async function copyText(text: string): Promise<void> {
+  if (!text.trim()) {
+    return;
+  }
+
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.setAttribute("readonly", "");
+  textArea.style.position = "fixed";
+  textArea.style.opacity = "0";
+  document.body.appendChild(textArea);
+  textArea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textArea);
 }
 
 const sqlKeywords = new Set([
