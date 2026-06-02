@@ -4,6 +4,15 @@ from app.analytics.build import build_query
 from app.analytics.models import AnalyticsRequest
 
 
+def _parameter_placeholders(sql: str) -> set[str]:
+    """Return parameter names referenced by SQLAlchemy's PostgreSQL placeholders."""
+    return {
+        token.split(")s", 1)[0]
+        for token in sql.split("%(")[1:]
+        if ")s" in token
+    }
+
+
 def test_loss_ratio_query_is_parameterised_and_has_provenance(health_uk_catalogue) -> None:
     request = AnalyticsRequest(
         metric_id="loss_ratio",
@@ -37,6 +46,45 @@ def test_loss_ratio_query_is_parameterised_and_has_provenance(health_uk_catalogu
     assert result.provenance.result_shape.grain == "single_metric"
     assert result.provenance.result_shape.max_rows == 1
     assert result.validation.passed is True
+
+
+def test_compact_sql_uses_only_explainable_pipeline_parameters(
+    health_uk_catalogue,
+) -> None:
+    requests = [
+        AnalyticsRequest(
+            metric_id="loss_ratio",
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 3, 31),
+            plan_tier="Comprehensive",
+        ),
+        AnalyticsRequest(
+            metric_id="paid_claims",
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 3, 31),
+            group_by=("region",),
+        ),
+        AnalyticsRequest(
+            metric_id="claim_severity",
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 3, 31),
+            plan_tier="Executive",
+        ),
+        AnalyticsRequest(
+            metric_id="decline_rate",
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 3, 31),
+            group_by=("consultant_specialty",),
+        ),
+    ]
+
+    for request in requests:
+        result = build_query(health_uk_catalogue, request)
+        compact_params = _parameter_placeholders(result.query.compact_sql)
+
+        assert compact_params
+        assert compact_params <= set(result.query.parameters)
+        assert compact_params <= _parameter_placeholders(result.query.sql)
 
 
 def test_paid_claims_query_is_parameterised_and_has_provenance(health_uk_catalogue) -> None:
