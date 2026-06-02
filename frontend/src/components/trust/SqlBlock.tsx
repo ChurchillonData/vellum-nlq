@@ -1,0 +1,99 @@
+import { Code2, Copy } from "lucide-react";
+import type { ReactNode } from "react";
+
+export function SqlBlock({ sql }: { sql: string }) {
+  const lines = sql.split("\n");
+
+  return (
+    <div className="sql-status">
+      <div className="sql-header">
+        <span>
+          <Code2 className="sql-generated-icon" size={24} />
+          Generated SQL (parameterised)
+        </span>
+        <button
+          className="icon-button"
+          disabled={!sql.trim()}
+          onClick={() => navigator.clipboard.writeText(sql)}
+          type="button"
+        >
+          <Copy size={16} />
+          Copy
+        </button>
+      </div>
+      <div className="sql-frame">
+        <div className="line-numbers" aria-hidden="true">
+          {lines.map((_, index) => (
+            <span key={index}>{index + 1}</span>
+          ))}
+        </div>
+        <pre className="sql-block">
+          {lines.map((line, index) => (
+            <span className="sql-line" key={`${line}-${index}`}>
+              {highlightSqlLine(line)}
+              {index < lines.length - 1 ? "\n" : ""}
+            </span>
+          ))}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
+const sqlKeywords = new Set([
+  "AND",
+  "AS",
+  "BETWEEN",
+  "BY",
+  "FROM",
+  "GROUP",
+  "JOIN",
+  "ON",
+  "SELECT",
+  "USING",
+  "WHERE",
+  "WITH"
+]);
+
+const sqlFunctions = new Set(["COUNT", "SUM", "AVG", "MIN", "MAX", "NULLIF"]);
+
+function highlightSqlLine(line: string): ReactNode[] {
+  const commentStart = line.indexOf("--");
+
+  if (commentStart === 0) {
+    return [<span className="sql-comment" key="comment">{line}</span>];
+  }
+
+  if (commentStart > 0) {
+    return [
+      ...highlightSqlLine(line.slice(0, commentStart)),
+      <span className="sql-comment" key="comment">{line.slice(commentStart)}</span>
+    ];
+  }
+
+  return line
+    .split(/('[^']*'|\b\d+(?:\.\d+)?\b|\b[A-Za-z_][A-Za-z0-9_]*\b)/g)
+    .map((part, index) => {
+      if (!part) {
+        return part;
+      }
+
+      if (/^'[^']*'$/.test(part)) {
+        return <span className="sql-string" key={`${part}-${index}`}>{part}</span>;
+      }
+
+      if (/^\d+(?:\.\d+)?$/.test(part)) {
+        return <span className="sql-number" key={`${part}-${index}`}>{part}</span>;
+      }
+
+      if (sqlKeywords.has(part.toUpperCase())) {
+        return <span className="sql-keyword" key={`${part}-${index}`}>{part}</span>;
+      }
+
+      if (sqlFunctions.has(part.toUpperCase())) {
+        return <span className="sql-function" key={`${part}-${index}`}>{part}</span>;
+      }
+
+      return part;
+    });
+}

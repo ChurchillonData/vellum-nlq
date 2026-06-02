@@ -1,22 +1,17 @@
 import {
-  AlertTriangle,
   BarChart3,
   BotMessageSquare,
   CircleSlash,
-  HelpCircle,
   Play,
-  ShieldAlert,
   Sparkles,
-  Users,
-  WalletCards
+  Users
 } from "lucide-react";
 import { useState } from "react";
 
-import { getDisplayRuleId, getSafetyReasonLines } from "../safetyDisplay";
-import type { AskExample, AskRequestPayload, AskResponse, Candidate, Metric } from "../types";
-import { CleanCheck } from "./CleanCheck";
-import { ResultTable } from "./ResultTable";
+import type { AskExample, AskRequestPayload, AskResponse, Metric } from "../types";
+import { EmptyAskState } from "./EmptyAskState";
 import { TrustPanel } from "./TrustPanel";
+import { WorkspaceState } from "./WorkspaceState";
 
 type AskWorkspaceProps = {
   askResult: AskResponse | null;
@@ -165,153 +160,10 @@ export function AskWorkspace({
   );
 }
 
-function WorkspaceState({
-  askResult,
-  metric,
-  onSelectCandidate
-}: {
-  askResult: AskResponse;
-  metric: Metric | null;
-  onSelectCandidate: (candidate: Candidate) => void;
-}) {
-  if (askResult.status === "answer" && askResult.answer) {
-    return (
-      <section className="result-section">
-        <p className="section-label">Result summary</p>
-        <div className="answer-card">
-          <div className="answer-icon success">
-            <CleanCheck size="lg" />
-          </div>
-          <div className="answer-content">
-            <p className="answer-text">
-              <HighlightedAnswer text={askResult.answer.answer} />
-            </p>
-            <ResultTable rows={askResult.answer.rows} />
-            <p className="row-note">
-              {askResult.answer.row_count} row
-              {askResult.answer.row_count === 1 ? "" : "s"} - based on{" "}
-              {metric?.id === "loss_ratio"
-                ? "incurred claims / earned premium"
-                : metric?.formula.expression ?? askResult.answer.provenance.formula ?? "catalogue formula"}
-            </p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (askResult.status === "clarification_required") {
-    return (
-      <section className="state-card amber">
-        <div className="state-heading">
-          <HelpCircle size={25} />
-          Clarification needed
-        </div>
-        <p>{askResult.message}</p>
-        <div className="candidate-grid">
-          {askResult.candidates.map((candidate, index) => (
-            <button
-              className="candidate-card"
-              key={candidate.metric_id}
-              onClick={() => onSelectCandidate(candidate)}
-              type="button"
-            >
-              <span className="candidate-icon">
-                {index === 1 ? (
-                  <WalletCards size={24} />
-                ) : index === 2 ? (
-                  <Users size={24} />
-                ) : (
-                  <BarChart3 size={24} />
-                )}
-              </span>
-              <strong>{candidate.label}</strong>
-              <span>{candidate.reason}</span>
-            </button>
-          ))}
-        </div>
-        <div className="state-footnote">
-          After selection, Vellum will generate validated SQL and full provenance.
-        </div>
-      </section>
-    );
-  }
-
-  if (askResult.status === "blocked") {
-    const reasonLines = getSafetyReasonLines(askResult.safety?.reason);
-
-    return (
-      <section className="state-card red">
-        <div className="state-heading">
-          <AlertTriangle size={25} />
-          Request refused
-        </div>
-        <p>{askResult.message}</p>
-        <div className="safety-rule-box">
-          <span className="safety-rule-icon" aria-hidden="true">
-            <ShieldAlert size={25} />
-          </span>
-          <code>
-            Safety rule fired: <strong>{getDisplayRuleId(askResult.safety?.rule_id)}</strong>
-            <span className="safety-rule-summary">{reasonLines.summary}</span>
-            {reasonLines.detail && <span className="safety-rule-detail">{reasonLines.detail}</span>}
-          </code>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="state-card neutral">
-      <div className="state-heading">
-        <HelpCircle size={22} />
-        More information needed
-      </div>
-      <p>{askResult.message}</p>
-    </section>
-  );
-}
-
-function EmptyAskState() {
-  return (
-    <section className="state-card neutral empty-ask-state">
-      <div className="state-heading">
-        <HelpCircle size={22} />
-        Ready for a real query
-      </div>
-      <p>
-        Enter a question or choose an example. Vellum will only show results after the
-        backend returns an audited ask response.
-      </p>
-    </section>
-  );
-}
-
 function getClarificationDefaults(askResult: AskResponse | null): Partial<AskRequestPayload> {
   return {
     end_date: askResult?.resolved_request?.end_date ?? "2026-03-31",
     plan_tier: askResult?.resolved_request?.plan_tier ?? "Comprehensive",
     start_date: askResult?.resolved_request?.start_date ?? "2026-01-01"
   };
-}
-
-function HighlightedAnswer({ text }: { text: string }) {
-  const parts = text.split(/(0\.\d{3}|\d{1,3}\.\d%)/g);
-
-  return (
-    <>
-      {parts.map((part, index) =>
-        /^(0\.\d{3}|\d{1,3}\.\d%)$/.test(part) ? (
-          <strong
-            className={part.endsWith("%") ? "answer-percent" : "answer-number"}
-            key={`${part}-${index}`}
-          >
-            {part}
-          </strong>
-        ) : (
-          part
-        )
-      )}
-    </>
-  );
 }
