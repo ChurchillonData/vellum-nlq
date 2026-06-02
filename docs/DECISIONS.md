@@ -206,9 +206,10 @@ an optional suite because they require a migrated and seeded database.
 
 **Decision.** A synthetic data generator that produces realistic UK PMI claims for two hundred thousand members across eighteen months. Distributions are calibrated to public ABI and PRA aggregate statistics for the UK PMI market.
 
-**Current implementation.** The current generator supports a smaller
-development slice for deterministic backend tests. The large portfolio demo
-dataset is still planned.
+**Current implementation.** The generator supports both the smaller local
+development slice and a portfolio profile of 200,000 members across 18 months.
+The portfolio path loads in chunks and has a dry-run report for table-level row
+counts. Full performance tuning against a seeded database is still planned.
 
 **Consequences.**
 - The repo is self-contained. Anyone can clone and run.

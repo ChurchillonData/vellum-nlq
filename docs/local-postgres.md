@@ -186,6 +186,15 @@ That runs `backend/seeds/generate.py --profile portfolio`, which generates
 member chunks so the seeding process does not need to hold millions of premium
 and enrolment rows in memory at once.
 
+Preview the portfolio load plan first:
+
+```bash
+make seed-portfolio-dry-run
+```
+
+The dry run prints the profile, member count, month count, chunk count, and
+table-level row counts without writing to Postgres.
+
 You can override the profile values when needed:
 
 ```bash

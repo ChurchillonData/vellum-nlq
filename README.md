@@ -52,6 +52,8 @@ Implemented today:
 - Alembic migration and seed command for deterministic synthetic data.
 - Configurable execution backend: local demo by default, Postgres through the
   read-only URL when enabled.
+- Portfolio seed dry run that previews the 200,000-member load plan and
+  table-level row counts without touching Postgres.
 - Local JSONL audit events for all `/ask` outcomes, successful previews, and
   demo executions.
 - Append-only Postgres audit table behind `VELLUM_AUDIT_BACKEND=postgres`.
@@ -227,8 +229,8 @@ The current SQL guard checks:
 The current allowlisted functions are deliberately small: `CAST`, `COUNT`,
 `NULLIF`, and `SUM`.
 
-Planned safety work includes expanded red-team coverage and live Postgres
-integration tests.
+Planned safety work includes expanded red-team coverage and operational
+security review.
 
 Read `docs/safety-model.md` for the current safety boundary and target model.
 

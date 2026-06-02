@@ -1,7 +1,16 @@
 from datetime import date
 from decimal import Decimal
 
+import pytest
+
 from app.seeds.synthetic import build_seed_data
+from seeds.generate import (
+    add_row_counts,
+    chunk_ranges,
+    count_seed_rows,
+    empty_row_counts,
+    resolve_seed_config,
+)
 
 
 def test_seed_data_builds_related_claims_rows() -> None:
@@ -45,6 +54,60 @@ def test_seed_data_supports_chunked_portfolio_generation() -> None:
     assert second_chunk.providers == []
     assert len(first_chunk.premium) + len(second_chunk.premium) == len(full_seed.premium)
     assert len(first_chunk.claims) + len(second_chunk.claims) == len(full_seed.claims)
+
+
+def test_seed_cli_resolves_portfolio_profile_defaults() -> None:
+    config = resolve_seed_config("portfolio")
+
+    assert config.member_count == 200_000
+    assert config.month_count == 18
+    assert config.chunk_size == 10_000
+
+
+def test_seed_cli_allows_safe_profile_overrides() -> None:
+    config = resolve_seed_config(
+        "portfolio",
+        member_count=50_000,
+        month_count=12,
+        chunk_size=5_000,
+    )
+
+    assert config.member_count == 50_000
+    assert config.month_count == 12
+    assert config.chunk_size == 5_000
+
+
+def test_seed_cli_rejects_invalid_counts() -> None:
+    with pytest.raises(ValueError, match="member_count"):
+        resolve_seed_config("local", member_count=0)
+
+    with pytest.raises(ValueError, match="month_count"):
+        resolve_seed_config("local", month_count=0)
+
+    with pytest.raises(ValueError, match="chunk_size"):
+        resolve_seed_config("local", chunk_size=0)
+
+
+def test_seed_cli_builds_chunk_plan() -> None:
+    assert chunk_ranges(member_count=25, chunk_size=10) == [(0, 10), (10, 10), (20, 5)]
+
+
+def test_seed_cli_reports_all_table_counts() -> None:
+    seed_data = build_seed_data(member_count=12, month_count=3)
+    totals = empty_row_counts()
+
+    add_row_counts(totals, count_seed_rows(seed_data))
+
+    assert totals["plans"] == 3
+    assert totals["providers"] == 4
+    assert totals["members"] == 12
+    assert totals["enrolment_months"] == 36
+    assert totals["premium"] == 36
+    assert totals["claims"] == len(seed_data.claims)
+    assert totals["claim_lines"] == len(seed_data.claim_lines)
+    assert totals["claim_status_history"] == len(seed_data.claim_status_history)
+    assert totals["reserves"] == len(seed_data.reserves)
+    assert totals["declines"] == len(seed_data.declines)
 
 
 def test_seed_data_supports_q1_comprehensive_loss_ratio_demo() -> None:
