@@ -250,3 +250,6 @@ Current frontend slice:
   production build.
 - `make test-integration` now runs the optional live Postgres integration suite
   for seeded local or hosted databases.
+- Partner schema mapping validation now exists for pilot readiness. The first
+  slice validates a fictional insurer mapping against the canonical `health-uk`
+  tables and columns, and reports mapping coverage without rewriting SQL.

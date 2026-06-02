@@ -1,0 +1,140 @@
+partner: example-insurer
+catalogue: health-uk
+version: 0.1.0
+tables:
+  - canonical_table: plans
+    source_table: product.plan_catalogue
+    columns:
+      - canonical_column: id
+        source_column: plan_id
+      - canonical_column: plan_code
+        source_column: product_code
+      - canonical_column: plan_tier
+        source_column: cover_tier
+      - canonical_column: hospital_network
+        source_column: network_name
+      - canonical_column: excess_amount
+        source_column: member_excess_gbp
+  - canonical_table: members
+    source_table: policy.covered_lives
+    columns:
+      - canonical_column: id
+        source_column: member_id
+      - canonical_column: plan_id
+        source_column: plan_id
+      - canonical_column: region
+        source_column: postcode_region
+      - canonical_column: date_of_birth
+        source_column: dob
+      - canonical_column: enrolled_from
+        source_column: cover_start_date
+      - canonical_column: enrolled_to
+        source_column: cover_end_date
+  - canonical_table: enrolment_months
+    source_table: policy.member_month_exposure
+    columns:
+      - canonical_column: id
+        source_column: exposure_id
+      - canonical_column: member_id
+        source_column: member_id
+      - canonical_column: coverage_month
+        source_column: exposure_month
+      - canonical_column: member_months
+        source_column: covered_member_months
+  - canonical_table: providers
+    source_table: provider.provider_master
+    columns:
+      - canonical_column: id
+        source_column: provider_id
+      - canonical_column: name
+        source_column: provider_name
+      - canonical_column: specialty
+        source_column: consultant_specialty
+      - canonical_column: network_status
+        source_column: network_status
+      - canonical_column: region
+        source_column: provider_region
+  - canonical_table: claims
+    source_table: claims.claim_header
+    columns:
+      - canonical_column: id
+        source_column: claim_id
+      - canonical_column: member_id
+        source_column: member_id
+      - canonical_column: incurred_date
+        source_column: incurred_on
+      - canonical_column: received_date
+        source_column: received_on
+      - canonical_column: adjudicated_date
+        source_column: adjudicated_on
+      - canonical_column: closed_date
+        source_column: closed_on
+      - canonical_column: status
+        source_column: claim_status
+      - canonical_column: net_incurred_amount
+        source_column: net_incurred_gbp
+  - canonical_table: claim_lines
+    source_table: claims.claim_service_line
+    columns:
+      - canonical_column: id
+        source_column: claim_line_id
+      - canonical_column: claim_id
+        source_column: claim_id
+      - canonical_column: provider_id
+        source_column: provider_id
+      - canonical_column: service_date
+        source_column: service_on
+      - canonical_column: procedure_code
+        source_column: procedure_code
+      - canonical_column: diagnosis_category
+        source_column: diagnosis_group
+      - canonical_column: paid_date
+        source_column: paid_on
+      - canonical_column: net_paid_amount
+        source_column: net_paid_gbp
+      - canonical_column: declined_amount
+        source_column: declined_gbp
+  - canonical_table: claim_status_history
+    source_table: claims.claim_status_event
+    columns:
+      - canonical_column: id
+        source_column: status_event_id
+      - canonical_column: claim_id
+        source_column: claim_id
+      - canonical_column: status
+        source_column: status_after_change
+      - canonical_column: changed_at
+        source_column: changed_at
+  - canonical_table: reserves
+    source_table: finance.reserve_snapshot
+    columns:
+      - canonical_column: id
+        source_column: reserve_snapshot_id
+      - canonical_column: claim_id
+        source_column: claim_id
+      - canonical_column: snapshot_date
+        source_column: snapshot_on
+      - canonical_column: case_reserve_amount
+        source_column: case_reserve_gbp
+  - canonical_table: premium
+    source_table: finance.earned_premium
+    columns:
+      - canonical_column: id
+        source_column: premium_id
+      - canonical_column: member_id
+        source_column: member_id
+      - canonical_column: coverage_month
+        source_column: earning_month
+      - canonical_column: earned_amount
+        source_column: earned_premium_gbp
+  - canonical_table: declines
+    source_table: claims.decline_reason
+    columns:
+      - canonical_column: id
+        source_column: decline_id
+      - canonical_column: claim_line_id
+        source_column: claim_line_id
+      - canonical_column: reason_code
+        source_column: decline_reason_code
+      - canonical_column: reason_text
+        source_column: decline_reason_text

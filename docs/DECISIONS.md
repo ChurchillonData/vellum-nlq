@@ -271,6 +271,37 @@ demo fallbacks when the API is unavailable.
 
 ---
 
+## ADR-013: Partner mappings are validated before runtime rewrite
+
+**Status:** Accepted, first validation slice implemented
+
+**Context.** A real insurer will not have tables named exactly like Vellum's
+canonical `health-uk` catalogue. The risky version of this problem is to start
+rewriting generated SQL against arbitrary partner table names before we know
+whether the source schema actually contains the fields needed by the governed
+metrics.
+
+**Decision.** Partner schema mapping starts as a typed YAML validation layer.
+The mapping must point canonical Vellum tables and columns to partner source
+tables and columns. Vellum validates the canonical side and reports coverage.
+Runtime SQL rewriting is a later step after a private partner schema inventory
+is available.
+
+**Consequences.**
+- A partner engineering team can review the exact fields Vellum needs without
+  exposing real data.
+- Unknown canonical tables or columns fail fast.
+- Mapping gaps become explicit onboarding work rather than hidden SQL failures.
+- The public repository can include a fictional mapping template safely.
+
+**Rejected alternatives.**
+- *Rewrite SQL immediately.* Rejected because it gives a false sense of pilot
+  readiness before source fields and transforms have been confirmed.
+- *Ask partners to rename their warehouse tables.* Rejected because real
+  insurers will not reshape production data just to test a portfolio demo.
+
+---
+
 ## What is deliberately not in this document
 
 These are decisions a reviewer might expect to see explained, but the reasoning is obvious or generic.

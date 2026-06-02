@@ -54,6 +54,7 @@ Implemented today:
   read-only URL when enabled.
 - Portfolio seed dry run that previews the 200,000-member load plan and
   table-level row counts without touching Postgres.
+- Partner schema mapping validator with a fictional insurer mapping example.
 - Local JSONL audit events for all `/ask` outcomes, successful previews, and
   demo executions.
 - Append-only Postgres audit table behind `VELLUM_AUDIT_BACKEND=postgres`.
@@ -67,7 +68,7 @@ Planned next:
 
 - Browser-verified frontend polish against live backend responses.
 - Large portfolio demo dataset and live Postgres performance checks.
-- Pilot-readiness mapping layer for a partner insurer schema.
+- Runtime use of partner mappings after a private insurer schema is available.
 
 ## Five-Minute Tour
 
@@ -80,7 +81,8 @@ If you have five minutes, read these files in this order.
 3. `backend/app/sql/guard.py` - the SQL validation boundary.
 4. `backend/app/ask/examples.py` - the current demo examples used by tests.
 5. `docs/local-postgres.md` - how the local database foundation works.
-6. `docs/DECISIONS.md` - the architectural decisions and what was rejected.
+6. `docs/schema-mapping.md` - how a partner insurer schema maps to Vellum.
+7. `docs/DECISIONS.md` - the architectural decisions and what was rejected.
 
 That tour shows what the current backend can answer, what it refuses, and why.
 

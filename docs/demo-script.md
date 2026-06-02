@@ -26,11 +26,12 @@ Current backend supports:
 
 Current backend does not yet support:
 
-- A partner data mapping layer for insurer-specific schemas.
 - The large portfolio demo dataset and performance-tuning pass.
 
 Live Postgres integration tests are implemented as an optional suite, but they
 need a migrated and seeded database before they can run.
+Partner schema mapping validation is implemented as a pilot-readiness boundary;
+runtime SQL rewriting through partner mappings is not enabled yet.
 
 Current frontend supports the Ask workspace, Catalogue Explorer, backend-backed
 demo examples, live `/ask` state rendering, and an Audit view that retrieves

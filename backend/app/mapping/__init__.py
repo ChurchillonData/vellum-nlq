@@ -1,0 +1,1 @@
+"""Partner schema mapping support."""

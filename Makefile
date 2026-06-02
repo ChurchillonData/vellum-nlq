@@ -157,6 +157,10 @@ list-metrics: ## Print all metrics in the active catalogue
 list-dimensions: ## Print all dimensions in the active catalogue
 	cd $(BACKEND_DIR) && $(PYTHON) -m app.semantic.catalogue --list-dimensions $(CATALOGUE)
 
+.PHONY: validate-example-mapping
+validate-example-mapping: ## Validate the example partner schema mapping
+	cd $(BACKEND_DIR) && $(PYTHON) -m app.mapping.validator mappings/health-uk/example_insurer.yaml --catalogue $(CATALOGUE)
+
 # ----------------------------------------------------------------------------
 # Testing
 # ----------------------------------------------------------------------------
