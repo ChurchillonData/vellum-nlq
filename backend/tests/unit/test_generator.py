@@ -23,6 +23,12 @@ def test_loss_ratio_query_is_parameterised_and_has_provenance(health_uk_catalogu
     assert result.query.parameters["start_date"] == date(2026, 1, 1)
     assert result.query.parameters["end_date"] == date(2026, 3, 31)
     assert result.query.parameters["plan_tier"] == "Comprehensive"
+    assert "WITH claim_totals AS" not in result.query.compact_sql
+    assert "claim_totals" in result.query.compact_sql
+    assert "premium_totals" in result.query.compact_sql
+    assert "%(start_date)s" in result.query.compact_sql
+    assert "%(plan_tier)s" in result.query.compact_sql
+    assert "Comprehensive" not in result.query.compact_sql
 
     assert result.provenance.metric_id == "loss_ratio"
     assert result.provenance.formula.startswith("SUM(claims.net_incurred_amount)")
@@ -46,6 +52,7 @@ def test_paid_claims_query_is_parameterised_and_has_provenance(health_uk_catalog
     assert "%(start_date)s" in result.query.sql
     assert "%(plan_tier)s" in result.query.sql
     assert "Comprehensive" not in result.query.sql
+    assert result.query.compact_sql == result.query.sql
     assert result.query.parameters["start_date"] == date(2026, 1, 1)
     assert result.query.parameters["end_date"] == date(2026, 3, 31)
     assert result.query.parameters["plan_tier"] == "Comprehensive"

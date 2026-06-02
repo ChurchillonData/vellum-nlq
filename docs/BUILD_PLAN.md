@@ -215,6 +215,8 @@ Current frontend slice:
 
 - The React Ask workspace calls the real `/ask` endpoint and renders answer,
   clarification, blocked, out-of-scope, and date-range-required states.
+- The Ask trust panel can switch generated SQL between the explainable
+  provenance-first view and the backend-provided compact display view.
 - Demo question controls load from `/ask/examples` when the backend is
   available, with saved demo fallbacks for no-API local viewing.
 - Saved frontend demo fallbacks now mirror the twenty backend ask examples and

@@ -1,8 +1,19 @@
 import { Code2, Copy } from "lucide-react";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
-export function SqlBlock({ sql }: { sql: string }) {
-  const lines = sql.split("\n");
+type SqlView = "explainable" | "compact";
+
+export function SqlBlock({
+  compactSql,
+  sql
+}: {
+  compactSql?: string | null;
+  sql: string;
+}) {
+  const [activeView, setActiveView] = useState<SqlView>("explainable");
+  const hasCompactSql = Boolean(compactSql && compactSql !== sql);
+  const activeSql = activeView === "compact" && hasCompactSql ? compactSql ?? sql : sql;
+  const lines = activeSql.split("\n");
 
   return (
     <div className="sql-status">
@@ -11,15 +22,35 @@ export function SqlBlock({ sql }: { sql: string }) {
           <Code2 className="sql-generated-icon" size={24} />
           Generated SQL (parameterised)
         </span>
-        <button
-          className="icon-button"
-          disabled={!sql.trim()}
-          onClick={() => navigator.clipboard.writeText(sql)}
-          type="button"
-        >
-          <Copy size={16} />
-          Copy
-        </button>
+        <div className="sql-header-actions">
+          {hasCompactSql ? (
+            <div aria-label="SQL view" className="sql-view-toggle" role="group">
+              <button
+                className={activeView === "explainable" ? "active" : ""}
+                onClick={() => setActiveView("explainable")}
+                type="button"
+              >
+                Explainable
+              </button>
+              <button
+                className={activeView === "compact" ? "active" : ""}
+                onClick={() => setActiveView("compact")}
+                type="button"
+              >
+                Compact
+              </button>
+            </div>
+          ) : null}
+          <button
+            className="icon-button"
+            disabled={!activeSql.trim()}
+            onClick={() => navigator.clipboard.writeText(activeSql)}
+            type="button"
+          >
+            <Copy size={16} />
+            Copy
+          </button>
+        </div>
       </div>
       <div className="sql-frame">
         <div className="line-numbers" aria-hidden="true">

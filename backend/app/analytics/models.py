@@ -62,6 +62,7 @@ class GeneratedQuery:
     """Parameterised SQL and the parameters that belong with it."""
 
     sql: str
+    compact_sql: str
     parameters: dict[str, object]
 
 

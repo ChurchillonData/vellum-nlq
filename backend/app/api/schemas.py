@@ -193,6 +193,7 @@ class QueryPreviewResponse(BaseModel):
     query_id: str
     metric_id: str
     sql: str
+    compact_sql: str
     parameters: dict[str, Any]
     provenance: QueryProvenanceResponse
     validation: SqlGuardResponse
@@ -209,6 +210,7 @@ class QueryPreviewResponse(BaseModel):
             query_id=query_id,
             metric_id=provenance.metric_id,
             sql=result.query.sql,
+            compact_sql=result.query.compact_sql,
             parameters=result.query.parameters,
             provenance=QueryProvenanceResponse(
                 metric_label=provenance.metric_label,

@@ -82,6 +82,8 @@ Answer response, trimmed to the fields most relevant to the UI:
     "answer": "<computed natural-language summary>",
     "row_count": 1,
     "execution_mode": "local_demo",
+    "sql": "<explainable parameterised SQL>",
+    "compact_sql": "<shorter parameterised SQL for display>",
     "rows": [
       {
         "loss_ratio": 0.04882407281207881
@@ -333,11 +335,15 @@ Response includes:
 - `query_id`
 - `metric_id`
 - parameterised `sql`
+- parameterised `compact_sql` for a shorter display option when available
 - bound `parameters`
 - `provenance`
 - SQL guard `validation`
 
 `provenance.result_shape.max_rows` is part of the result-size safety contract.
+The explainable `sql` remains the primary planned and guarded query. The
+`compact_sql` field is for UI display and demos; it does not let callers submit
+or execute arbitrary SQL.
 
 ### POST `/queries/execute`
 
@@ -395,6 +401,7 @@ requests, and execution requests. The default development store is JSONL;
   "status": "answer",
   "metric_id": "loss_ratio",
   "sql": "...",
+  "compact_sql": "...",
   "parameters": {
     "start_date": "2026-01-01",
     "end_date": "2026-03-31",

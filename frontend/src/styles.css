@@ -891,6 +891,12 @@ kbd {
   margin-bottom: 8px;
 }
 
+.sql-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .sql-header.plain {
   justify-content: flex-start;
 }
@@ -909,6 +915,29 @@ kbd {
   color: #334155;
   padding: 7px 12px;
   font-size: 15px;
+}
+
+.sql-view-toggle {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.sql-view-toggle button {
+  border: 0;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 8px 11px;
+}
+
+.sql-view-toggle button.active {
+  background: var(--blue);
+  color: #fff;
 }
 
 .sql-frame {

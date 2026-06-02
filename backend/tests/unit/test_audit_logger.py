@@ -35,6 +35,8 @@ def test_jsonl_audit_logger_records_preview_event(tmp_path, health_uk_catalogue)
     assert record["request"]["start_date"] == "2026-01-01"
     assert record["metric_id"] == "loss_ratio"
     assert "%(start_date)s" in record["sql"]
+    assert "%(start_date)s" in record["compact_sql"]
+    assert "WITH claim_totals AS" not in record["compact_sql"]
     assert record["provenance"]["time_anchor"] == "claims.incurred_date"
     assert record["provenance"]["result_shape"] == {
         "columns": ["loss_ratio"],

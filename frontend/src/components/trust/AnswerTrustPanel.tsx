@@ -68,7 +68,10 @@ export function AnswerTrustPanel({
         <MetaRow label="Latency" value="234 ms execution - 72 ms planning" mono />
       </dl>
 
-      <SqlBlock sql={answer?.sql ?? "-- No SQL generated for this state."} />
+      <SqlBlock
+        compactSql={answer?.compact_sql}
+        sql={answer?.sql ?? "-- No SQL generated for this state."}
+      />
     </aside>
   );
 }

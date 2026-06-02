@@ -99,6 +99,9 @@ def test_preview_endpoint_returns_loss_ratio_sql_and_provenance() -> None:
     assert body["metric_id"] == "loss_ratio"
     assert "%(start_date)s" in body["sql"]
     assert "Comprehensive" not in body["sql"]
+    assert "%(start_date)s" in body["compact_sql"]
+    assert "WITH claim_totals AS" not in body["compact_sql"]
+    assert "Comprehensive" not in body["compact_sql"]
     assert body["parameters"]["plan_tier"] == "Comprehensive"
     assert body["provenance"]["time_anchor"] == "claims.incurred_date"
     assert body["provenance"]["result_shape"] == {

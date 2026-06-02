@@ -16,6 +16,7 @@ class AuditEvent:
     request: dict[str, object]
     metric_id: str
     sql: str
+    compact_sql: str
     parameters: dict[str, object]
     provenance: dict[str, object]
     validation: dict[str, object]
@@ -37,6 +38,7 @@ class AskAuditEvent:
     scope: dict[str, object] | None
     metric_id: str | None = None
     sql: str | None = None
+    compact_sql: str | None = None
     parameters: dict[str, object] | None = None
     provenance: dict[str, object] | None = None
     validation: dict[str, object] | None = None
@@ -104,6 +106,11 @@ def build_ask_audit_event(
         scope=_scope_payload(result),
         metric_id=_metric_id(result),
         sql=(result.build_result.query.sql if result.build_result is not None else None),
+        compact_sql=(
+            result.build_result.query.compact_sql
+            if result.build_result is not None
+            else None
+        ),
         parameters=(
             result.build_result.query.parameters
             if result.build_result is not None
@@ -144,6 +151,7 @@ def _build_audit_event(
         request=request.model_dump(),
         metric_id=result.provenance.metric_id,
         sql=result.query.sql,
+        compact_sql=result.query.compact_sql,
         parameters=result.query.parameters,
         provenance=_provenance_payload(result),
         validation=_validation_payload(result),

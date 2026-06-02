@@ -92,7 +92,16 @@ def generate_loss_ratio_query(plan: LogicalPlan) -> GeneratedQuery:
         )
 
     compiled = statement.compile(dialect=postgresql.dialect())
-    return GeneratedQuery(sql=str(compiled), parameters=compiled.params)
+    compact_compiled = _compact_loss_ratio_statement(
+        plan=plan,
+        claim_totals_query=claim_totals_query,
+        premium_totals_query=premium_totals_query,
+    ).compile(dialect=postgresql.dialect())
+    return GeneratedQuery(
+        sql=str(compiled),
+        compact_sql=str(compact_compiled),
+        parameters=compiled.params,
+    )
 
 
 def generate_paid_claims_query(plan: LogicalPlan) -> GeneratedQuery:
@@ -120,7 +129,7 @@ def generate_paid_claims_query(plan: LogicalPlan) -> GeneratedQuery:
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())
-    return GeneratedQuery(sql=str(compiled), parameters=compiled.params)
+    return _generated_query(compiled)
 
 
 def generate_incurred_claims_query(plan: LogicalPlan) -> GeneratedQuery:
@@ -150,7 +159,7 @@ def generate_incurred_claims_query(plan: LogicalPlan) -> GeneratedQuery:
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())
-    return GeneratedQuery(sql=str(compiled), parameters=compiled.params)
+    return _generated_query(compiled)
 
 
 def generate_claim_frequency_query(plan: LogicalPlan) -> GeneratedQuery:
@@ -226,7 +235,7 @@ def generate_claim_frequency_query(plan: LogicalPlan) -> GeneratedQuery:
         statement = select(claim_frequency).select_from(source)
 
     compiled = statement.compile(dialect=postgresql.dialect())
-    return GeneratedQuery(sql=str(compiled), parameters=compiled.params)
+    return _generated_query(compiled)
 
 
 def generate_claim_severity_query(plan: LogicalPlan) -> GeneratedQuery:
@@ -261,7 +270,7 @@ def generate_claim_severity_query(plan: LogicalPlan) -> GeneratedQuery:
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())
-    return GeneratedQuery(sql=str(compiled), parameters=compiled.params)
+    return _generated_query(compiled)
 
 
 def generate_decline_rate_query(plan: LogicalPlan) -> GeneratedQuery:
@@ -297,7 +306,48 @@ def generate_decline_rate_query(plan: LogicalPlan) -> GeneratedQuery:
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())
-    return GeneratedQuery(sql=str(compiled), parameters=compiled.params)
+    return _generated_query(compiled)
+
+
+def _generated_query(compiled) -> GeneratedQuery:
+    """Return a generated query when compact SQL matches the full SQL."""
+    sql = str(compiled)
+    return GeneratedQuery(sql=sql, compact_sql=sql, parameters=compiled.params)
+
+
+def _compact_loss_ratio_statement(
+    plan: LogicalPlan,
+    claim_totals_query,
+    premium_totals_query,
+):
+    """Build a shorter loss-ratio statement with the same aggregation grain."""
+    group_key = _group_key(plan)
+    claim_totals = claim_totals_query.subquery("claim_totals")
+    premium_totals = premium_totals_query.subquery("premium_totals")
+
+    loss_ratio = (
+        func.sum(claim_totals.c.incurred_claims)
+        / func.nullif(func.sum(premium_totals.c.earned_premium), 0)
+    ).label("loss_ratio")
+
+    if group_key is None:
+        source = claim_totals.join(
+            premium_totals,
+            claim_totals.c.member_id == premium_totals.c.member_id,
+        )
+        return select(loss_ratio).select_from(source)
+
+    source = claim_totals.join(
+        premium_totals,
+        claim_totals.c[group_key] == premium_totals.c[group_key],
+    )
+    return (
+        select(claim_totals.c[group_key], loss_ratio)
+        .select_from(source)
+        .group_by(claim_totals.c[group_key])
+        .order_by(loss_ratio.element.desc())
+        .limit(_result_limit(plan))
+    )
 
 
 def _aggregate_statement(plan: LogicalPlan, source, filters, metric_column):

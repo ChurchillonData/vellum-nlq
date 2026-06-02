@@ -42,6 +42,7 @@ export type AskAnswer = {
   row_count: number;
   rows: Record<string, unknown>[];
   sql: string;
+  compact_sql: string;
   parameters: Record<string, unknown>;
   provenance: Provenance;
   validation: Validation;
@@ -128,6 +129,7 @@ export type AuditRecord = {
   scope?: { reason_id: string; reason: string } | null;
   metric_id?: string | null;
   sql?: string | null;
+  compact_sql?: string | null;
   parameters?: Record<string, unknown> | null;
   provenance?: Provenance | null;
   validation?: Validation | null;
