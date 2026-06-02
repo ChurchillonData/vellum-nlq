@@ -7,7 +7,7 @@ import { CleanCheck } from "./CleanCheck";
 
 type TrustPanelProps = {
   askResult: AskResponse;
-  metric: Metric;
+  metric: Metric | null;
 };
 
 export function TrustPanel({ askResult, metric }: TrustPanelProps) {
@@ -19,12 +19,19 @@ export function TrustPanel({ askResult, metric }: TrustPanelProps) {
     return <BlockedPanel askResult={askResult} />;
   }
 
+  if (askResult.status !== "answer" || !askResult.answer) {
+    return <ResolutionOnlyPanel askResult={askResult} />;
+  }
+
   return <AnswerPanel askResult={askResult} metric={metric} />;
 }
 
 function AnswerPanel({ askResult, metric }: TrustPanelProps) {
   const answer = askResult.answer;
   const validation = answer?.validation;
+  const metricId = metric?.id ?? answer?.metric_id ?? askResult.resolved_request?.metric_id ?? "unresolved";
+  const metricVersion = metric?.version ?? answer?.provenance.metric_version ?? "n/a";
+  const timeAnchor = metric?.time_anchor ?? answer?.provenance.time_anchor ?? "n/a";
 
   return (
     <aside className="trust-panel">
@@ -42,13 +49,13 @@ function AnswerPanel({ askResult, metric }: TrustPanelProps) {
       <dl className="metadata-list">
         <MetaRow
           label="Metric used"
-          value={`${metric.id} (financial_kpi)`}
+          value={`${metricId} (financial_kpi)`}
           trailingIcon={<MetricInfoMark />}
           mono
           normalWeight
         />
-        <MetaRow label="Metric version" value={metric.version} mono />
-        <MetaRow label="Time anchor" value={metric.time_anchor} mono />
+        <MetaRow label="Metric version" value={metricVersion} mono />
+        <MetaRow label="Time anchor" value={timeAnchor} mono />
         <MetaRow label="Joins used" value={<JoinDisplay joins={answer?.provenance.joins_used} />} mono compact />
         <MetaRow
           label="Validation result"
@@ -154,6 +161,44 @@ function BlockedPanel({ askResult }: { askResult: AskResponse }) {
 Rule: DROP_DETECT - severity: CRITICAL - action: ABORT
 "DROP all claims" classified as malicious intent / data destruction
 No SQL compiled - read-only policy enforced.`}</pre>
+    </aside>
+  );
+}
+
+function ResolutionOnlyPanel({ askResult }: { askResult: AskResponse }) {
+  return (
+    <aside className="trust-panel">
+      <div className="panel-header">
+        <h2>
+          <ClipboardList size={25} />
+          Resolution state
+        </h2>
+        <span className="validation-pill amber">
+          <AlertCircle size={15} />
+          {askResult.status.replace(/_/g, " ")}
+        </span>
+      </div>
+
+      <dl className="metadata-list">
+        <MetaRow label="Query analysis" value={askResult.message} />
+        <MetaRow label="Audit ID" value={askResult.query_id} mono />
+        {askResult.scope && (
+          <MetaRow label="Scope reason" value={askResult.scope.reason} tone="warning" />
+        )}
+      </dl>
+
+      <div className="sql-status">
+        <div className="sql-header plain">
+          <span>
+            <Code2 size={18} />
+            SQL generation status
+          </span>
+        </div>
+        <pre className="sql-placeholder">
+-- No SQL generated for this query state.
+-- Provide the missing inputs or choose a supported catalogue question.
+        </pre>
+      </div>
     </aside>
   );
 }

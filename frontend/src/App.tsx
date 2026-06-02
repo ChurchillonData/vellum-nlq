@@ -5,24 +5,17 @@ import { AskWorkspace } from "./components/AskWorkspace";
 import { AuditExplorer } from "./components/AuditExplorer";
 import { CatalogueExplorer } from "./components/CatalogueExplorer";
 import { TopBar } from "./components/TopBar";
-import {
-  demoAskExamples,
-  demoAskResponse,
-  demoMetrics,
-  demoQuestions,
-  getDemoAskResponse
-} from "./demoData";
 import type { AskExample, AskRequestPayload, AskResponse, HealthResponse, Metric } from "./types";
 
 type ActiveView = "ask" | "catalogue" | "audit";
 
 export default function App() {
   const [activeView, setActiveView] = useState<ActiveView>("ask");
-  const [question, setQuestion] = useState(demoQuestions[0]);
-  const [askResult, setAskResult] = useState<AskResponse>(demoAskResponse);
-  const [askExamples, setAskExamples] = useState<AskExample[]>(demoAskExamples);
+  const [question, setQuestion] = useState("");
+  const [askResult, setAskResult] = useState<AskResponse | null>(null);
+  const [askExamples, setAskExamples] = useState<AskExample[]>([]);
   const [health, setHealth] = useState<HealthResponse | null>(null);
-  const [metrics, setMetrics] = useState<Metric[]>(demoMetrics);
+  const [metrics, setMetrics] = useState<Metric[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -38,7 +31,8 @@ export default function App() {
     fetchMetrics()
       .then((response) => setMetrics(response.metrics))
       .catch(() => {
-        setNotice("Backend API is not connected. Showing demo catalogue data.");
+        setMetrics([]);
+        setNotice("Backend API is not connected. Start the API to load catalogue data.");
       });
   }, []);
 
@@ -46,18 +40,24 @@ export default function App() {
     fetchAskExamples()
       .then((response) => setAskExamples(response.examples))
       .catch(() => {
-        setNotice("Backend API is not connected. Showing saved demo examples.");
+        setAskExamples([]);
+        setNotice("Backend API is not connected. Start the API to load demo examples.");
       });
   }, []);
 
   const selectedMetric = useMemo(() => {
-    const metricId =
-      askResult.answer?.metric_id ?? askResult.resolved_request?.metric_id ?? "loss_ratio";
-    return metrics.find((metric) => metric.id === metricId) ?? metrics[0];
+    const metricId = askResult?.answer?.metric_id ?? askResult?.resolved_request?.metric_id;
+    return metrics.find((metric) => metric.id === metricId) ?? null;
   }, [askResult, metrics]);
 
   async function runQuestion(nextQuestion = question, overrides: Partial<AskRequestPayload> = {}) {
-    const payload: AskRequestPayload = { question: nextQuestion, ...overrides };
+    const trimmedQuestion = nextQuestion.trim();
+    if (!trimmedQuestion) {
+      setNotice("Enter a question before running the ask flow.");
+      return;
+    }
+
+    const payload: AskRequestPayload = { question: trimmedQuestion, ...overrides };
     setQuestion(payload.question);
     setIsRunning(true);
     setNotice(null);
@@ -66,8 +66,8 @@ export default function App() {
       const response = await askQuestion(payload);
       setAskResult(response);
     } catch {
-      setNotice("Backend API is not connected. Showing the saved demo answer.");
-      setAskResult(getDemoAskResponse(payload.question));
+      setAskResult(null);
+      setNotice("Backend API is not connected. No answer was generated.");
     } finally {
       setIsRunning(false);
     }
@@ -102,7 +102,7 @@ export default function App() {
 
       {activeView === "catalogue" && <CatalogueExplorer metrics={metrics} />}
 
-      {activeView === "audit" && <AuditExplorer latestQueryId={askResult.query_id} />}
+      {activeView === "audit" && <AuditExplorer latestQueryId={askResult?.query_id ?? ""} />}
     </div>
   );
 }

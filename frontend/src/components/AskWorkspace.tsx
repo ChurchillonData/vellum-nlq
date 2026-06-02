@@ -19,10 +19,10 @@ import { ResultTable } from "./ResultTable";
 import { TrustPanel } from "./TrustPanel";
 
 type AskWorkspaceProps = {
-  askResult: AskResponse;
+  askResult: AskResponse | null;
   askExamples: AskExample[];
   isRunning: boolean;
-  metric: Metric;
+  metric: Metric | null;
   notice: string | null;
   onQuestionChange: (question: string) => void;
   onRun: (question?: string, overrides?: Partial<AskRequestPayload>) => void;
@@ -41,8 +41,8 @@ export function AskWorkspace({
   onRunExample,
   question
 }: AskWorkspaceProps) {
-  const isBlocked = askResult.status === "blocked";
-  const isClarifying = askResult.status === "clarification_required";
+  const isBlocked = askResult?.status === "blocked";
+  const isClarifying = askResult?.status === "clarification_required";
   const [showExamples, setShowExamples] = useState(false);
   const actionLabel = isBlocked ? "Blocked" : isClarifying ? "Clarify" : "Run";
   const ActionIcon = isBlocked ? CircleSlash : isClarifying ? Sparkles : Play;
@@ -62,17 +62,18 @@ export function AskWorkspace({
             {isBlocked ? "Restricted action" : "Natural language query"}
           </label>
           <div className="query-row">
-            <div className={`query-box ${askResult.status}`}>
+            <div className={`query-box ${askResult?.status ?? ""}`}>
               <BotMessageSquare size={27} />
               <textarea
                 id="question"
                 onChange={(event) => onQuestionChange(event.target.value)}
+                placeholder="Ask a governed claims analytics question..."
                 value={question}
               />
             </div>
             <button
               className={isBlocked ? "run-button blocked" : "run-button"}
-              disabled={isRunning || isBlocked}
+              disabled={isRunning || isBlocked || !question.trim()}
               onClick={() => onRun()}
               type="button"
             >
@@ -89,6 +90,8 @@ export function AskWorkspace({
                   onClick={() => {
                     if (planTierExample) {
                       onRunExample(planTierExample);
+                    } else {
+                      onRun("Show loss ratio by plan tier in Q1 2026.");
                     }
                   }}
                   type="button"
@@ -106,15 +109,17 @@ export function AskWorkspace({
                   <Users size={16} />
                   average claim amount per member
                 </button>
-                <button
-                  aria-expanded={showExamples}
-                  className="suggestion"
-                  onClick={() => setShowExamples((isOpen) => !isOpen)}
-                  type="button"
-                >
-                  <span className="suggestion-plus">{showExamples ? "-" : "+"}</span>
-                  More examples
-                </button>
+                {extraExamples.length > 0 && (
+                  <button
+                    aria-expanded={showExamples}
+                    className="suggestion"
+                    onClick={() => setShowExamples((isOpen) => !isOpen)}
+                    type="button"
+                  >
+                    <span className="suggestion-plus">{showExamples ? "-" : "+"}</span>
+                    More examples
+                  </button>
+                )}
               </div>
 
               {showExamples && (
@@ -139,19 +144,23 @@ export function AskWorkspace({
           )}
         </div>
 
-        <WorkspaceState
-          askResult={askResult}
-          metric={metric}
-          onSelectCandidate={(candidate) =>
-            onRun(question, {
-              ...clarificationDefaults,
-              metric_id: candidate.metric_id
-            })
-          }
-        />
+        {askResult ? (
+          <WorkspaceState
+            askResult={askResult}
+            metric={metric}
+            onSelectCandidate={(candidate) =>
+              onRun(question, {
+                ...clarificationDefaults,
+                metric_id: candidate.metric_id
+              })
+            }
+          />
+        ) : (
+          <EmptyAskState />
+        )}
       </section>
 
-      <TrustPanel askResult={askResult} metric={metric} />
+      {askResult && <TrustPanel askResult={askResult} metric={metric} />}
     </main>
   );
 }
@@ -162,7 +171,7 @@ function WorkspaceState({
   onSelectCandidate
 }: {
   askResult: AskResponse;
-  metric: Metric;
+  metric: Metric | null;
   onSelectCandidate: (candidate: Candidate) => void;
 }) {
   if (askResult.status === "answer" && askResult.answer) {
@@ -181,7 +190,9 @@ function WorkspaceState({
             <p className="row-note">
               {askResult.answer.row_count} row
               {askResult.answer.row_count === 1 ? "" : "s"} - based on{" "}
-              {metric.id === "loss_ratio" ? "incurred claims / earned premium" : metric.formula.expression}
+              {metric?.id === "loss_ratio"
+                ? "incurred claims / earned premium"
+                : metric?.formula.expression ?? askResult.answer.provenance.formula ?? "catalogue formula"}
             </p>
           </div>
         </div>
@@ -261,11 +272,26 @@ function WorkspaceState({
   );
 }
 
-function getClarificationDefaults(askResult: AskResponse): Partial<AskRequestPayload> {
+function EmptyAskState() {
+  return (
+    <section className="state-card neutral empty-ask-state">
+      <div className="state-heading">
+        <HelpCircle size={22} />
+        Ready for a real query
+      </div>
+      <p>
+        Enter a question or choose an example. Vellum will only show results after the
+        backend returns an audited ask response.
+      </p>
+    </section>
+  );
+}
+
+function getClarificationDefaults(askResult: AskResponse | null): Partial<AskRequestPayload> {
   return {
-    end_date: askResult.resolved_request?.end_date ?? "2026-03-31",
-    plan_tier: askResult.resolved_request?.plan_tier ?? "Comprehensive",
-    start_date: askResult.resolved_request?.start_date ?? "2026-01-01"
+    end_date: askResult?.resolved_request?.end_date ?? "2026-03-31",
+    plan_tier: askResult?.resolved_request?.plan_tier ?? "Comprehensive",
+    start_date: askResult?.resolved_request?.start_date ?? "2026-01-01"
   };
 }
 

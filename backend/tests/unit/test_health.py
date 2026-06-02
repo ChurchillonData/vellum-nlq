@@ -12,3 +12,15 @@ def test_health_endpoint_reports_active_catalogue() -> None:
         "catalogue": "health-uk",
     }
 
+
+def test_cors_allows_configured_frontend_origin() -> None:
+    response = TestClient(app).options(
+        "/health",
+        headers={
+            "Access-Control-Request-Method": "GET",
+            "Origin": "http://127.0.0.1:5173",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://127.0.0.1:5173"

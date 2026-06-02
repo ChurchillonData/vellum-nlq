@@ -12,51 +12,48 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000
 export async function askQuestion(payload: AskRequestPayload | string): Promise<AskResponse> {
   const body = typeof payload === "string" ? { question: payload } : payload;
 
-  const response = await fetch(`${API_BASE_URL}/ask`, {
+  return apiRequest<AskResponse>("/ask", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body)
   });
-
-  if (!response.ok) {
-    throw new Error(`Ask request failed with status ${response.status}`);
-  }
-
-  return response.json() as Promise<AskResponse>;
 }
 
 export async function fetchAskExamples(): Promise<AskExamplesResponse> {
-  const response = await fetch(`${API_BASE_URL}/ask/examples`);
-  if (!response.ok) {
-    throw new Error(`Ask examples request failed with status ${response.status}`);
-  }
-
-  return response.json() as Promise<AskExamplesResponse>;
+  return apiRequest<AskExamplesResponse>("/ask/examples");
 }
 
 export async function fetchMetrics(): Promise<MetricsResponse> {
-  const response = await fetch(`${API_BASE_URL}/metrics`);
-  if (!response.ok) {
-    throw new Error(`Metrics request failed with status ${response.status}`);
-  }
-
-  return response.json() as Promise<MetricsResponse>;
+  return apiRequest<MetricsResponse>("/metrics");
 }
 
 export async function fetchHealth(): Promise<HealthResponse> {
-  const response = await fetch(`${API_BASE_URL}/health`);
-  if (!response.ok) {
-    throw new Error(`Health request failed with status ${response.status}`);
-  }
-
-  return response.json() as Promise<HealthResponse>;
+  return apiRequest<HealthResponse>("/health");
 }
 
 export async function fetchAuditRecord(queryId: string): Promise<AuditRecord> {
-  const response = await fetch(`${API_BASE_URL}/queries/${encodeURIComponent(queryId)}`);
+  return apiRequest<AuditRecord>(`/queries/${encodeURIComponent(queryId)}`);
+}
+
+async function apiRequest<T>(path: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, options);
+
   if (!response.ok) {
-    throw new Error(`Audit lookup failed with status ${response.status}`);
+    throw new Error(await errorMessage(response));
   }
 
-  return response.json() as Promise<AuditRecord>;
+  return response.json() as Promise<T>;
+}
+
+async function errorMessage(response: Response): Promise<string> {
+  try {
+    const body = (await response.json()) as { detail?: unknown };
+    if (typeof body.detail === "string") {
+      return body.detail;
+    }
+  } catch {
+    return `API request failed with status ${response.status}`;
+  }
+
+  return `API request failed with status ${response.status}`;
 }

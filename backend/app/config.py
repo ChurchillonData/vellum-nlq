@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     audit_database_url: str = "postgresql+psycopg://vellum_auditor:vellum_auditor@localhost:5432/vellum"
     audit_log_path: Path = Path(__file__).resolve().parents[1] / ".local" / "audit-log.jsonl"
     audit_backend: str = "jsonl"
+    allowed_origins: list[str] = [
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+    ]
     demo_member_count: int = 2_000
     demo_month_count: int = 18
     execution_backend: str = "local_demo"
