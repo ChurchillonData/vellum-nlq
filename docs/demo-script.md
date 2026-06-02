@@ -26,9 +26,11 @@ Current backend supports:
 
 Current backend does not yet support:
 
-- Live Postgres integration tests in this execution environment.
 - A partner data mapping layer for insurer-specific schemas.
 - The large portfolio demo dataset and performance-tuning pass.
+
+Live Postgres integration tests are implemented as an optional suite, but they
+need a migrated and seeded database before they can run.
 
 Current frontend supports the Ask workspace, Catalogue Explorer, backend-backed
 demo examples, live `/ask` state rendering, and an Audit view that retrieves

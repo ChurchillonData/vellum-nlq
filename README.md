@@ -58,8 +58,8 @@ Implemented today:
 - Twenty `/ask/examples` items covered by unit tests.
 - YAML golden question suite covering the core demo contract.
 - First red-team suite for destructive questions and unsafe SQL guard cases.
-- GitHub Actions CI for backend unit, golden, red-team tests, and frontend
-  production build.
+- GitHub Actions CI for backend unit, golden, red-team, optional integration
+  suite import checks, and frontend production build.
 
 Planned next:
 
@@ -188,7 +188,8 @@ vellum-nlq/
 `-- Makefile
 ```
 
-Live Postgres integration tests, large-data performance work, and production
+Live Postgres integration tests are implemented as an optional suite because
+they require a seeded database. Large-data performance work and production
 deployment are planned phases, not finished implementation.
 
 ## The Catalogue
@@ -262,13 +263,25 @@ make test-golden
 make test-redteam
 ```
 
+Optional live Postgres integration test:
+
+```bash
+cd backend
+VELLUM_RUN_POSTGRES_INTEGRATION=1 python -m pytest tests/integration -q
+```
+
+The integration test expects a migrated and seeded Postgres database plus the
+configured admin, seeder, read-only, and auditor URLs.
+
 The current suite covers catalogue loading, deterministic resolution, planning,
 SQL generation, SQL guard checks, demo execution, ask audit coverage, audit
 lookup, `/ask` examples, the YAML golden question contract, and the first
-red-team suite.
+red-team suite. The optional integration suite verifies the seeded Postgres
+execution path when a real database is available.
 
-GitHub Actions runs the implemented backend test suites and the frontend build
-on pushes to `main` and on pull requests.
+GitHub Actions runs the implemented backend test suites, checks that the
+optional integration suite skips cleanly without a live database, and builds
+the frontend on pushes to `main` and on pull requests.
 
 ## Current API Surface
 

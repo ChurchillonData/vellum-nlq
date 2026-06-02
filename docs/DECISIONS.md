@@ -147,7 +147,8 @@ deterministic parsing by default.
 **Current implementation.** Deterministic demo execution still defaults to
 in-memory SQLite so the backend runs without Docker. A guarded Postgres
 execution path is available behind `VELLUM_EXECUTION_BACKEND=postgres` and uses
-the read-only database URL. Live Postgres integration tests are still planned.
+the read-only database URL. Live Postgres integration tests are implemented as
+an optional suite because they require a migrated and seeded database.
 
 **Consequences.**
 - The test suite needs Docker to run. CI uses the github-actions Docker runner.

@@ -158,8 +158,9 @@ Status: complete for first backend slice
 
 Current gaps:
 
-- Live Postgres integration tests are not implemented yet because Docker is not
-  available in the current execution environment.
+- Live Postgres integration tests are implemented as an optional suite. They
+  are skipped unless `VELLUM_RUN_POSTGRES_INTEGRATION=1` is set because they
+  require a migrated and seeded Postgres database.
 
 ## Phase 4: OpenAI Intent Layer
 
@@ -243,4 +244,7 @@ Current frontend slice:
 - A `make postgres-smoke` command verifies seeded Postgres table counts and
   representative guarded query execution through the read-only role.
 - GitHub Actions CI now runs backend unit tests, golden question tests,
-  red-team tests, and the frontend production build.
+  red-team tests, the optional integration suite skip check, and the frontend
+  production build.
+- `make test-integration` now runs the optional live Postgres integration suite
+  for seeded local or hosted databases.

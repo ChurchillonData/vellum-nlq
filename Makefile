@@ -165,8 +165,8 @@ test-unit: ## Run unit tests only
 	cd $(BACKEND_DIR) && $(PYTEST) tests/unit -v
 
 .PHONY: test-integration
-test-integration: ## Planned: run integration tests against Postgres
-	@echo "$(GREEN)Integration tests are planned; no backend/tests/integration suite exists yet.$(RESET)"
+test-integration: ## Run optional live Postgres integration tests
+	cd $(BACKEND_DIR) && $(PYTEST) tests/integration -v
 
 .PHONY: test-golden
 test-golden: ## Run YAML golden questions through the ask endpoint

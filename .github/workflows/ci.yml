@@ -38,6 +38,9 @@ jobs:
       - name: Run red-team tests
         run: python -m pytest tests/redteam -q
 
+      - name: Check optional integration suite
+        run: python -m pytest tests/integration -q
+
   frontend-build:
     name: Frontend build
     runs-on: ubuntu-latest

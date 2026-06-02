@@ -33,7 +33,7 @@ Current build:
 
 Not built yet:
 
-- Live Postgres integration tests for execution and audit.
+- Optional live Postgres integration tests for execution and audit.
 - Expanded red-team coverage for prompt injection and obfuscated attacks.
 
 ## Product Boundary
@@ -153,7 +153,8 @@ Expected result: a structured blocked response, not generated SQL.
 Honest scope limits:
 
 1. A compromised catalogue YAML file can widen the allowlist.
-2. Live Postgres integration tests are not implemented yet.
+2. Live Postgres integration tests require a migrated and seeded database, so
+   they run only when explicitly enabled.
 3. Red-team coverage is still a first slice and does not yet include
    obfuscated or encoded prompt-injection attempts.
 4. Rate limiting and side-channel inference controls are not implemented yet.

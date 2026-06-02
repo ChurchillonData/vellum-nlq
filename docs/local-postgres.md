@@ -93,6 +93,20 @@ cd backend
 python -m app.postgres_smoke
 ```
 
+The same seeded database can run the optional integration test:
+
+```bash
+VELLUM_RUN_POSTGRES_INTEGRATION=1 make test-integration
+```
+
+On Windows machines without `make`, use:
+
+```bash
+cd backend
+$env:VELLUM_RUN_POSTGRES_INTEGRATION='1'
+python -m pytest tests/integration -q
+```
+
 The smoke test checks:
 
 - all configured Postgres roles can connect,
