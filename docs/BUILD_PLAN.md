@@ -253,3 +253,5 @@ Current frontend slice:
 - Partner schema mapping validation now exists for pilot readiness. The first
   slice validates a fictional insurer mapping against the canonical `health-uk`
   tables and columns, and reports mapping coverage without rewriting SQL.
+- `GET /mappings/{partner}/coverage` exposes validated partner mapping coverage
+  for demos, reviewer walkthroughs, and future frontend display.

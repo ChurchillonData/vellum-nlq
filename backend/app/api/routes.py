@@ -5,6 +5,7 @@ from app.api.ask_schemas import AskExampleResponse, AskExamplesResponse
 from app.api.ask_schemas import AskRequest as AskApiRequest
 from app.api.ask_schemas import AskResponse
 from app.api.schemas import (
+    MappingCoverageResponse,
     MetricResponse,
     MetricsResponse,
     QueryExecuteRequest,
@@ -27,6 +28,12 @@ from app.config import get_settings
 from app.execution.factory import execute_query as execute_configured_query
 from app.intent.factory import build_intent_provider
 from app.intent.models import IntentProviderError
+from app.mapping.models import SchemaMapping
+from app.mapping.validator import (
+    MappingError,
+    load_schema_mapping,
+    validate_schema_mapping,
+)
 from app.semantic.catalogue import CatalogueError, load_catalogue
 from app.semantic.question_resolver import resolve_question
 from app.semantic.resolver import ResolutionError
@@ -58,6 +65,20 @@ def list_metrics() -> MetricsResponse:
     )
 
 
+@router.get("/mappings/{partner}/coverage", response_model=MappingCoverageResponse)
+def get_mapping_coverage(partner: str) -> MappingCoverageResponse:
+    """Return validated coverage for one partner schema mapping."""
+    catalogue = _load_active_catalogue()
+    mapping = _load_partner_mapping(partner)
+
+    try:
+        coverage = validate_schema_mapping(catalogue, mapping)
+    except MappingError as error:
+        raise HTTPException(status_code=500, detail=str(error)) from error
+
+    return MappingCoverageResponse.from_coverage(coverage)
+
+
 @router.get("/ask/examples", response_model=AskExamplesResponse)
 def list_ask_examples() -> AskExamplesResponse:
     """Return golden ask questions for demos and contract tests."""
@@ -67,6 +88,29 @@ def list_ask_examples() -> AskExamplesResponse:
             for example in GOLDEN_ASK_EXAMPLES
         ]
     )
+
+
+def _load_partner_mapping(partner: str) -> SchemaMapping:
+    """Load a partner mapping from the active catalogue mapping directory."""
+    settings = get_settings()
+    mapping_dir = settings.mapping_root / settings.active_catalogue
+    preferred_path = mapping_dir / f"{partner.replace('-', '_')}.yaml"
+    candidate_paths = (
+        [preferred_path]
+        if preferred_path.exists()
+        else sorted(mapping_dir.glob("*.yaml"))
+    )
+
+    for mapping_path in candidate_paths:
+        try:
+            mapping = load_schema_mapping(mapping_path)
+        except MappingError as error:
+            raise HTTPException(status_code=500, detail=str(error)) from error
+
+        if mapping.partner == partner:
+            return mapping
+
+    raise HTTPException(status_code=404, detail=f"mapping not found: {partner}")
 
 
 @router.post("/ask", response_model=AskResponse)

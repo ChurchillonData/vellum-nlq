@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     app_name: str = "Vellum-NLQ"
     active_catalogue: str = "health-uk"
     catalogue_root: Path = Path(__file__).resolve().parents[1] / "catalogues"
+    mapping_root: Path = Path(__file__).resolve().parents[1] / "mappings"
     database_url: str = "postgresql+psycopg://vellum_admin:vellum_admin@localhost:5432/vellum"
     seed_database_url: str = "postgresql+psycopg://vellum_seeder:vellum_seeder@localhost:5432/vellum"
     readonly_database_url: str = "postgresql+psycopg://vellum_readonly:vellum_readonly@localhost:5432/vellum"

@@ -253,6 +253,32 @@ Returns metric definitions from the active semantic catalogue.
 }
 ```
 
+### GET `/mappings/{partner}/coverage`
+
+Returns validated partner schema mapping coverage for the active catalogue. This
+is a pilot-readiness endpoint; it does not enable runtime SQL rewriting.
+
+Example:
+
+```text
+GET /mappings/example-insurer/coverage
+```
+
+Response:
+
+```json
+{
+  "partner": "example-insurer",
+  "catalogue": "health-uk",
+  "mapped_tables": 10,
+  "total_tables": 10,
+  "mapped_columns": 53,
+  "total_columns": 53,
+  "missing_tables": [],
+  "missing_columns": []
+}
+```
+
 ## Development Query Endpoints
 
 These endpoints expose the internal deterministic pieces separately. The

@@ -35,6 +35,17 @@ python -m app.mapping.validator mappings/health-uk/example_insurer.yaml
 
 A valid mapping prints the number of canonical tables and columns covered.
 
+## API Coverage Check
+
+When the backend is running, the same coverage is available through:
+
+```text
+GET /mappings/example-insurer/coverage
+```
+
+This endpoint is useful for demos and future frontend display. It still only
+reports validated coverage; it does not rewrite generated SQL.
+
 ## What This Protects
 
 - Unknown canonical tables are rejected.

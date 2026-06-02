@@ -296,6 +296,7 @@ Full request and response examples are documented in `docs/api-contract.md`.
 | `POST /ask` | Product-facing ask flow. Returns answer, clarification, blocked, or out-of-scope state. |
 | `GET /ask/examples` | Twenty demo questions used by tests and future UI controls. |
 | `GET /metrics` | Active catalogue metric definitions with formulas and versions. |
+| `GET /mappings/{partner}/coverage` | Validated partner schema mapping coverage. |
 | `POST /queries/resolve` | Deterministic metric resolution and early safety blocking. |
 | `POST /queries/preview` | Parameterised SQL and provenance without execution. |
 | `POST /queries/execute` | Guarded deterministic demo execution against synthetic local data. |

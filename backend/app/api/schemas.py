@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from app.analytics.models import AnalyticsRequest, QueryBuildResult
 from app.execution.models import ExecutionResult
+from app.mapping.models import MappingCoverage
 from app.planner.grouping import COMMON_GROUPINGS
 from app.semantic.models import Catalogue, JoinEdge, MetricSpec
 from app.sql.guard import SqlGuardResult
@@ -73,6 +74,24 @@ class MetricsResponse(BaseModel):
 
     catalogue: str
     metrics: list[MetricResponse]
+
+
+class MappingCoverageResponse(BaseModel):
+    """Partner schema mapping coverage exposed to API clients."""
+
+    partner: str
+    catalogue: str
+    mapped_tables: int
+    total_tables: int
+    mapped_columns: int
+    total_columns: int
+    missing_tables: list[str]
+    missing_columns: list[str]
+
+    @classmethod
+    def from_coverage(cls, coverage: MappingCoverage) -> "MappingCoverageResponse":
+        """Convert internal mapping coverage into the HTTP response shape."""
+        return cls(**coverage.model_dump())
 
 
 def _allowed_dimensions(metric: MetricSpec) -> list[str]:
