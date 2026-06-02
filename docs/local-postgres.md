@@ -115,6 +115,35 @@ The smoke test checks:
 - guarded generated SQL can execute through the read-only Postgres role for
   representative metrics.
 
+## One-Command Proof
+
+The reviewer-friendly proof command runs the local live-database path in order:
+
+1. start the Docker Postgres service,
+2. run Alembic migrations,
+3. check all configured Postgres roles,
+4. optionally seed data,
+5. run the Postgres smoke test,
+6. optionally run the live integration test.
+
+From the repository root:
+
+```bash
+make postgres-proof
+```
+
+On Windows without `make`:
+
+```powershell
+python scripts/prove_postgres.py --seed local --integration
+```
+
+If Postgres is already running and seeded, run a non-seeding verification:
+
+```powershell
+python scripts/prove_postgres.py --skip-start
+```
+
 Recommended local sequence:
 
 ```bash

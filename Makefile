@@ -132,6 +132,14 @@ db-check: ## Check local Postgres URLs and roles before seeding/execution
 postgres-smoke: ## Verify seeded Postgres tables and guarded query execution
 	cd $(BACKEND_DIR) && $(PYTHON) -m app.postgres_smoke
 
+.PHONY: postgres-proof
+postgres-proof: ## Start, migrate, check, seed locally, smoke test, and run integration proof
+	$(PYTHON) scripts/prove_postgres.py --seed local --integration
+
+.PHONY: postgres-proof-existing
+postgres-proof-existing: ## Verify an already seeded Postgres database
+	$(PYTHON) scripts/prove_postgres.py --skip-start
+
 .PHONY: db-reset-local
 db-reset-local: ## Destructive: recreate the local Postgres volume, migrate, and check roles
 	$(PYTHON) scripts/reset_local_postgres.py --yes

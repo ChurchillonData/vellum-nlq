@@ -259,3 +259,7 @@ Current frontend slice:
   answer, grouped analytics, clarification, out-of-scope, and blocked states.
   Windows users can run the same flow with `python -m app.demo.runner` from
   `backend/`.
+- `make postgres-proof` now provides a single live-database proof workflow for
+  start, migration, role checks, local seeding, smoke tests, and optional
+  integration tests. Windows users can run
+  `python scripts/prove_postgres.py --seed local --integration`.

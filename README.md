@@ -52,6 +52,8 @@ Implemented today:
 - Alembic migration and seed command for deterministic synthetic data.
 - Configurable execution backend: local demo by default, Postgres through the
   read-only URL when enabled.
+- Local Postgres proof workflow for start, migrate, role check, seed, smoke,
+  and optional integration verification.
 - Portfolio seed dry run that previews the 200,000-member load plan and
   table-level row counts without touching Postgres.
 - Partner schema mapping validator with a fictional insurer mapping example.
@@ -290,6 +292,24 @@ VELLUM_RUN_POSTGRES_INTEGRATION=1 python -m pytest tests/integration -q
 
 The integration test expects a migrated and seeded Postgres database plus the
 configured admin, seeder, read-only, and auditor URLs.
+
+Run the full local Postgres proof workflow:
+
+```bash
+make postgres-proof
+```
+
+On Windows without Make:
+
+```powershell
+python scripts/prove_postgres.py --seed local --integration
+```
+
+To verify an already seeded database without loading new data:
+
+```powershell
+python scripts/prove_postgres.py --skip-start
+```
 
 The current suite covers catalogue loading, deterministic resolution, planning,
 SQL generation, SQL guard checks, demo execution, ask audit coverage, audit
