@@ -860,6 +860,26 @@ td {
   font-weight: 600;
 }
 
+.validation-list-toggle {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  font-family: "Nunito Sans", Inter, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 5px 9px;
+}
+
+.validation-list-toggle svg {
+  color: currentColor;
+}
+
 .validation-rule-list li::marker {
   color: currentColor;
   font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;

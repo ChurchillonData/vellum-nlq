@@ -1,4 +1,4 @@
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Minus, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import type { Validation } from "../../types";
@@ -34,37 +34,79 @@ export function ValidationStatusIcon({ validation }: { validation?: Validation }
 
 function ValidationPass({ validation }: { validation: Validation }) {
   const checkedCount = useCountingNumber(validation.rules_checked.length);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <span className="validation-result-detail">
       <span>
         {checkedCount} of {validation.rules_checked.length} rules checked - no violations
       </span>
-      <ol className="validation-rule-list" aria-label="Checked validation rules">
-        {validation.rules_checked.map((rule) => (
-          <li key={rule}>{humaniseRule(rule)}</li>
-        ))}
-      </ol>
+      <ValidationListToggle
+        count={validation.rules_checked.length}
+        isExpanded={isExpanded}
+        label="rules"
+        onClick={() => setIsExpanded((current) => !current)}
+      />
+      {isExpanded ? (
+        <ol className="validation-rule-list" aria-label="Checked validation rules">
+          {validation.rules_checked.map((rule) => (
+            <li key={rule}>{humaniseRule(rule)}</li>
+          ))}
+        </ol>
+      ) : null}
     </span>
   );
 }
 
 function ValidationFailures({ validation }: { validation: Validation }) {
   const violationCount = validation.rejections.length;
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <span className="validation-result-detail">
       <span>
         blocked - {violationCount} {violationCount === 1 ? "violation" : "violations"}
       </span>
-      <ol className="validation-rule-list violation-list" aria-label="Validation violations">
-        {validation.rejections.map((rejection) => (
-          <li key={`${rejection.rule}-${rejection.message}`}>
-            <strong>{rejection.rule}</strong>: {rejection.message}
-          </li>
-        ))}
-      </ol>
+      <ValidationListToggle
+        count={violationCount}
+        isExpanded={isExpanded}
+        label={violationCount === 1 ? "violation" : "violations"}
+        onClick={() => setIsExpanded((current) => !current)}
+      />
+      {isExpanded ? (
+        <ol className="validation-rule-list violation-list" aria-label="Validation violations">
+          {validation.rejections.map((rejection) => (
+            <li key={`${rejection.rule}-${rejection.message}`}>
+              <strong>{rejection.rule}</strong>: {rejection.message}
+            </li>
+          ))}
+        </ol>
+      ) : null}
     </span>
+  );
+}
+
+function ValidationListToggle({
+  count,
+  isExpanded,
+  label,
+  onClick
+}: {
+  count: number;
+  isExpanded: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      aria-expanded={isExpanded}
+      className="validation-list-toggle"
+      onClick={onClick}
+      type="button"
+    >
+      {isExpanded ? <Minus size={13} /> : <Plus size={13} />}
+      {isExpanded ? "Hide" : "Show"} {count} {label}
+    </button>
   );
 }
 

@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import type { AskResponse, Metric } from "../../types";
@@ -17,11 +18,17 @@ describe("AnswerTrustPanel", () => {
     expect(screen.queryByText("loss_ratio (financial_kpi)")).not.toBeInTheDocument();
   });
 
-  it("shows validation violations and hides unsafe SQL", () => {
+  it("shows validation violations and hides unsafe SQL", async () => {
+    const user = userEvent.setup();
+
     render(<AnswerTrustPanel askResult={failedValidationResult} metric={staleMetric} />);
 
     expect(screen.getByText("validation failed")).toBeInTheDocument();
     expect(screen.getByText(/blocked - 2 violations/i)).toBeInTheDocument();
+    expect(screen.queryByText(/unknown_table/i)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /show 2 violations/i }));
+
     expect(screen.getByText(/unknown_table/i)).toBeInTheDocument();
     expect(screen.getByText(/unsafe_function/i)).toBeInTheDocument();
     expect(
