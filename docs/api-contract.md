@@ -82,6 +82,11 @@ Answer response, trimmed to the fields most relevant to the UI:
     "answer": "<computed natural-language summary>",
     "row_count": 1,
     "execution_mode": "local_demo",
+    "latency": {
+      "planning_ms": 2.25,
+      "execution_ms": 8.5,
+      "total_ms": 10.75
+    },
     "sql": "<explainable parameterised SQL>",
     "compact_sql": "<shorter parameterised SQL for display>",
     "rows": [
@@ -339,6 +344,7 @@ Response includes:
 - bound `parameters`
 - `provenance`
 - SQL guard `validation`
+- measured `latency`
 
 `provenance.result_shape.max_rows` is part of the result-size safety contract.
 The explainable `sql` remains the primary planned and guarded query. The
@@ -361,6 +367,7 @@ Response includes all preview fields plus:
 - `row_count`
 - `execution_mode`
 - `dataset`
+- measured `latency` with planning, execution, and total milliseconds
 
 Default execution mode is `local_demo`. When
 `VELLUM_EXECUTION_BACKEND=postgres`, execution runs guarded generated SQL

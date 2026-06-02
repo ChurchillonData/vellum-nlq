@@ -19,6 +19,12 @@ export type Validation = {
   rejections: Array<{ rule: string; message: string }>;
 };
 
+export type Latency = {
+  planning_ms: number;
+  execution_ms?: number | null;
+  total_ms: number;
+};
+
 export type Provenance = {
   metric_id?: string;
   metric_label?: string;
@@ -41,11 +47,18 @@ export type AskAnswer = {
   answer: string;
   row_count: number;
   rows: Record<string, unknown>[];
+  dataset: {
+    name: string;
+    member_count: number | null;
+    claim_count: number | null;
+    premium_row_count: number | null;
+  };
   sql: string;
   compact_sql: string;
   parameters: Record<string, unknown>;
   provenance: Provenance;
   validation: Validation;
+  latency: Latency;
   execution_mode: string;
 };
 
@@ -133,6 +146,7 @@ export type AuditRecord = {
   parameters?: Record<string, unknown> | null;
   provenance?: Provenance | null;
   validation?: Validation | null;
+  latency?: Latency | null;
   execution?: {
     mode?: string;
     row_count?: number;

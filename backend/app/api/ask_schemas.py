@@ -56,6 +56,8 @@ class AskResponse(QueryResolveResponse):
                 result.build_result,
                 result.execution_result,
                 query_id=query_id,
+                planning_ms=result.planning_ms,
+                execution_ms=result.execution_ms,
             )
 
         payload = resolution.model_dump()

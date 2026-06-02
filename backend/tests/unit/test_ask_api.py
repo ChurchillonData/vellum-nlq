@@ -44,11 +44,39 @@ def test_ask_endpoint_returns_answer_state(tmp_path) -> None:
     assert body["answer"]["row_count"] == 1
     assert body["answer"]["rows"][0]["loss_ratio"] > 0
     assert body["answer"]["validation"]["passed"] is True
+    assert body["answer"]["latency"]["planning_ms"] >= 0
+    assert body["answer"]["latency"]["execution_ms"] >= 0
+    assert body["answer"]["latency"]["total_ms"] >= body["answer"]["latency"]["planning_ms"]
     assert body["query_id"].startswith("q_")
     assert body["answer"]["query_id"] == body["query_id"]
     assert records[0]["event_type"] == "ask"
     assert records[0]["status"] == "answer"
     assert records[0]["query_id"] == body["query_id"]
+
+
+def test_ask_endpoint_generates_new_query_id_for_same_question(tmp_path) -> None:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    original_member_count = settings.demo_member_count
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+    settings.demo_member_count = 120
+    payload = {
+        "question": "What was incurred loss ratio in Q1?",
+        "start_date": "2026-01-01",
+        "end_date": "2026-03-31",
+        "plan_tier": "Comprehensive",
+    }
+
+    try:
+        first = TestClient(app).post("/ask", json=payload).json()
+        second = TestClient(app).post("/ask", json=payload).json()
+    finally:
+        settings.audit_log_path = original_path
+        settings.demo_member_count = original_member_count
+
+    assert first["query_id"].startswith("q_")
+    assert second["query_id"].startswith("q_")
+    assert first["query_id"] != second["query_id"]
 
 
 def test_ask_endpoint_infers_supported_filters_from_question(tmp_path) -> None:

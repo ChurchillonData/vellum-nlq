@@ -1,3 +1,5 @@
+from time import perf_counter
+
 from fastapi import APIRouter, HTTPException
 
 from app.analytics.build import build_query
@@ -175,7 +177,9 @@ def preview_query(request: QueryPreviewRequest) -> QueryPreviewResponse:
 
     try:
         catalogue = _load_active_catalogue()
+        planning_started = perf_counter()
         build_result = build_query(catalogue, request)
+        planning_ms = _elapsed_ms(planning_started)
     except ResolutionError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
@@ -185,6 +189,7 @@ def preview_query(request: QueryPreviewRequest) -> QueryPreviewResponse:
     return QueryPreviewResponse.from_build_result(
         build_result,
         query_id=audit_event.query_id,
+        planning_ms=planning_ms,
     )
 
 
@@ -195,8 +200,12 @@ def execute_query(request: QueryExecuteRequest) -> QueryExecuteResponse:
 
     try:
         catalogue = _load_active_catalogue()
+        planning_started = perf_counter()
         build_result = build_query(catalogue, request)
+        planning_ms = _elapsed_ms(planning_started)
+        execution_started = perf_counter()
         execution_result = execute_configured_query(build_result, settings)
+        execution_ms = _elapsed_ms(execution_started)
     except ResolutionError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
     except ValueError as error:
@@ -215,6 +224,8 @@ def execute_query(request: QueryExecuteRequest) -> QueryExecuteResponse:
         build_result,
         execution_result,
         query_id=audit_event.query_id,
+        planning_ms=planning_ms,
+        execution_ms=execution_ms,
     )
 
 
@@ -227,3 +238,8 @@ def get_query(query_id: str) -> dict[str, object]:
         raise HTTPException(status_code=404, detail=f"query not found: {query_id}")
 
     return event
+
+
+def _elapsed_ms(started_at: float) -> float:
+    """Return elapsed wall-clock time in milliseconds."""
+    return round((perf_counter() - started_at) * 1000, 2)

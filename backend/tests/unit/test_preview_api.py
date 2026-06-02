@@ -102,6 +102,9 @@ def test_preview_endpoint_returns_loss_ratio_sql_and_provenance() -> None:
     assert "%(start_date)s" in body["compact_sql"]
     assert "WITH claim_totals AS" not in body["compact_sql"]
     assert "Comprehensive" not in body["compact_sql"]
+    assert body["latency"]["planning_ms"] >= 0
+    assert body["latency"]["execution_ms"] is None
+    assert body["latency"]["total_ms"] == body["latency"]["planning_ms"]
     assert body["parameters"]["plan_tier"] == "Comprehensive"
     assert body["provenance"]["time_anchor"] == "claims.incurred_date"
     assert body["provenance"]["joins_used"] == [

@@ -36,6 +36,9 @@ def test_execute_endpoint_runs_loss_ratio_against_demo_data(tmp_path) -> None:
     assert body["metric_id"] == "loss_ratio"
     assert "%(start_date)s" in body["compact_sql"]
     assert "WITH claim_totals AS" not in body["compact_sql"]
+    assert body["latency"]["planning_ms"] >= 0
+    assert body["latency"]["execution_ms"] >= 0
+    assert body["latency"]["total_ms"] >= body["latency"]["planning_ms"]
     assert body["row_count"] == 1
     assert body["rows"][0]["loss_ratio"] > 0
     assert body["dataset"]["member_count"] == 120

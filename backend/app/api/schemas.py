@@ -187,6 +187,14 @@ class SqlGuardResponse(BaseModel):
         )
 
 
+class QueryLatencyResponse(BaseModel):
+    """Measured request timings in milliseconds."""
+
+    planning_ms: float
+    execution_ms: float | None
+    total_ms: float
+
+
 class QueryPreviewResponse(BaseModel):
     """Previewed SQL and the provenance used to build it."""
 
@@ -197,12 +205,14 @@ class QueryPreviewResponse(BaseModel):
     parameters: dict[str, Any]
     provenance: QueryProvenanceResponse
     validation: SqlGuardResponse
+    latency: QueryLatencyResponse
 
     @classmethod
     def from_build_result(
         cls,
         result: QueryBuildResult,
         query_id: str,
+        planning_ms: float,
     ) -> "QueryPreviewResponse":
         """Convert internal build output into the HTTP response shape."""
         provenance = result.provenance
@@ -227,6 +237,11 @@ class QueryPreviewResponse(BaseModel):
                 ),
             ),
             validation=SqlGuardResponse.from_guard_result(result.validation),
+            latency=QueryLatencyResponse(
+                planning_ms=planning_ms,
+                execution_ms=None,
+                total_ms=planning_ms,
+            ),
         )
 
 
@@ -254,11 +269,23 @@ class QueryExecuteResponse(QueryPreviewResponse):
         build_result: QueryBuildResult,
         execution_result: ExecutionResult,
         query_id: str,
+        planning_ms: float,
+        execution_ms: float,
     ) -> "QueryExecuteResponse":
         """Convert executed query output into the HTTP response shape."""
-        preview = QueryPreviewResponse.from_build_result(build_result, query_id)
+        preview = QueryPreviewResponse.from_build_result(
+            build_result,
+            query_id=query_id,
+            planning_ms=planning_ms,
+        )
+        preview_payload = preview.model_dump()
+        preview_payload["latency"] = QueryLatencyResponse(
+            planning_ms=planning_ms,
+            execution_ms=execution_ms,
+            total_ms=round(planning_ms + execution_ms, 2),
+        )
         return cls(
-            **preview.model_dump(),
+            **preview_payload,
             answer=execution_result.answer,
             rows=execution_result.rows,
             row_count=execution_result.row_count,

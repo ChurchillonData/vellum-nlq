@@ -17,9 +17,11 @@ export function AnswerTrustPanel({
   const answer = askResult.answer;
   const validation = answer?.validation;
   const metricId =
-    metric?.id ?? answer?.metric_id ?? askResult.resolved_request?.metric_id ?? "unresolved";
-  const metricVersion = metric?.version ?? answer?.provenance.metric_version ?? "n/a";
-  const timeAnchor = metric?.time_anchor ?? answer?.provenance.time_anchor ?? "n/a";
+    answer?.metric_id ?? askResult.resolved_request?.metric_id ?? metric?.id ?? "unresolved";
+  const metricVersion = answer?.provenance.metric_version ?? metric?.version ?? "n/a";
+  const timeAnchor = answer?.provenance.time_anchor ?? metric?.time_anchor ?? "n/a";
+  const queryId = answer?.query_id ?? askResult.query_id;
+  const latency = answer?.latency ? formatLatency(answer.latency) : "pending";
 
   return (
     <aside className="trust-panel">
@@ -64,8 +66,8 @@ export function AnswerTrustPanel({
           }
           tone="success"
         />
-        <MetaRow label="Audit / Query ID" value={askResult.query_id} mono />
-        <MetaRow label="Latency" value="234 ms execution - 72 ms planning" mono />
+        <MetaRow label="Audit / Query ID" value={queryId} mono />
+        <MetaRow label="Latency" value={latency} mono />
       </dl>
 
       <SqlBlock
@@ -74,4 +76,19 @@ export function AnswerTrustPanel({
       />
     </aside>
   );
+}
+
+function formatLatency(latency: {
+  execution_ms?: number | null;
+  planning_ms: number;
+  total_ms: number;
+}) {
+  const planning = `${latency.planning_ms.toFixed(2)} ms planning`;
+  const total = `${latency.total_ms.toFixed(2)} ms total`;
+
+  if (latency.execution_ms === null || latency.execution_ms === undefined) {
+    return `${planning} - ${total}`;
+  }
+
+  return `${latency.execution_ms.toFixed(2)} ms execution - ${planning} - ${total}`;
 }
