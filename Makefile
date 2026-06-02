@@ -258,8 +258,8 @@ install-all: install frontend-install ## Install implemented dependencies
 # ----------------------------------------------------------------------------
 
 .PHONY: demo
-demo: ## Planned: run a scripted demo of the canonical questions
-	@echo "$(GREEN)Scripted demo is planned; use GET /ask/examples for current demo questions.$(RESET)"
+demo: ## Run the scripted product demo through the ask endpoint
+	cd $(BACKEND_DIR) && $(PYTHON) -m app.demo.runner
 
 .PHONY: demo-questions
 demo-questions: ## Print the canonical demo questions

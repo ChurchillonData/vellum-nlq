@@ -255,3 +255,7 @@ Current frontend slice:
   tables and columns, and reports mapping coverage without rewriting SQL.
 - `GET /mappings/{partner}/coverage` exposes validated partner mapping coverage
   for demos, reviewer walkthroughs, and future frontend display.
+- `make demo` now runs the five-step product demo through `/ask` and verifies
+  answer, grouped analytics, clarification, out-of-scope, and blocked states.
+  Windows users can run the same flow with `python -m app.demo.runner` from
+  `backend/`.

@@ -38,8 +38,21 @@ demo examples, live `/ask` state rendering, and an Audit view that retrieves
 records through `GET /queries/{query_id}`. Saved demo fallback remains available
 when the API is unavailable.
 
-The five-question script below is still the target demo arc. For today, use the
-current API examples for live verification.
+The five-question script below is now executable from the repository root:
+
+```bash
+make demo
+```
+
+On Windows without Make:
+
+```powershell
+cd backend
+python -m app.demo.runner
+```
+
+The command runs the product-facing `/ask` flow through FastAPI and checks that
+each step returns its expected state.
 
 ## Current API Demo
 
@@ -63,6 +76,19 @@ Useful endpoints:
 - `GET /metrics`
 - `POST /queries/preview`
 - `POST /queries/execute`
+
+Or run the guided script without starting a server:
+
+```bash
+make demo
+```
+
+On Windows without Make:
+
+```powershell
+cd backend
+python -m app.demo.runner
+```
 
 The current `/ask` endpoint can infer supported quarter phrases, ISO date
 ranges, relative demo periods, full-year phrases, demo plan tiers, and supported

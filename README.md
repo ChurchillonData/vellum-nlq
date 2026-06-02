@@ -61,6 +61,7 @@ Implemented today:
 - Twenty `/ask/examples` items covered by unit tests.
 - YAML golden question suite covering the core demo contract.
 - First red-team suite for destructive questions and unsafe SQL guard cases.
+- Scripted five-step demo command that runs the product `/ask` flow end to end.
 - GitHub Actions CI for backend unit, golden, red-team, optional integration
   suite import checks, and frontend production build.
 
@@ -265,6 +266,19 @@ Or from the repo root:
 make test-unit
 make test-golden
 make test-redteam
+```
+
+Run the guided five-step product demo:
+
+```bash
+make demo
+```
+
+On Windows without Make:
+
+```powershell
+cd backend
+python -m app.demo.runner
 ```
 
 Optional live Postgres integration test:
