@@ -224,6 +224,8 @@ Current frontend slice:
 - Validation results now show a live checked-rule count, enumerate the rules
   that passed, render violation details when validation fails, and hide unsafe
   generated SQL from the answer panel.
+- Generated SQL now reveals with a typewriter-style animation when a new answer
+  or SQL view is shown, while copy actions still use the complete SQL text.
 - Demo question controls load from `/ask/examples` when the backend is
   available, with saved demo fallbacks for no-API local viewing.
 - Saved frontend demo fallbacks now mirror the twenty backend ask examples and

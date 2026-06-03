@@ -1,5 +1,5 @@
 import { Code2, Copy } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 type SqlView = "explainable" | "compact";
 
@@ -13,7 +13,8 @@ export function SqlBlock({
   const [activeView, setActiveView] = useState<SqlView>("explainable");
   const hasCompactSql = Boolean(compactSql && compactSql !== sql);
   const activeSql = activeView === "compact" && hasCompactSql ? compactSql ?? sql : sql;
-  const lines = activeSql.split("\n");
+  const displayedSql = useTypewriterText(activeSql);
+  const lines = displayedSql.split("\n");
 
   return (
     <div className="sql-status">
@@ -65,10 +66,47 @@ export function SqlBlock({
               {index < lines.length - 1 ? "\n" : ""}
             </span>
           ))}
+          {displayedSql.length < activeSql.length ? <span className="sql-caret" /> : null}
         </pre>
       </div>
     </div>
   );
+}
+
+function useTypewriterText(text: string) {
+  const [displayedText, setDisplayedText] = useState("");
+
+  useEffect(() => {
+    if (!text) {
+      setDisplayedText("");
+      return;
+    }
+
+    if (prefersReducedMotion()) {
+      setDisplayedText(text);
+      return;
+    }
+
+    setDisplayedText("");
+    let cursor = 0;
+    const chunkSize = Math.max(1, Math.ceil(text.length / 90));
+    const timer = window.setInterval(() => {
+      cursor = Math.min(text.length, cursor + chunkSize);
+      setDisplayedText(text.slice(0, cursor));
+
+      if (cursor >= text.length) {
+        window.clearInterval(timer);
+      }
+    }, 16);
+
+    return () => window.clearInterval(timer);
+  }, [text]);
+
+  return displayedText;
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 }
 
 async function copyText(text: string): Promise<void> {

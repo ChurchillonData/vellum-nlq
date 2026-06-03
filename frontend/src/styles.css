@@ -1085,6 +1085,28 @@ kbd {
   display: inline;
 }
 
+.sql-caret {
+  display: inline-block;
+  width: 8px;
+  height: 1.05em;
+  margin-left: 2px;
+  animation: sql-caret-blink 0.9s steps(2, start) infinite;
+  background: #dcecff;
+  vertical-align: -0.15em;
+}
+
+@keyframes sql-caret-blink {
+  0%,
+  55% {
+    opacity: 1;
+  }
+
+  56%,
+  100% {
+    opacity: 0;
+  }
+}
+
 .sql-comment {
   color: #6a9955;
 }
