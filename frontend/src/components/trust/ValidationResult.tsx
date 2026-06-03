@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import type { Validation } from "../../types";
 import { CleanCheck } from "../CleanCheck";
 
+const VALIDATION_COUNT_INTERVAL_MS = 85;
+
 export function ValidationResult({ validation }: { validation?: Validation }) {
   if (!validation) {
     return <span>pending</span>;
@@ -131,7 +133,7 @@ function useCountingNumber(target: number) {
 
         return next;
       });
-    }, 35);
+    }, VALIDATION_COUNT_INTERVAL_MS);
 
     return () => window.clearInterval(timer);
   }, [target]);

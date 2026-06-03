@@ -3,6 +3,9 @@ import { useEffect, useState, type ReactNode } from "react";
 
 type SqlView = "explainable" | "compact";
 
+const SQL_TYPE_INTERVAL_MS = 24;
+const SQL_TYPE_TARGET_TICKS = 160;
+
 export function SqlBlock({
   compactSql,
   sql
@@ -89,7 +92,7 @@ function useTypewriterText(text: string) {
 
     setDisplayedText("");
     let cursor = 0;
-    const chunkSize = Math.max(1, Math.ceil(text.length / 90));
+    const chunkSize = Math.max(1, Math.ceil(text.length / SQL_TYPE_TARGET_TICKS));
     const timer = window.setInterval(() => {
       cursor = Math.min(text.length, cursor + chunkSize);
       setDisplayedText(text.slice(0, cursor));
@@ -97,7 +100,7 @@ function useTypewriterText(text: string) {
       if (cursor >= text.length) {
         window.clearInterval(timer);
       }
-    }, 16);
+    }, SQL_TYPE_INTERVAL_MS);
 
     return () => window.clearInterval(timer);
   }, [text]);
