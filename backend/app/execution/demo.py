@@ -1,4 +1,7 @@
 import sqlite3
+from dataclasses import dataclass
+from functools import lru_cache
+from threading import Lock
 
 from app.analytics.models import QueryBuildResult
 from app.execution.demo_answers import build_demo_answer
@@ -15,6 +18,17 @@ from app.metrics.additional import ADDITIONAL_METRICS
 from app.execution.models import ExecutionDatasetSummary, ExecutionResult
 from app.execution.sqlite_seed import prepare_demo_database, to_sqlite_parameters
 from app.seeds.synthetic import build_seed_data
+
+
+@dataclass
+class DemoDatabase:
+    """Cached local demo database for fast repeated in-process queries."""
+
+    connection: sqlite3.Connection
+    lock: Lock
+    member_count: int
+    claim_count: int
+    premium_row_count: int
 
 
 def execute_demo_query(
@@ -37,18 +51,16 @@ def execute_demo_query(
     if build_result.provenance.metric_id not in supported_metrics:
         raise ValueError("demo execution does not support this metric yet")
 
-    seed_data = build_seed_data(member_count=member_count, month_count=month_count)
-    with sqlite3.connect(":memory:") as connection:
-        connection.row_factory = sqlite3.Row
-        prepare_demo_database(connection, seed_data)
-        rows = _run_demo_query(connection, build_result)
+    demo_database = _demo_database(member_count, month_count)
+    with demo_database.lock:
+        rows = _run_demo_query(demo_database.connection, build_result)
 
     rows = rows[: build_result.provenance.result_shape.max_rows]
     dataset = ExecutionDatasetSummary(
         name="health-uk synthetic demo",
-        member_count=len(seed_data.members),
-        claim_count=len(seed_data.claims),
-        premium_row_count=len(seed_data.premium),
+        member_count=demo_database.member_count,
+        claim_count=demo_database.claim_count,
+        premium_row_count=demo_database.premium_row_count,
     )
     answer = build_demo_answer(build_result, rows)
     return ExecutionResult(
@@ -57,6 +69,21 @@ def execute_demo_query(
         answer=answer,
         dataset=dataset,
         mode="local_demo",
+    )
+
+
+@lru_cache(maxsize=4)
+def _demo_database(member_count: int, month_count: int) -> DemoDatabase:
+    seed_data = build_seed_data(member_count=member_count, month_count=month_count)
+    connection = sqlite3.connect(":memory:", check_same_thread=False)
+    connection.row_factory = sqlite3.Row
+    prepare_demo_database(connection, seed_data)
+    return DemoDatabase(
+        connection=connection,
+        lock=Lock(),
+        member_count=len(seed_data.members),
+        claim_count=len(seed_data.claims),
+        premium_row_count=len(seed_data.premium),
     )
 
 

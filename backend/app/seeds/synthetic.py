@@ -254,7 +254,7 @@ def _paid_amount(member_index: int, status: str) -> Decimal:
 def _premium_amount(plan_tier: object) -> Decimal:
     amounts = {
         "Essential": Decimal("210.00"),
-        "Comprehensive": Decimal("330.00"),
+        "Comprehensive": Decimal("270.00"),
         "Executive": Decimal("470.00"),
     }
     return amounts[str(plan_tier)]

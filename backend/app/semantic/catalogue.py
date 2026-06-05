@@ -4,6 +4,7 @@ from typing import Any
 
 import yaml
 
+from app.planner.grouping import COMMON_GROUPINGS
 from app.semantic.models import Catalogue, JoinsFile, MetricSpec, TablesFile, TableSpec
 
 
@@ -95,6 +96,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--root", type=Path)
     parser.add_argument("--validate", action="store_true")
     parser.add_argument("--list-metrics", action="store_true")
+    parser.add_argument("--list-dimensions", action="store_true")
+    parser.add_argument("--check-synonyms", action="store_true")
     return parser.parse_args()
 
 
@@ -109,11 +112,56 @@ def main() -> None:
             print(metric_id)
         return
 
-    if args.validate or not args.list_metrics:
+    if args.list_dimensions:
+        for dimension in supported_dimensions(catalogue):
+            print(dimension)
+        return
+
+    if args.check_synonyms:
+        collisions = synonym_collisions(catalogue)
+        if collisions:
+            for term, metric_ids in collisions.items():
+                print(f"{term}: {', '.join(metric_ids)}")
+            raise SystemExit(1)
+        print(f"Catalogue {catalogue.name} has no synonym collisions.")
+        return
+
+    if args.validate or not any(
+        (args.list_metrics, args.list_dimensions, args.check_synonyms)
+    ):
         print(
             f"Catalogue {catalogue.name} is valid: "
             f"{len(catalogue.tables)} tables, {len(catalogue.metrics)} metrics."
         )
+
+
+def supported_dimensions(catalogue: Catalogue) -> list[str]:
+    """Return dimensions currently supported by deterministic grouped analytics."""
+    dimensions = set(COMMON_GROUPINGS)
+    if "decline_rate" in catalogue.metrics:
+        dimensions.add("consultant_specialty")
+    return sorted(dimensions)
+
+
+def synonym_collisions(catalogue: Catalogue) -> dict[str, list[str]]:
+    """Return normalized synonym terms that point to more than one metric."""
+    owners: dict[str, list[str]] = {}
+    for metric in catalogue.metrics.values():
+        terms = [metric.id, metric.label, *metric.synonyms]
+        for term in terms:
+            normalized = normalize_term(term)
+            owners.setdefault(normalized, []).append(metric.id)
+
+    return {
+        term: sorted(set(metric_ids))
+        for term, metric_ids in owners.items()
+        if len(set(metric_ids)) > 1
+    }
+
+
+def normalize_term(term: str) -> str:
+    """Normalize metric labels and synonyms for collision checks."""
+    return " ".join(term.casefold().replace("_", " ").replace("-", " ").split())
 
 
 if __name__ == "__main__":

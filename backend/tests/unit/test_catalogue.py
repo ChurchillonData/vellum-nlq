@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from app.semantic.catalogue import load_catalogue
+from app.semantic.catalogue import load_catalogue, supported_dimensions, synonym_collisions
 
 
 def test_health_uk_catalogue_loads_first_metric() -> None:
@@ -37,3 +37,15 @@ def test_health_uk_catalogue_loads_first_metric() -> None:
     }
     assert catalogue.metrics["loss_ratio"].time_anchor == "claims.incurred_date"
     assert catalogue.joins[0].left_table == "members"
+
+
+def test_catalogue_inspection_helpers_match_makefile_targets() -> None:
+    catalogue_root = Path(__file__).resolve().parents[2] / "catalogues"
+    catalogue = load_catalogue(catalogue_root, "health-uk")
+
+    assert supported_dimensions(catalogue) == [
+        "consultant_specialty",
+        "plan_tier",
+        "region",
+    ]
+    assert synonym_collisions(catalogue) == {}

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from app.analytics.models import QueryBuildResult
 from app.metrics.additional import ADDITIONAL_METRICS
 
@@ -36,7 +38,7 @@ def _build_loss_ratio_answer(
     if value is None:
         return f"{subject} from {period} could not be calculated because premium was zero."
 
-    ratio = float(value)
+    ratio = _required_float(value)
     return f"{subject} from {period} was {ratio:.3f} ({ratio:.1%})."
 
 
@@ -54,7 +56,7 @@ def _build_paid_claims_answer(
     if value is None:
         return f"{subject} from {period} had no paid claim amount."
 
-    return f"{subject} from {period} were GBP {float(value):,.2f}."
+    return f"{subject} from {period} were GBP {_required_float(value):,.2f}."
 
 
 def _build_incurred_claims_answer(
@@ -71,7 +73,7 @@ def _build_incurred_claims_answer(
     if value is None:
         return f"{subject} from {period} had no incurred claim amount."
 
-    return f"{subject} from {period} were GBP {float(value):,.2f}."
+    return f"{subject} from {period} were GBP {_required_float(value):,.2f}."
 
 
 def _build_claim_frequency_answer(
@@ -88,7 +90,10 @@ def _build_claim_frequency_answer(
     if value is None:
         return f"{subject} from {period} could not be calculated."
 
-    return f"{subject} from {period} was {float(value):.2f} per 1,000 member months."
+    return (
+        f"{subject} from {period} was "
+        f"{_required_float(value):.2f} per 1,000 member months."
+    )
 
 
 def _build_claim_severity_answer(
@@ -105,7 +110,7 @@ def _build_claim_severity_answer(
     if value is None:
         return f"{subject} from {period} could not be calculated."
 
-    return f"{subject} from {period} was GBP {float(value):,.2f}."
+    return f"{subject} from {period} was GBP {_required_float(value):,.2f}."
 
 
 def _build_decline_rate_answer(
@@ -122,7 +127,7 @@ def _build_decline_rate_answer(
     if value is None:
         return f"{subject} from {period} could not be calculated."
 
-    rate = float(value)
+    rate = _required_float(value)
     return f"{subject} from {period} was {rate:.3f} ({rate:.1%})."
 
 
@@ -141,7 +146,10 @@ def _build_additional_metric_answer(
     if value is None:
         return f"{subject} from {period} could not be calculated."
 
-    return f"{subject} from {period} was {_format_metric_value(metric_id, float(value))}."
+    return (
+        f"{subject} from {period} was "
+        f"{_format_metric_value(metric_id, _required_float(value))}."
+    )
 
 
 def _build_grouped_answer(
@@ -160,7 +168,7 @@ def _build_grouped_answer(
 
     top_row = rows[0]
     group_value = top_row.get(group_key, "Unknown")
-    value = float(top_row.get(metric_id) or 0)
+    value = _required_float(top_row.get(metric_id) or 0)
     return (
         f"{subject} by {display_group} from {period} was highest for "
         f"{group_value} at {_format_metric_value(metric_id, value)}."
@@ -202,3 +210,9 @@ def _period(build_result: QueryBuildResult) -> str:
         f"{build_result.plan.start_date.isoformat()} "
         f"to {build_result.plan.end_date.isoformat()}"
     )
+
+
+def _required_float(value: object) -> float:
+    if isinstance(value, int | float | str | Decimal):
+        return float(value)
+    raise TypeError(f"expected numeric value, got {type(value).__name__}")

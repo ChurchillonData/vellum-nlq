@@ -1,5 +1,6 @@
 from sqlalchemy import Date, Integer, Numeric, String, bindparam, cast, func, select, true
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.sql.elements import ColumnElement
 
 from app.analytics.models import GeneratedQuery, LogicalPlan
 from app.db.schema import (
@@ -26,11 +27,13 @@ def generate_loss_ratio_query(plan: LogicalPlan) -> GeneratedQuery:
         plans, members.c.plan_id == plans.c.id
     )
 
-    claims_filters = [
+    claims_filters: list[ColumnElement[bool]] = [
         claims.c.incurred_date.between(start_date, end_date),
         claims.c.status != excluded_status,
     ]
-    premium_filters = [premium.c.coverage_month.between(start_date, end_date)]
+    premium_filters: list[ColumnElement[bool]] = [
+        premium.c.coverage_month.between(start_date, end_date)
+    ]
 
     if plan.plan_tier:
         plan_tier = bindparam("plan_tier", plan.plan_tier, type_=String())
@@ -103,7 +106,9 @@ def generate_paid_claims_query(plan: LogicalPlan) -> GeneratedQuery:
         .join(members, claims.c.member_id == members.c.id)
         .join(plans, members.c.plan_id == plans.c.id)
     )
-    filters = [claim_lines.c.paid_date.between(start_date, end_date)]
+    filters: list[ColumnElement[bool]] = [
+        claim_lines.c.paid_date.between(start_date, end_date)
+    ]
 
     if plan.plan_tier:
         plan_tier = bindparam("plan_tier", plan.plan_tier, type_=String())
@@ -165,11 +170,13 @@ def generate_claim_frequency_query(plan: LogicalPlan) -> GeneratedQuery:
         enrolment_months.c.member_id == members.c.id,
     ).join(plans, members.c.plan_id == plans.c.id)
 
-    claims_filters = [
+    claims_filters: list[ColumnElement[bool]] = [
         claims.c.incurred_date.between(start_date, end_date),
         claims.c.status != excluded_status,
     ]
-    enrolment_filters = [enrolment_months.c.coverage_month.between(start_date, end_date)]
+    enrolment_filters: list[ColumnElement[bool]] = [
+        enrolment_months.c.coverage_month.between(start_date, end_date)
+    ]
 
     if plan.plan_tier:
         plan_tier = bindparam("plan_tier", plan.plan_tier, type_=String())
@@ -275,7 +282,9 @@ def generate_decline_rate_query(plan: LogicalPlan) -> GeneratedQuery:
     if plan.group_by == ("consultant_specialty",):
         source = source.join(providers, claim_lines.c.provider_id == providers.c.id)
 
-    filters = [claim_lines.c.service_date.between(start_date, end_date)]
+    filters: list[ColumnElement[bool]] = [
+        claim_lines.c.service_date.between(start_date, end_date)
+    ]
 
     if plan.plan_tier:
         plan_tier = bindparam("plan_tier", plan.plan_tier, type_=String())

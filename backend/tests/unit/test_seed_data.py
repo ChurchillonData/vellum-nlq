@@ -140,3 +140,4 @@ def test_seed_data_supports_q1_comprehensive_loss_ratio_demo() -> None:
 
     assert claim_total > 0
     assert premium_total > 0
+    assert Decimal("0.78") <= claim_total / premium_total <= Decimal("0.92")
