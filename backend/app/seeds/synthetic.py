@@ -3,6 +3,8 @@ from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 from uuid import NAMESPACE_URL, UUID, uuid5
 
+from app.data_window import add_months, rolling_data_window
+
 
 Row = dict[str, object]
 
@@ -33,11 +35,12 @@ class SeedData:
 def build_seed_data(
     member_count: int,
     month_count: int = 18,
-    start_month: date = date(2025, 1, 1),
+    start_month: date | None = None,
+    as_of_date: date | None = None,
     start_member_index: int = 0,
     include_reference_data: bool = True,
 ) -> SeedData:
-    """Build deterministic UK PMI-shaped data for local development."""
+    """Build deterministic UK PMI-shaped data for the rolling demo window."""
     if member_count < 1:
         raise ValueError("member_count must be at least 1")
     if month_count < 1:
@@ -51,12 +54,19 @@ def build_seed_data(
         plans=reference_plans if include_reference_data else [],
         providers=reference_providers if include_reference_data else [],
     )
-    coverage_months = _coverage_months(start_month, month_count)
+    first_coverage_month = (
+        start_month
+        if start_month is not None
+        else rolling_data_window(as_of_date=as_of_date, month_count=month_count).start_date
+    )
+    coverage_months = _coverage_months(first_coverage_month, month_count)
 
     for member_index in range(start_member_index, start_member_index + member_count):
         member_id = _row_id("member", member_index)
         plan = reference_plans[member_index % len(reference_plans)]
-        data.members.append(_member_row(member_id, plan["id"], member_index, start_month))
+        data.members.append(
+            _member_row(member_id, plan["id"], member_index, first_coverage_month)
+        )
 
         for coverage_month in coverage_months:
             data.enrolment_months.append(
@@ -87,6 +97,7 @@ def build_seed_data(
                 member_id,
                 member_index,
                 incurred_month,
+                plan_tier=plan["plan_tier"],
                 claim_number=claim_number,
             )
 
@@ -157,6 +168,7 @@ def _append_claim_rows(
     member_id: UUID,
     member_index: int,
     incurred_month: date,
+    plan_tier: object,
     claim_number: int,
 ) -> None:
     claim_id = _row_id("claim", member_index, claim_number)
@@ -166,8 +178,13 @@ def _append_claim_rows(
     received_date = incurred_date + timedelta(days=2)
     adjudicated_date = received_date + timedelta(days=5)
     status = _claim_status(member_index, claim_number)
-    paid_amount = _paid_amount(member_index, status)
-    reserve_amount = Decimal("450.00") if status == "open" else Decimal("0.00")
+    amount_factor = _claim_amount_factor(plan_tier)
+    paid_amount = (_paid_amount(member_index, status) * amount_factor).quantize(
+        Decimal("0.01")
+    )
+    reserve_amount = (
+        Decimal("450.00") * amount_factor if status == "open" else Decimal("0.00")
+    ).quantize(Decimal("0.01"))
     declined_amount = Decimal("3200.00") if status == "declined" else Decimal("0.00")
     closed_date = adjudicated_date if status in {"closed", "declined"} else None
 
@@ -260,18 +277,22 @@ def _premium_amount(plan_tier: object) -> Decimal:
     return amounts[str(plan_tier)]
 
 
+def _claim_amount_factor(plan_tier: object) -> Decimal:
+    factors = {
+        "Essential": Decimal("1.00"),
+        "Comprehensive": Decimal("0.655"),
+        "Executive": Decimal("1.00"),
+    }
+    return factors[str(plan_tier)]
+
+
 def _diagnosis_category(member_index: int) -> str:
     categories = ["Musculoskeletal", "Cardiac", "Diagnostics", "General"]
     return categories[member_index % len(categories)]
 
 
 def _coverage_months(start_month: date, month_count: int) -> list[date]:
-    return [_add_months(start_month, offset) for offset in range(month_count)]
-
-
-def _add_months(value: date, offset: int) -> date:
-    month_index = value.month - 1 + offset
-    return date(value.year + month_index // 12, (month_index % 12) + 1, 1)
+    return [add_months(start_month, offset) for offset in range(month_count)]
 
 
 def _row_id(*parts: object) -> UUID:

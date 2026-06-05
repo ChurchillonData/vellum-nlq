@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from app.analytics.models import AnalyticsRequest
+from app.data_window import DataWindow, PeriodAvailability, check_period_available
 from app.semantic.models import Catalogue, MetricSpec
 from app.semantic.scope import ScopeFinding, classify_question_scope
 from app.semantic.safety import SafetyFinding, classify_question_safety
@@ -33,6 +34,7 @@ class QuestionResolution:
     message: str
     safety: SafetyFinding | None = None
     scope: ScopeFinding | None = None
+    availability: PeriodAvailability | None = None
 
 
 def resolve_question(
@@ -43,6 +45,7 @@ def resolve_question(
     metric_id: str | None = None,
     plan_tier: str | None = None,
     group_by: tuple[str, ...] = (),
+    data_window: DataWindow | None = None,
 ) -> QuestionResolution:
     """Resolve a simple question into one metric or a clarification prompt."""
     tokens = set(_tokenize(question))
@@ -77,6 +80,7 @@ def resolve_question(
             end_date=end_date,
             plan_tier=plan_tier,
             group_by=group_by,
+            data_window=data_window,
         )
 
     candidates = _rank_candidates(catalogue, question, tokens)
@@ -110,6 +114,17 @@ def resolve_question(
         if start_date > end_date:
             raise ValueError("start_date must be on or before end_date")
 
+        availability = _check_availability(start_date, end_date, data_window)
+        if availability is not None:
+            return QuestionResolution(
+                status="unavailable_period",
+                question=question,
+                candidates=tuple(candidates),
+                resolved_request=None,
+                message=availability.message or "Requested period is unavailable.",
+                availability=availability,
+            )
+
         return QuestionResolution(
             status="resolved",
             question=question,
@@ -141,6 +156,7 @@ def _resolve_provider_metric(
     end_date: date | None,
     plan_tier: str | None,
     group_by: tuple[str, ...],
+    data_window: DataWindow | None,
 ) -> QuestionResolution:
     metric = catalogue.metrics.get(metric_id)
     if metric is None:
@@ -171,6 +187,17 @@ def _resolve_provider_metric(
 
     if start_date > end_date:
         raise ValueError("start_date must be on or before end_date")
+
+    availability = _check_availability(start_date, end_date, data_window)
+    if availability is not None:
+        return QuestionResolution(
+            status="unavailable_period",
+            question=question,
+            candidates=(candidate,),
+            resolved_request=None,
+            message=availability.message or "Requested period is unavailable.",
+            availability=availability,
+        )
 
     return QuestionResolution(
         status="resolved",
@@ -256,6 +283,18 @@ def _claims_candidates(catalogue: Catalogue) -> list[MetricCandidate]:
         for metric_id in candidate_ids
         if (metric := catalogue.metrics.get(metric_id)) is not None
     ]
+
+
+def _check_availability(
+    start_date: date,
+    end_date: date,
+    data_window: DataWindow | None,
+) -> PeriodAvailability | None:
+    if data_window is None:
+        return None
+
+    availability = check_period_available(start_date, end_date, data_window)
+    return None if availability.available else availability
 
 
 def _tokenize(value: str) -> list[str]:

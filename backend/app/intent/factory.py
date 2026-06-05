@@ -13,8 +13,12 @@ def build_intent_provider(settings: Settings) -> IntentProvider:
     if _override_provider is not None:
         return _override_provider
 
+    fallback = DeterministicIntentProvider(
+        as_of_date=settings.demo_as_of_date,
+        month_count=settings.demo_month_count,
+    )
+
     if settings.intent_provider == "openai":
-        fallback = DeterministicIntentProvider()
         try:
             primary = OpenAIIntentProvider(
                 api_key=settings.openai_api_key or "",
@@ -34,7 +38,7 @@ def build_intent_provider(settings: Settings) -> IntentProvider:
             fallback_enabled=settings.openai_fallback_enabled,
         )
 
-    return DeterministicIntentProvider()
+    return fallback
 
 
 def set_intent_provider_override(provider: IntentProvider | None) -> None:

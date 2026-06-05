@@ -20,6 +20,9 @@ const navItems: Array<{ id: ActiveView; label: string }> = [
 export function TopBar({ activeView, health, onChangeView }: TopBarProps) {
   const isOperational = health?.status === "ok";
   const catalogueName = health?.catalogue ?? "health-uk";
+  const dataWindow = health?.data_window
+    ? `${formatDate(health.data_window.start_date)} - ${formatDate(health.data_window.end_date)}`
+    : null;
 
   return (
     <header className="top-bar">
@@ -45,6 +48,7 @@ export function TopBar({ activeView, health, onChangeView }: TopBarProps) {
           <span className={isOperational ? "active-dot" : "active-dot offline"} aria-hidden="true" />
           <strong>{isOperational ? "active" : "offline"}</strong>
         </span>
+        {dataWindow && <span className="data-window-pill">{dataWindow}</span>}
         <span className={isOperational ? "operational-pill" : "operational-pill offline"}>
           <span className="operational-check" aria-hidden="true">
             <CleanCheck size="sm" />
@@ -54,4 +58,16 @@ export function TopBar({ activeView, health, onChangeView }: TopBarProps) {
       </div>
     </header>
   );
+}
+
+function formatDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    month: "short",
+    year: "numeric"
+  }).format(date);
 }

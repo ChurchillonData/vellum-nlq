@@ -94,10 +94,12 @@ cd backend
 python -m app.demo.runner
 ```
 
-The current `/ask` endpoint can infer supported quarter phrases, ISO date
-ranges, relative demo periods, full-year phrases, demo plan tiers, and supported
-grouping phrases. Explicit structured dates and filters are still accepted and
-take priority over inferred values.
+The current `/ask` endpoint can infer supported completed-quarter phrases, ISO
+date ranges, relative demo periods, full-year phrases, demo plan tiers, and
+supported grouping phrases. Explicit structured dates and filters are still
+accepted and take priority over inferred values. The synthetic demo data covers
+the last 18 completed months; future or unavailable periods are rejected before
+SQL planning.
 
 Example happy path:
 

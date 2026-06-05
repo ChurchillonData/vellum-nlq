@@ -46,11 +46,15 @@ planning, SQL guard validation, execution, and audit.
 
 Supported inference in this phase:
 
-- `Q1 2026`, `Q2 2026`, `Q3 2026`, `Q4 2026`
-- `2026 Q1`, `2026 Q2`, `2026 Q3`, `2026 Q4`
+- completed quarter phrases such as `Q1 2026`, `2026 Q1`, and `last quarter`
 - two ISO dates such as `2026-01-01` and `2026-03-31`
+- relative periods: `last month`, `last six months`, and `year to date`
 - plan tiers: `Essential`, `Comprehensive`, `Executive`
 - grouping phrase: `by consultant specialty`
+
+The demo dataset is rolling: it covers the last 18 completed months from the
+configured `VELLUM_DEMO_AS_OF_DATE` or the current date. Periods outside that
+window are rejected before SQL planning. Forecasting remains out of scope.
 
 Answer response, trimmed to the fields most relevant to the UI:
 
@@ -112,6 +116,21 @@ inferred, the endpoint returns a date-range prompt:
   "question": "What was loss ratio for the Comprehensive plan tier?",
   "message": "A supported date range is required before planning SQL.",
   "resolved_request": null,
+  "answer": null
+}
+```
+
+If a question asks for a period outside the available rolling data window, the
+endpoint returns an unavailable-period state:
+
+```json
+{
+  "status": "unavailable_period",
+  "message": "Requested period is outside the available demo data window (2024-12-01 to 2026-05-31).",
+  "availability": {
+    "reason_id": "period_outside_data_window",
+    "message": "Requested period is outside the available demo data window (2024-12-01 to 2026-05-31)."
+  },
   "answer": null
 }
 ```

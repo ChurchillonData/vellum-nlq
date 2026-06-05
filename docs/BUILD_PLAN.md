@@ -219,7 +219,8 @@ Status: in progress
 Current frontend slice:
 
 - The React Ask workspace calls the real `/ask` endpoint and renders answer,
-  clarification, blocked, out-of-scope, and date-range-required states.
+  clarification, blocked, out-of-scope, unavailable-period, and
+  date-range-required states.
 - The Ask trust panel can switch generated SQL between the explainable
   provenance-first view and a compact semantic-layer display view that hides
   physical joins and CTE plumbing.
@@ -245,9 +246,12 @@ Current frontend slice:
 - The Catalogue Explorer now consumes the richer `/metrics` payload for all
   active metrics, including catalogue-owned formulas, versions, owners,
   allowed dimensions, join previews, synonyms, and review dates.
-- The top-bar catalogue and operational badges now read `/health`, so the
-  frontend shows the active catalogue and backend availability instead of a
-  hardcoded status.
+- The top-bar catalogue, operational badge, and data-window pill now read
+  `/health`, so the frontend shows the active catalogue, backend availability,
+  and available synthetic period instead of hardcoded status.
+- The synthetic demo data now rolls across the last 18 completed months from
+  the configured `VELLUM_DEMO_AS_OF_DATE` or current date. Future and unavailable
+  historical periods return an unavailable-period state before SQL planning.
 - The synthetic seed loader now supports a portfolio profile of 200,000 members
   across 18 months, loaded in chunks so large demo preparation does not require
   building the full dataset in memory at once.

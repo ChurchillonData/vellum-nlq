@@ -43,6 +43,8 @@ Implemented today:
   and can fall back to deterministic parsing.
 - Backend-v1 natural-language parsing for quarters, ISO date ranges, relative
   demo periods, full-year phrases, plan tiers, and supported grouping phrases.
+- Rolling demo data for the last 18 completed months, with future or unavailable
+  historical periods rejected before SQL planning.
 - Grouped demo outputs for plan tier and region across supported metrics, plus
   decline rate by consultant specialty.
 - Ambiguity, out-of-scope, and destructive-intent responses for controlled demo

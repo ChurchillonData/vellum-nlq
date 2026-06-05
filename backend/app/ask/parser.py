@@ -1,16 +1,19 @@
-import calendar
 import re
 from dataclasses import dataclass
 from datetime import date
 
+from app.data_window import (
+    DataWindow,
+    add_months,
+    latest_completed_quarter,
+    rolling_data_window,
+)
 
 PLAN_TIERS = {
     "essential": "Essential",
     "comprehensive": "Comprehensive",
     "executive": "Executive",
 }
-
-DEMO_TODAY = date(2026, 5, 24)
 
 
 @dataclass(frozen=True)
@@ -23,9 +26,14 @@ class ParsedAskFields:
     group_by: tuple[str, ...] = ()
 
 
-def parse_ask_fields(question: str) -> ParsedAskFields:
+def parse_ask_fields(
+    question: str,
+    as_of_date: date | None = None,
+    month_count: int = 18,
+) -> ParsedAskFields:
     """Infer supported dates and filters from an ask question."""
-    start_date, end_date = _parse_date_range(question)
+    window = rolling_data_window(as_of_date=as_of_date, month_count=month_count)
+    start_date, end_date = _parse_date_range(question, window)
     plan_tier = _parse_plan_tier(question)
     group_by = _parse_group_by(question)
     return ParsedAskFields(
@@ -36,8 +44,11 @@ def parse_ask_fields(question: str) -> ParsedAskFields:
     )
 
 
-def _parse_date_range(question: str) -> tuple[date | None, date | None]:
-    quarter_range = _parse_quarter(question)
+def _parse_date_range(
+    question: str,
+    window: DataWindow,
+) -> tuple[date | None, date | None]:
+    quarter_range = _parse_quarter(question, window)
     if quarter_range != (None, None):
         return quarter_range
 
@@ -45,14 +56,20 @@ def _parse_date_range(question: str) -> tuple[date | None, date | None]:
     if iso_range != (None, None):
         return iso_range
 
-    relative_range = _parse_relative_range(question)
+    relative_range = _parse_relative_range(question, window)
     if relative_range != (None, None):
         return relative_range
 
     return _parse_year_range(question)
 
 
-def _parse_quarter(question: str) -> tuple[date | None, date | None]:
+def _parse_quarter(
+    question: str,
+    window: DataWindow,
+) -> tuple[date | None, date | None]:
+    if re.search(r"\blast\s+quarter\b", question, flags=re.IGNORECASE):
+        return latest_completed_quarter(window.as_of_date)
+
     patterns = (
         r"\bq([1-4])\s+(\d{4})\b",
         r"\b(\d{4})\s+q([1-4])\b",
@@ -67,7 +84,7 @@ def _parse_quarter(question: str) -> tuple[date | None, date | None]:
         groups = match.groups()
         if len(groups) == 1:
             quarter = int(groups[0])
-            year = DEMO_TODAY.year
+            year = latest_completed_quarter(window.as_of_date)[0].year
             return _quarter_bounds(year, quarter)
 
         first, second = groups
@@ -97,20 +114,22 @@ def _parse_iso_date_range(question: str) -> tuple[date | None, date | None]:
     return start_date, end_date
 
 
-def _parse_relative_range(question: str) -> tuple[date | None, date | None]:
+def _parse_relative_range(
+    question: str,
+    window: DataWindow,
+) -> tuple[date | None, date | None]:
     normalized = question.casefold()
-    current_month_start = date(DEMO_TODAY.year, DEMO_TODAY.month, 1)
+    latest_month_start = date(window.end_date.year, window.end_date.month, 1)
 
     if re.search(r"\blast\s+(six|6)\s+months\b", normalized):
-        start_date = _add_months(current_month_start, -5)
-        return start_date, _month_end(DEMO_TODAY.year, DEMO_TODAY.month)
+        start_date = add_months(latest_month_start, -5)
+        return start_date, window.end_date
 
     if re.search(r"\blast\s+month\b", normalized):
-        start_date = _add_months(current_month_start, -1)
-        return start_date, _month_end(start_date.year, start_date.month)
+        return latest_month_start, window.end_date
 
     if re.search(r"\b(this\s+year|year\s+to\s+date|ytd)\b", normalized):
-        return date(DEMO_TODAY.year, 1, 1), DEMO_TODAY
+        return date(window.as_of_date.year, 1, 1), window.end_date
 
     return None, None
 
@@ -159,12 +178,3 @@ def _parse_group_by(question: str) -> tuple[str, ...]:
     if any(re.search(pattern, normalized) for pattern in specialty_patterns):
         return ("consultant_specialty",)
     return ()
-
-
-def _add_months(value: date, offset: int) -> date:
-    month_index = value.month - 1 + offset
-    return date(value.year + month_index // 12, (month_index % 12) + 1, 1)
-
-
-def _month_end(year: int, month: int) -> date:
-    return date(year, month, calendar.monthrange(year, month)[1])

@@ -27,6 +27,7 @@ from app.audit.logger import (
 )
 from app.audit.store import build_audit_store
 from app.config import get_settings
+from app.data_window import check_period_available, rolling_data_window
 from app.execution.factory import execute_query as execute_configured_query
 from app.intent.factory import build_intent_provider
 from app.intent.models import IntentProviderError
@@ -126,7 +127,11 @@ def ask(request: AskApiRequest) -> AskResponse:
             catalogue,
             request.question,
         )
-        parsed_fields = parse_ask_fields(request.question)
+        parsed_fields = parse_ask_fields(
+            request.question,
+            as_of_date=settings.demo_as_of_date,
+            month_count=settings.demo_month_count,
+        )
         ask_request = AskServiceRequest(
             question=request.question,
             metric_id=request.metric_id or intent.metric_id,
@@ -144,10 +149,10 @@ def ask(request: AskApiRequest) -> AskResponse:
         )
     except ResolutionError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
-    except IntentProviderError as error:
-        raise HTTPException(status_code=503, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
+    except IntentProviderError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
 
     audit_event = build_ask_audit_event(ask_request, result)
     build_audit_store(settings).record(audit_event)
@@ -158,6 +163,7 @@ def ask(request: AskApiRequest) -> AskResponse:
 @router.post("/queries/resolve", response_model=QueryResolveResponse)
 def resolve_query(request: QueryResolveRequest) -> QueryResolveResponse:
     """Resolve a simple question into a metric or clarification candidates."""
+    settings = get_settings()
     catalogue = _load_active_catalogue()
     result = resolve_question(
         catalogue,
@@ -166,6 +172,10 @@ def resolve_query(request: QueryResolveRequest) -> QueryResolveResponse:
         end_date=request.end_date,
         plan_tier=request.plan_tier,
         group_by=request.group_by,
+        data_window=rolling_data_window(
+            as_of_date=settings.demo_as_of_date,
+            month_count=settings.demo_month_count,
+        ),
     )
     return QueryResolveResponse.from_resolution(result)
 
@@ -177,10 +187,13 @@ def preview_query(request: QueryPreviewRequest) -> QueryPreviewResponse:
 
     try:
         catalogue = _load_active_catalogue()
+        _ensure_period_available(request.start_date, request.end_date)
         planning_started = perf_counter()
         build_result = build_query(catalogue, request)
         planning_ms = _elapsed_ms(planning_started)
     except ResolutionError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
     audit_event = build_preview_audit_event(request, build_result)
@@ -200,6 +213,7 @@ def execute_query(request: QueryExecuteRequest) -> QueryExecuteResponse:
 
     try:
         catalogue = _load_active_catalogue()
+        _ensure_period_available(request.start_date, request.end_date)
         planning_started = perf_counter()
         build_result = build_query(catalogue, request)
         planning_ms = _elapsed_ms(planning_started)
@@ -243,3 +257,15 @@ def get_query(query_id: str) -> dict[str, object]:
 def _elapsed_ms(started_at: float) -> float:
     """Return elapsed wall-clock time in milliseconds."""
     return round((perf_counter() - started_at) * 1000, 2)
+
+
+def _ensure_period_available(start_date, end_date) -> None:
+    """Reject structured requests outside the configured demo data window."""
+    settings = get_settings()
+    window = rolling_data_window(
+        as_of_date=settings.demo_as_of_date,
+        month_count=settings.demo_month_count,
+    )
+    availability = check_period_available(start_date, end_date, window)
+    if not availability.available:
+        raise ValueError(availability.message or "Requested period is unavailable.")

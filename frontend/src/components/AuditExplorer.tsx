@@ -208,11 +208,14 @@ function AuditRecordView({ record }: { record: AuditRecord }) {
         <JsonBlock title="Tables, joins and parameters" value={provenanceDetails(record)} />
       </div>
 
-      {(record.safety || record.scope || record.candidates?.length) && (
+      {(record.safety || record.scope || record.availability || record.candidates?.length) && (
         <div className="audit-panel wide">
           <PanelTitle icon={<AlertTriangle size={20} />} title="Resolution notes" />
           {record.safety && <JsonBlock title="Safety" value={record.safety} />}
           {record.scope && <JsonBlock title="Scope" value={record.scope} />}
+          {record.availability && (
+            <JsonBlock title="Availability" value={record.availability} />
+          )}
           {record.candidates?.length ? (
             <JsonBlock title="Candidates" value={record.candidates} />
           ) : null}

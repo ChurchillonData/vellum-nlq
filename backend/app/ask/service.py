@@ -5,6 +5,7 @@ from time import perf_counter
 from app.analytics.build import build_query
 from app.analytics.models import QueryBuildResult
 from app.config import Settings
+from app.data_window import rolling_data_window
 from app.execution.factory import execute_query
 from app.execution.models import ExecutionResult
 from app.semantic.models import Catalogue
@@ -49,6 +50,10 @@ def answer_question(
         end_date=request.end_date,
         plan_tier=request.plan_tier,
         group_by=request.group_by,
+        data_window=rolling_data_window(
+            as_of_date=settings.demo_as_of_date,
+            month_count=settings.demo_month_count,
+        ),
     )
 
     if resolution.status != "resolved" or resolution.resolved_request is None:

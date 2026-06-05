@@ -36,6 +36,7 @@ class AskAuditEvent:
     candidates: list[dict[str, object]]
     safety: dict[str, object] | None
     scope: dict[str, object] | None
+    availability: dict[str, object] | None
     metric_id: str | None = None
     sql: str | None = None
     compact_sql: str | None = None
@@ -104,6 +105,7 @@ def build_ask_audit_event(
         ],
         safety=_safety_payload(result),
         scope=_scope_payload(result),
+        availability=_availability_payload(result),
         metric_id=_metric_id(result),
         sql=(result.build_result.query.sql if result.build_result is not None else None),
         compact_sql=(
@@ -182,6 +184,16 @@ def _scope_payload(result: AskResult) -> dict[str, object] | None:
     if scope is None:
         return None
     return {"reason_id": scope.reason_id, "reason": scope.reason}
+
+
+def _availability_payload(result: AskResult) -> dict[str, object] | None:
+    availability = result.resolution.availability
+    if availability is None:
+        return None
+    return {
+        "reason_id": availability.reason_id,
+        "message": availability.message,
+    }
 
 
 def _metric_id(result: AskResult) -> str | None:

@@ -81,6 +81,7 @@ const askResult: AskResponse = {
     }
   },
   candidates: [],
+  availability: null,
   message: "Resolved to metric: paid_claims.",
   query_id: "q_live_answer",
   question: "How much did we pay?",

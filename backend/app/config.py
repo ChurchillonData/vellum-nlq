@@ -1,4 +1,5 @@
 from functools import lru_cache
+from datetime import date
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -25,6 +26,7 @@ class Settings(BaseSettings):
     ]
     demo_member_count: int = 2_000
     demo_month_count: int = 18
+    demo_as_of_date: date | None = None
     execution_backend: str = "local_demo"
     intent_provider: str = "deterministic"
     openai_api_key: str | None = None

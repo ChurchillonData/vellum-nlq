@@ -1,5 +1,6 @@
 import sqlite3
 from dataclasses import dataclass
+from datetime import date
 from functools import lru_cache
 from threading import Lock
 
@@ -35,6 +36,7 @@ def execute_demo_query(
     build_result: QueryBuildResult,
     member_count: int,
     month_count: int,
+    as_of_date: date | None = None,
 ) -> ExecutionResult:
     """Run one guarded query against deterministic in-memory demo data."""
     if not build_result.validation.passed:
@@ -51,7 +53,7 @@ def execute_demo_query(
     if build_result.provenance.metric_id not in supported_metrics:
         raise ValueError("demo execution does not support this metric yet")
 
-    demo_database = _demo_database(member_count, month_count)
+    demo_database = _demo_database(member_count, month_count, as_of_date)
     with demo_database.lock:
         rows = _run_demo_query(demo_database.connection, build_result)
 
@@ -73,8 +75,16 @@ def execute_demo_query(
 
 
 @lru_cache(maxsize=4)
-def _demo_database(member_count: int, month_count: int) -> DemoDatabase:
-    seed_data = build_seed_data(member_count=member_count, month_count=month_count)
+def _demo_database(
+    member_count: int,
+    month_count: int,
+    as_of_date: date | None,
+) -> DemoDatabase:
+    seed_data = build_seed_data(
+        member_count=member_count,
+        month_count=month_count,
+        as_of_date=as_of_date,
+    )
     connection = sqlite3.connect(":memory:", check_same_thread=False)
     connection.row_factory = sqlite3.Row
     prepare_demo_database(connection, seed_data)

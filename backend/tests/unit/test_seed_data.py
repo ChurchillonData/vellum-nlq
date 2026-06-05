@@ -12,9 +12,11 @@ from seeds.generate import (
     resolve_seed_config,
 )
 
+AS_OF_DATE = date(2026, 6, 5)
+
 
 def test_seed_data_builds_related_claims_rows() -> None:
-    seed_data = build_seed_data(member_count=12, month_count=3)
+    seed_data = build_seed_data(member_count=12, month_count=3, as_of_date=AS_OF_DATE)
 
     member_ids = {row["id"] for row in seed_data.members}
     claim_ids = {row["id"] for row in seed_data.claims}
@@ -33,16 +35,18 @@ def test_seed_data_supports_chunked_portfolio_generation() -> None:
     first_chunk = build_seed_data(
         member_count=10,
         month_count=3,
+        as_of_date=AS_OF_DATE,
         start_member_index=0,
         include_reference_data=True,
     )
     second_chunk = build_seed_data(
         member_count=10,
         month_count=3,
+        as_of_date=AS_OF_DATE,
         start_member_index=10,
         include_reference_data=False,
     )
-    full_seed = build_seed_data(member_count=20, month_count=3)
+    full_seed = build_seed_data(member_count=20, month_count=3, as_of_date=AS_OF_DATE)
 
     chunked_member_ids = {row["id"] for row in first_chunk.members + second_chunk.members}
     full_member_ids = {row["id"] for row in full_seed.members}
@@ -93,7 +97,7 @@ def test_seed_cli_builds_chunk_plan() -> None:
 
 
 def test_seed_cli_reports_all_table_counts() -> None:
-    seed_data = build_seed_data(member_count=12, month_count=3)
+    seed_data = build_seed_data(member_count=12, month_count=3, as_of_date=AS_OF_DATE)
     totals = empty_row_counts()
 
     add_row_counts(totals, count_seed_rows(seed_data))
@@ -111,7 +115,11 @@ def test_seed_cli_reports_all_table_counts() -> None:
 
 
 def test_seed_data_supports_q1_comprehensive_loss_ratio_demo() -> None:
-    seed_data = build_seed_data(member_count=120, month_count=18)
+    seed_data = build_seed_data(
+        member_count=2_000,
+        month_count=18,
+        as_of_date=AS_OF_DATE,
+    )
     plans = {row["id"]: row for row in seed_data.plans}
     members = {row["id"]: row for row in seed_data.members}
     start_date = date(2026, 1, 1)

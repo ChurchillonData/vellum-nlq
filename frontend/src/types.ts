@@ -4,6 +4,7 @@ export type AskStatus =
   | "blocked"
   | "date_range_required"
   | "out_of_scope"
+  | "unavailable_period"
   | "unresolved";
 
 export type Candidate = {
@@ -77,6 +78,7 @@ export type AskResponse = {
   candidates: Candidate[];
   safety: { rule_id: string; severity: string; reason: string } | null;
   scope: { reason_id: string; reason: string } | null;
+  availability: { reason_id: string; message: string } | null;
   answer: AskAnswer | null;
 };
 
@@ -128,6 +130,12 @@ export type MetricsResponse = {
 export type HealthResponse = {
   status: string;
   catalogue: string;
+  data_window?: {
+    as_of_date: string;
+    start_date: string;
+    end_date: string;
+    month_count: number;
+  };
 };
 
 export type AuditRecord = {
@@ -140,6 +148,7 @@ export type AuditRecord = {
   candidates?: Candidate[];
   safety?: { rule_id: string; severity: string; reason: string } | null;
   scope?: { reason_id: string; reason: string } | null;
+  availability?: { reason_id: string | null; message: string | null } | null;
   metric_id?: string | null;
   sql?: string | null;
   compact_sql?: string | null;

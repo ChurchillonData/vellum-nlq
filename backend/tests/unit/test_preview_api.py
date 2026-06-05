@@ -1,4 +1,5 @@
 import json
+from datetime import date
 
 from fastapi.testclient import TestClient
 
@@ -133,6 +134,27 @@ def test_preview_endpoint_reports_unknown_metric() -> None:
 
     assert response.status_code == 400
     assert response.json() == {"detail": "unknown metric: not_a_metric"}
+
+
+def test_preview_endpoint_rejects_period_outside_data_window() -> None:
+    settings = get_settings()
+    original_as_of_date = settings.demo_as_of_date
+    settings.demo_as_of_date = date(2026, 6, 5)
+
+    try:
+        response = TestClient(app).post(
+            "/queries/preview",
+            json={
+                "metric_id": "loss_ratio",
+                "start_date": "2026-10-01",
+                "end_date": "2026-12-31",
+            },
+        )
+    finally:
+        settings.demo_as_of_date = original_as_of_date
+
+    assert response.status_code == 400
+    assert "outside the available demo data window" in response.json()["detail"]
 
 
 def test_preview_endpoint_rejects_reverse_date_range() -> None:

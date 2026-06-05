@@ -17,4 +17,5 @@ def execute_query(build_result: QueryBuildResult, settings: Settings) -> Executi
         build_result,
         member_count=settings.demo_member_count,
         month_count=settings.demo_month_count,
+        as_of_date=settings.demo_as_of_date,
     )

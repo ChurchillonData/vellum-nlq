@@ -277,6 +277,31 @@ def test_ask_endpoint_requires_date_range_for_answerable_question(tmp_path) -> N
     assert records[0]["sql"] is None
 
 
+def test_ask_endpoint_reports_period_outside_data_window(tmp_path) -> None:
+    settings = get_settings()
+    original_as_of_date = settings.demo_as_of_date
+    settings.demo_as_of_date = date(2026, 6, 5)
+
+    try:
+        response, records = _post_ask_with_audit(
+            tmp_path,
+            {"question": "Show loss ratio for the Comprehensive plan tier in Q4 2026."},
+        )
+    finally:
+        settings.demo_as_of_date = original_as_of_date
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["status"] == "unavailable_period"
+    assert body["answer"] is None
+    assert body["resolved_request"] is None
+    assert body["availability"]["reason_id"] == "period_outside_data_window"
+    assert "2024-12-01 to 2026-05-31" in body["message"]
+    assert records[0]["status"] == "unavailable_period"
+    assert records[0]["availability"]["reason_id"] == "period_outside_data_window"
+
+
 def test_ask_endpoint_blocks_unsafe_question_without_dates(tmp_path) -> None:
     response, records = _post_ask_with_audit(
         tmp_path,

@@ -3,6 +3,7 @@ from datetime import date
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.analytics.models import AnalyticsRequest
+from app.data_window import PeriodAvailability
 from app.semantic.question_resolver import MetricCandidate, QuestionResolution
 from app.semantic.scope import ScopeFinding
 from app.semantic.safety import SafetyFinding
@@ -76,6 +77,24 @@ class ScopeFindingResponse(BaseModel):
         return cls(reason_id=finding.reason_id, reason=finding.reason)
 
 
+class PeriodAvailabilityResponse(BaseModel):
+    """Data availability finding returned when a period is unavailable."""
+
+    reason_id: str
+    message: str
+
+    @classmethod
+    def from_finding(
+        cls,
+        finding: PeriodAvailability,
+    ) -> "PeriodAvailabilityResponse":
+        """Convert a period availability finding into API JSON."""
+        return cls(
+            reason_id=finding.reason_id or "period_unavailable",
+            message=finding.message or "Requested period is unavailable.",
+        )
+
+
 class QueryResolveResponse(BaseModel):
     """Metric resolution state for the ask workspace."""
 
@@ -86,6 +105,7 @@ class QueryResolveResponse(BaseModel):
     resolved_request: AnalyticsRequest | None
     safety: SafetyFindingResponse | None
     scope: ScopeFindingResponse | None
+    availability: PeriodAvailabilityResponse | None
 
     @classmethod
     def from_resolution(cls, result: QuestionResolution) -> "QueryResolveResponse":
@@ -107,6 +127,11 @@ class QueryResolveResponse(BaseModel):
             scope=(
                 ScopeFindingResponse.from_finding(result.scope)
                 if result.scope is not None
+                else None
+            ),
+            availability=(
+                PeriodAvailabilityResponse.from_finding(result.availability)
+                if result.availability is not None
                 else None
             ),
         )
