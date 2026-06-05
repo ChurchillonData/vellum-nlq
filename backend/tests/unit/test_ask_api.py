@@ -156,6 +156,16 @@ def test_ask_endpoint_infers_natural_single_day_from_question(tmp_path) -> None:
     assert records[0]["status"] == "answer"
 
 
+def test_ask_endpoint_rejects_invalid_natural_date() -> None:
+    response = TestClient(app).post(
+        "/ask",
+        json={"question": "Show claim count on 31 February 2026."},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "invalid date in question"
+
+
 def test_ask_endpoint_accepts_selected_catalogue_metric(tmp_path) -> None:
     response, records = _post_ask_with_audit(
         tmp_path,

@@ -1,3 +1,4 @@
+from datetime import date
 from time import perf_counter
 
 from fastapi import APIRouter, HTTPException
@@ -259,7 +260,7 @@ def _elapsed_ms(started_at: float) -> float:
     return round((perf_counter() - started_at) * 1000, 2)
 
 
-def _ensure_period_available(start_date, end_date) -> None:
+def _ensure_period_available(start_date: date, end_date: date) -> None:
     """Reject structured requests outside the configured demo data window."""
     settings = get_settings()
     window = rolling_data_window(

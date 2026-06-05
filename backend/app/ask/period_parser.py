@@ -122,8 +122,8 @@ def _parse_iso_date_range(
     if not matches:
         return None, None
 
-    start_date = date.fromisoformat(matches[0])
-    end_date = date.fromisoformat(matches[1]) if len(matches) > 1 else start_date
+    start_date = _parse_iso_date(matches[0])
+    end_date = _parse_iso_date(matches[1]) if len(matches) > 1 else start_date
     return _checked_range(start_date, end_date)
 
 
@@ -207,7 +207,7 @@ def _parse_natural_day(
             month = _month_number(groups[0])
             day = int(groups[1])
             year = int(groups[2])
-        value = date(year, month, day)
+        value = _safe_date(year, month, day)
         return value, value
 
     return None, None
@@ -313,6 +313,20 @@ def _checked_range(start_date: date, end_date: date) -> tuple[date, date]:
     if start_date > end_date:
         raise ValueError("start_date must be on or before end_date")
     return start_date, end_date
+
+
+def _parse_iso_date(value: str) -> date:
+    try:
+        return date.fromisoformat(value)
+    except ValueError as error:
+        raise ValueError("invalid date in question") from error
+
+
+def _safe_date(year: int, month: int, day: int) -> date:
+    try:
+        return date(year, month, day)
+    except ValueError as error:
+        raise ValueError("invalid date in question") from error
 
 
 def _month_number(value: str) -> int:

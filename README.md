@@ -77,7 +77,6 @@ Planned next:
 - Browser-verified frontend polish against live backend responses.
 - Hosted deployment and runtime use of partner mappings after a private insurer
   schema is available.
-- Runtime use of partner mappings after a private insurer schema is available.
 
 ## Five-Minute Tour
 
@@ -246,8 +245,9 @@ The current SQL guard checks:
 The current allowlisted functions are deliberately small: `CAST`, `COUNT`,
 `NULLIF`, and `SUM`.
 
-Planned safety work includes expanded red-team coverage and operational
-security review.
+Future safety work should keep expanding red-team cases as new metrics and
+dimensions ship. A hosted deployment still needs an operational security
+review before any external production use.
 
 Read `docs/safety-model.md` for the current safety boundary and target model.
 
@@ -280,6 +280,7 @@ Or from the repo root:
 make test-unit
 make test-golden
 make test-redteam
+make security-audit
 ```
 
 Run the guided five-step product demo:

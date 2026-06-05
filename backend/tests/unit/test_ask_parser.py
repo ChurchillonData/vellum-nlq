@@ -182,6 +182,18 @@ def test_parser_rejects_reversed_iso_date_range() -> None:
         )
 
 
+@pytest.mark.parametrize(
+    "question",
+    [
+        "Show claim count on 2026-02-31",
+        "Show paid claims on 31 February 2026",
+    ],
+)
+def test_parser_rejects_invalid_calendar_dates(question: str) -> None:
+    with pytest.raises(ValueError, match="invalid date in question"):
+        parse_ask_fields(question, as_of_date=AS_OF_DATE)
+
+
 def test_parser_rejects_reversed_month_range() -> None:
     with pytest.raises(ValueError, match="start_date must be on or before end_date"):
         parse_ask_fields("Show loss ratio from July to May 2025", as_of_date=AS_OF_DATE)

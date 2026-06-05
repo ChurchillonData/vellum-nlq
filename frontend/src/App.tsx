@@ -65,9 +65,13 @@ export default function App() {
     try {
       const response = await askQuestion(payload);
       setAskResult(response);
-    } catch {
+    } catch (error) {
       setAskResult(null);
-      setNotice("Backend API is not connected. No answer was generated.");
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Backend API is not connected. No answer was generated."
+      );
     } finally {
       setIsRunning(false);
     }

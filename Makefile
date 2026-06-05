@@ -226,6 +226,11 @@ lint: ## Run ruff and mypy
 	cd $(BACKEND_DIR) && ruff check app tests
 	cd $(BACKEND_DIR) && mypy app
 
+.PHONY: security-audit
+security-audit: ## Run backend and frontend dependency vulnerability audits
+	cd $(BACKEND_DIR) && $(PYTHON) -m pip_audit . --skip-editable
+	cd $(FRONTEND_DIR) && npm audit
+
 .PHONY: format
 format: ## Auto-format with ruff
 	cd $(BACKEND_DIR) && ruff format app tests
@@ -294,7 +299,7 @@ demo-questions: ## Print the canonical demo questions
 # ----------------------------------------------------------------------------
 
 .PHONY: ci
-ci: lint test-all frontend-build ## Run the implemented CI pipeline locally
+ci: lint security-audit test-all frontend-build ## Run the implemented CI pipeline locally
 	@echo "$(GREEN)CI pipeline passed.$(RESET)"
 
 .PHONY: ci-quick
