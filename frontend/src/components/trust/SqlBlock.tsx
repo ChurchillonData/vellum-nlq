@@ -16,9 +16,9 @@ const TYPEWRITER_PROFILES: Record<SqlView, TypewriterProfile> = {
     targetDurationMs: 7200
   },
   compact: {
-    initialDelayMs: 160,
-    intervalMs: 24,
-    targetDurationMs: 2200
+    initialDelayMs: 320,
+    intervalMs: 32,
+    targetDurationMs: 7200
   }
 };
 
