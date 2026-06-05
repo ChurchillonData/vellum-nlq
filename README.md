@@ -41,8 +41,9 @@ Implemented today:
   guard validation, execution, and audit.
 - OpenAI intent output is sanitized against the catalogue, confidence-gated,
   and can fall back to deterministic parsing.
-- Backend-v1 natural-language parsing for quarters, ISO date ranges, relative
-  demo periods, full-year phrases, plan tiers, and supported grouping phrases.
+- Backend-v1 natural-language parsing for quarters, natural dates, month names,
+  month ranges, ISO date ranges, relative demo periods, full-year phrases, plan
+  tiers, and supported grouping phrases.
 - Rolling demo data for the last 18 completed months, with future or unavailable
   historical periods rejected before SQL planning.
 - Grouped demo outputs for plan tier and region across supported metrics, plus

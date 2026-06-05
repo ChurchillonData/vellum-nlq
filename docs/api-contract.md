@@ -46,8 +46,13 @@ planning, SQL guard validation, execution, and audit.
 
 Supported inference in this phase:
 
-- completed quarter phrases such as `Q1 2026`, `2026 Q1`, and `last quarter`
-- two ISO dates such as `2026-01-01` and `2026-03-31`
+- completed quarter phrases such as `Q1 2026`, `2026 Q1`,
+  `first quarter 2025`, `quarter 1 2025`, and `last quarter`
+- ISO date ranges such as `2026-01-01` to `2026-03-31`
+- single dates such as `2026-05-14`, `14 May 2026`, and `May 14, 2026`
+- month periods such as `May 2026` and `2026 May`
+- month ranges such as `May to July 2025`, `May 2025 to July 2025`, and
+  `January 2026 to March 2026`
 - relative periods: `last month`, `last six months`, and `year to date`
 - plan tiers: `Essential`, `Comprehensive`, `Executive`
 - grouping phrase: `by consultant specialty`

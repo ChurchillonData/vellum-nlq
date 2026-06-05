@@ -110,6 +110,52 @@ def test_ask_endpoint_infers_supported_filters_from_question(tmp_path) -> None:
     assert body["answer"]["parameters"]["plan_tier"] == "Comprehensive"
 
 
+def test_ask_endpoint_infers_natural_month_from_question(tmp_path) -> None:
+    settings = get_settings()
+    original_as_of_date = settings.demo_as_of_date
+    settings.demo_as_of_date = date(2026, 6, 5)
+
+    try:
+        response, records = _post_ask_with_audit(
+            tmp_path,
+            {"question": "Show paid claims for the Comprehensive plan tier in May 2026."},
+        )
+    finally:
+        settings.demo_as_of_date = original_as_of_date
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["status"] == "answer"
+    assert body["resolved_request"]["metric_id"] == "paid_claims"
+    assert body["resolved_request"]["start_date"] == "2026-05-01"
+    assert body["resolved_request"]["end_date"] == "2026-05-31"
+    assert records[0]["status"] == "answer"
+
+
+def test_ask_endpoint_infers_natural_single_day_from_question(tmp_path) -> None:
+    settings = get_settings()
+    original_as_of_date = settings.demo_as_of_date
+    settings.demo_as_of_date = date(2026, 6, 5)
+
+    try:
+        response, records = _post_ask_with_audit(
+            tmp_path,
+            {"question": "Show claim count on 14 May 2026."},
+        )
+    finally:
+        settings.demo_as_of_date = original_as_of_date
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["status"] == "answer"
+    assert body["resolved_request"]["metric_id"] == "claim_count"
+    assert body["resolved_request"]["start_date"] == "2026-05-14"
+    assert body["resolved_request"]["end_date"] == "2026-05-14"
+    assert records[0]["status"] == "answer"
+
+
 def test_ask_endpoint_accepts_selected_catalogue_metric(tmp_path) -> None:
     response, records = _post_ask_with_audit(
         tmp_path,
