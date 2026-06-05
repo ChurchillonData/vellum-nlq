@@ -11,12 +11,12 @@ type TypewriterProfile = {
 
 const TYPEWRITER_PROFILES: Record<SqlView, TypewriterProfile> = {
   explainable: {
-    initialDelayMs: 3000,
+    initialDelayMs: 5000,
     intervalMs: 32,
     targetDurationMs: 7200
   },
   compact: {
-    initialDelayMs: 3000,
+    initialDelayMs: 5000,
     intervalMs: 32,
     targetDurationMs: 7200
   }

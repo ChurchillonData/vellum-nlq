@@ -41,7 +41,7 @@ describe("SqlBlock", () => {
     expect(container.querySelector(".sql-block")).toBeNull();
 
     act(() => {
-      vi.advanceTimersByTime(5000);
+      vi.advanceTimersByTime(7000);
     });
 
     const sqlBlock = container.querySelector(".sql-block");
