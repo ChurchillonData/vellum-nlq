@@ -29,9 +29,10 @@ import type { IconSvgElement } from "@hugeicons/react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 
-import type { Metric } from "../types";
+import type { MappingCoverageResponse, Metric } from "../types";
 
 type CatalogueExplorerProps = {
+  mappingCoverage: MappingCoverageResponse | null;
   metrics: Metric[];
 };
 
@@ -43,7 +44,7 @@ type SynonymGroup = {
   terms: string[];
 };
 
-export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
+export function CatalogueExplorer({ mappingCoverage, metrics }: CatalogueExplorerProps) {
   const [isMetricMenuOpen, setIsMetricMenuOpen] = useState(false);
   const [isSynonymCardOpen, setIsSynonymCardOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -223,6 +224,8 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
               ))}
             </ul>
           </div>
+
+          <MappingCoverageCard coverage={mappingCoverage} />
         </aside>
       </section>
 
@@ -321,6 +324,79 @@ export function CatalogueExplorer({ metrics }: CatalogueExplorerProps) {
         </span>
       </section>
     </main>
+  );
+}
+
+function MappingCoverageCard({ coverage }: { coverage: MappingCoverageResponse | null }) {
+  if (coverage === null) {
+    return (
+      <div className="catalogue-side-card mapping-coverage-card">
+        <div className="side-card-heading">
+          <span className="side-card-icon icon-tone-blue">
+            <Icon icon={AiNetworkIcon} size={24} />
+          </span>
+          <div>
+            <h2>Partner mapping</h2>
+          </div>
+        </div>
+        <p>Mapping coverage will appear here when the backend is available.</p>
+      </div>
+    );
+  }
+
+  const tablePercent = percentage(coverage.mapped_tables, coverage.total_tables);
+  const columnPercent = percentage(coverage.mapped_columns, coverage.total_columns);
+
+  return (
+    <div className="catalogue-side-card mapping-coverage-card">
+      <div className="side-card-heading">
+        <span className="side-card-icon icon-tone-blue">
+          <Icon icon={AiNetworkIcon} size={24} />
+        </span>
+        <div>
+          <h2>Partner mapping</h2>
+          <p>{coverage.partner} {"->"} {coverage.catalogue}</p>
+        </div>
+      </div>
+
+      <div className="mapping-coverage-grid">
+        <CoverageMeter label="Tables" total={coverage.total_tables} value={coverage.mapped_tables} percent={tablePercent} />
+        <CoverageMeter label="Columns" total={coverage.total_columns} value={coverage.mapped_columns} percent={columnPercent} />
+      </div>
+
+      <div className="mapping-gap-list">
+        <strong>Open gaps</strong>
+        <span>
+          {coverage.missing_tables.length + coverage.missing_columns.length === 0
+            ? "No missing tables or columns in the example mapping."
+            : `${coverage.missing_tables.length} tables, ${coverage.missing_columns.length} columns`}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function CoverageMeter({
+  label,
+  percent,
+  total,
+  value
+}: {
+  label: string;
+  percent: number;
+  total: number;
+  value: number;
+}) {
+  return (
+    <div className="coverage-meter">
+      <div>
+        <span>{label}</span>
+        <strong>{value}/{total}</strong>
+      </div>
+      <div className="coverage-track">
+        <span style={{ width: `${percent}%` }} />
+      </div>
+    </div>
   );
 }
 
@@ -736,6 +812,14 @@ function formatReviewedDate(value: string): string {
 
 function shorten(text: string): string {
   return text.length > 82 ? `${text.slice(0, 79)}...` : text;
+}
+
+function percentage(value: number, total: number): number {
+  if (total <= 0) {
+    return 0;
+  }
+
+  return Math.round((value / total) * 100);
 }
 
 function toTitleCase(text: string): string {

@@ -12,13 +12,15 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
 import { fetchAuditRecord } from "../api";
-import type { AuditRecord } from "../types";
+import type { AuditRecord, Metric } from "../types";
+import { BackendTools } from "./BackendTools";
 
 type AuditExplorerProps = {
   latestQueryId: string;
+  metrics: Metric[];
 };
 
-export function AuditExplorer({ latestQueryId }: AuditExplorerProps) {
+export function AuditExplorer({ latestQueryId, metrics }: AuditExplorerProps) {
   const [queryId, setQueryId] = useState(latestQueryId);
   const [record, setRecord] = useState<AuditRecord | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -97,6 +99,8 @@ export function AuditExplorer({ latestQueryId }: AuditExplorerProps) {
           )}
         </form>
       </section>
+
+      <BackendTools metrics={metrics} />
 
       {error && <div className="audit-message error">{error}</div>}
 

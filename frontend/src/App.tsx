@@ -1,11 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { askQuestion, fetchAskExamples, fetchHealth, fetchMetrics } from "./api";
+import { askQuestion, fetchAskExamples, fetchHealth, fetchMappingCoverage, fetchMetrics } from "./api";
 import { AskWorkspace } from "./components/AskWorkspace";
 import { AuditExplorer } from "./components/AuditExplorer";
 import { CatalogueExplorer } from "./components/CatalogueExplorer";
 import { TopBar } from "./components/TopBar";
-import type { AskExample, AskRequestPayload, AskResponse, HealthResponse, Metric } from "./types";
+import type {
+  AskExample,
+  AskRequestPayload,
+  AskResponse,
+  HealthResponse,
+  MappingCoverageResponse,
+  Metric
+} from "./types";
 
 type ActiveView = "ask" | "catalogue" | "audit";
 
@@ -15,6 +22,7 @@ export default function App() {
   const [askResult, setAskResult] = useState<AskResponse | null>(null);
   const [askExamples, setAskExamples] = useState<AskExample[]>([]);
   const [health, setHealth] = useState<HealthResponse | null>(null);
+  const [mappingCoverage, setMappingCoverage] = useState<MappingCoverageResponse | null>(null);
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -43,6 +51,12 @@ export default function App() {
         setAskExamples([]);
         setNotice("Backend API is not connected. Start the API to load demo examples.");
       });
+  }, []);
+
+  useEffect(() => {
+    fetchMappingCoverage("example-insurer")
+      .then(setMappingCoverage)
+      .catch(() => setMappingCoverage(null));
   }, []);
 
   const selectedMetric = useMemo(() => {
@@ -104,9 +118,13 @@ export default function App() {
         />
       )}
 
-      {activeView === "catalogue" && <CatalogueExplorer metrics={metrics} />}
+      {activeView === "catalogue" && (
+        <CatalogueExplorer mappingCoverage={mappingCoverage} metrics={metrics} />
+      )}
 
-      {activeView === "audit" && <AuditExplorer latestQueryId={askResult?.query_id ?? ""} />}
+      {activeView === "audit" && (
+        <AuditExplorer latestQueryId={askResult?.query_id ?? ""} metrics={metrics} />
+      )}
     </div>
   );
 }

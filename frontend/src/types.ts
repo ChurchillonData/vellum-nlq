@@ -162,3 +162,49 @@ export type AuditRecord = {
     answer?: string;
   } | null;
 };
+
+export type MappingCoverageResponse = {
+  partner: string;
+  catalogue: string;
+  mapped_tables: number;
+  total_tables: number;
+  mapped_columns: number;
+  total_columns: number;
+  missing_tables: string[];
+  missing_columns: string[];
+};
+
+export type AnalyticsRequestPayload = {
+  metric_id: string;
+  start_date: string;
+  end_date: string;
+  plan_tier?: string | null;
+  group_by?: string[];
+};
+
+export type QueryResolvePayload = Omit<AnalyticsRequestPayload, "metric_id"> & {
+  question: string;
+};
+
+export type QueryResolveResponse = Omit<AskResponse, "answer" | "query_id" | "status"> & {
+  status: AskStatus | "resolved";
+};
+
+export type QueryPreviewResponse = {
+  query_id: string;
+  metric_id: string;
+  sql: string;
+  compact_sql: string;
+  parameters: Record<string, unknown>;
+  provenance: Provenance;
+  validation: Validation;
+  latency: Latency;
+};
+
+export type QueryExecuteResponse = QueryPreviewResponse & {
+  answer: string;
+  rows: Record<string, unknown>[];
+  row_count: number;
+  execution_mode: string;
+  dataset: AskAnswer["dataset"];
+};
