@@ -1,0 +1,21 @@
+id: premium_per_member
+label: Premium per member
+description: >
+  Earned premium divided by distinct covered members in the selected period.
+formula:
+  numerator: SUM(premium.earned_amount)
+  denominator: COUNT(DISTINCT premium.member_id)
+  expression: SUM(premium.earned_amount) / NULLIF(COUNT(DISTINCT premium.member_id), 0)
+required_tables:
+  - premium
+time_anchor: premium.coverage_month
+currency: GBP
+filters_default: []
+synonyms:
+  - premium per member
+  - earned premium per member
+  - average premium per member
+  - premium per covered member
+owner: finance
+version: "Vellum 2.5"
+last_reviewed: "2026-06-04"

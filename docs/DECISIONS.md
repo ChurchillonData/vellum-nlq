@@ -209,7 +209,9 @@ an optional suite because they require a migrated and seeded database.
 **Current implementation.** The generator supports both the smaller local
 development slice and a portfolio profile of 200,000 members across 18 months.
 The portfolio path loads in chunks and has a dry-run report for table-level row
-counts. Full performance tuning against a seeded database is still planned.
+counts. Its documented loss-ratio, frequency, severity, and decline-rate
+ranges are enforced by a generated-data audit. A separate live audit validates
+the seeded Postgres counts and guarded-query latency.
 
 **Consequences.**
 - The repo is self-contained. Anyone can clone and run.

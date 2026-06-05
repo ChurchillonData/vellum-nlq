@@ -28,9 +28,11 @@ Implemented today:
 - FastAPI backend with product-facing `/ask` and development query endpoints.
 - React + Vite frontend shell for the Ask workspace, Catalogue Explorer, and
   Audit view.
-- Catalogue-backed deterministic paths for all six current metrics:
+- Catalogue-backed deterministic paths for twelve governed insurance metrics:
   `loss_ratio`, `paid_claims`, `claim_frequency`, `decline_rate`,
-  `incurred_claims`, and `claim_severity`.
+  `incurred_claims`, `claim_severity`, `claim_count`, `covered_members`,
+  `open_claim_rate`, `out_of_network_rate`, `premium_per_member`, and
+  `case_reserves`.
 - Grouped `decline_rate` by consultant specialty.
 - Result-size controls for grouped outputs, with guarded row limits surfaced in
   provenance and audit records.
@@ -60,7 +62,7 @@ Implemented today:
 - Local JSONL audit events for all `/ask` outcomes, successful previews, and
   demo executions.
 - Append-only Postgres audit table behind `VELLUM_AUDIT_BACKEND=postgres`.
-- Twenty `/ask/examples` items covered by unit tests.
+- Twenty-six `/ask/examples` items covered by unit tests.
 - YAML golden question suite covering the core demo contract.
 - First red-team suite for destructive questions and unsafe SQL guard cases.
 - Scripted five-step demo command that runs the product `/ask` flow end to end.
@@ -70,7 +72,8 @@ Implemented today:
 Planned next:
 
 - Browser-verified frontend polish against live backend responses.
-- Large portfolio demo dataset and live Postgres performance checks.
+- Hosted deployment and runtime use of partner mappings after a private insurer
+  schema is available.
 - Runtime use of partner mappings after a private insurer schema is available.
 
 ## Five-Minute Tour
@@ -196,8 +199,8 @@ vellum-nlq/
 ```
 
 Live Postgres integration tests are implemented as an optional suite because
-they require a seeded database. Large-data performance work and production
-deployment are planned phases, not finished implementation.
+they require a seeded database. Generated portfolio quality checks are
+implemented; hosted production deployment remains a planned phase.
 
 ## The Catalogue
 
@@ -212,6 +215,12 @@ Vellum-NLQ is multi-catalogue by design. The current build includes the
 | `decline_rate` | Yes | Yes |
 | `incurred_claims` | Yes | Yes |
 | `claim_severity` | Yes | Yes |
+| `claim_count` | Yes | Yes |
+| `covered_members` | Yes | Yes |
+| `open_claim_rate` | Yes | Yes |
+| `out_of_network_rate` | Yes | Yes |
+| `premium_per_member` | Yes | Yes |
+| `case_reserves` | Yes | Yes |
 
 Adding a new metric should start with catalogue YAML, tests, and a narrow
 planner/generator path. The codebase intentionally favours small readable files
@@ -328,7 +337,7 @@ Full request and response examples are documented in `docs/api-contract.md`.
 | Endpoint | Purpose |
 |---|---|
 | `POST /ask` | Product-facing ask flow. Returns answer, clarification, blocked, or out-of-scope state. |
-| `GET /ask/examples` | Twenty demo questions used by tests and future UI controls. |
+| `GET /ask/examples` | Twenty-six demo questions used by tests and future UI controls. |
 | `GET /metrics` | Active catalogue metric definitions with formulas and versions. |
 | `GET /mappings/{partner}/coverage` | Validated partner schema mapping coverage. |
 | `POST /queries/resolve` | Deterministic metric resolution and early safety blocking. |

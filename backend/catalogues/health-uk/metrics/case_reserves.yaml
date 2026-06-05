@@ -1,0 +1,21 @@
+id: case_reserves
+label: Case reserves
+description: >
+  Total case reserve amount recorded in the selected snapshot period.
+formula:
+  numerator: SUM(reserves.case_reserve_amount)
+  denominator: null
+  expression: SUM(reserves.case_reserve_amount)
+required_tables:
+  - reserves
+time_anchor: reserves.snapshot_date
+currency: GBP
+filters_default: []
+synonyms:
+  - case reserves
+  - outstanding reserves
+  - reserve amount
+  - claims reserves
+owner: actuarial
+version: "Vellum 2.5"
+last_reviewed: "2026-06-04"

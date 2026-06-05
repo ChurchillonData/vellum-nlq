@@ -45,9 +45,6 @@ def generate_loss_ratio_query(plan: LogicalPlan) -> GeneratedQuery:
     if group_expression is not None:
         claim_columns.insert(0, group_expression.label(group_key))
         premium_columns.insert(0, group_expression.label(group_key))
-    else:
-        claim_columns.insert(0, claims.c.member_id.label("member_id"))
-        premium_columns.insert(0, premium.c.member_id.label("member_id"))
 
     claim_totals_query = (
         select(*claim_columns)
@@ -63,9 +60,6 @@ def generate_loss_ratio_query(plan: LogicalPlan) -> GeneratedQuery:
     if group_expression is not None:
         claim_totals_query = claim_totals_query.group_by(group_expression)
         premium_totals_query = premium_totals_query.group_by(group_expression)
-    else:
-        claim_totals_query = claim_totals_query.group_by(claims.c.member_id)
-        premium_totals_query = premium_totals_query.group_by(premium.c.member_id)
 
     claim_totals = claim_totals_query.cte("claim_totals")
     premium_totals = premium_totals_query.cte("premium_totals")
@@ -77,7 +71,7 @@ def generate_loss_ratio_query(plan: LogicalPlan) -> GeneratedQuery:
     if group_key is not None:
         join_condition = claim_totals.c[group_key] == premium_totals.c[group_key]
     else:
-        join_condition = claim_totals.c.member_id == premium_totals.c.member_id
+        join_condition = true()
 
     source = claim_totals.join(premium_totals, join_condition)
     if group_key is None:

@@ -62,7 +62,7 @@ Current first slice:
   generation, returning a safety rule ID for the UI rejection state.
 - `POST /ask` now orchestrates the first product-facing flow: answer,
   clarification, or blocked state from one endpoint.
-- `GET /ask/examples` exposes twenty golden demo questions, and tests run each
+- `GET /ask/examples` exposes twenty-six golden demo questions, and tests run each
   example through `/ask` to protect answer, date-range-required,
   clarification, blocked, and out-of-scope states.
 - `docs/api-contract.md` documents the current backend API surface for frontend
@@ -95,6 +95,11 @@ Current first slice:
   supported metrics, with guarded 50-row limits.
 - `decline_rate by consultant_specialty` remains the consultant-join grouped
   path for the demo.
+- Six more governed metrics now run through the shared additional-metric path:
+  `claim_count`, `covered_members`, `open_claim_rate`,
+  `out_of_network_rate`, `premium_per_member`, and `case_reserves`. Each has a
+  catalogue definition, resolver validation, planned SQL, guard validation,
+  local demo execution, ask example, and golden question.
 
 ## Phase 3: Safety And Audit
 
@@ -228,9 +233,8 @@ Current frontend slice:
   or SQL view is shown, while copy actions still use the complete SQL text.
 - Demo question controls load from `/ask/examples` when the backend is
   available, with saved demo fallbacks for no-API local viewing.
-- Saved frontend demo fallbacks now mirror the twenty backend ask examples and
-  all six active catalogue metrics, so offline viewing still shows the same
-  answer, clarification, blocked, date-required, and out-of-scope states.
+- Demo controls now reflect the twenty-six backend ask examples, and the
+  Catalogue Explorer consumes all twelve active metrics from `/metrics`.
 - Clarification candidates can be selected in the UI; the selected
   `metric_id` is sent back to `/ask` and still goes through catalogue
   resolution, deterministic planning, SQL guard validation, execution, and
@@ -274,3 +278,11 @@ Current frontend slice:
   start, migration, role checks, local seeding, smoke tests, and optional
   integration tests. Windows users can run
   `python scripts/prove_postgres.py --seed local --integration`.
+- The synthetic portfolio is now calibrated to explicit quality contracts for
+  loss ratio, claim frequency, claim severity, and decline rate. The
+  loss-ratio SQL also uses all earned premium in the selected slice rather than
+  premium from claimants only.
+- `make portfolio-audit` streams the full 200,000-member profile in chunks and
+  verifies volumes, metric distributions, generation time, and throughput.
+  `make portfolio-audit-live` verifies a seeded Postgres portfolio and measures
+  representative guarded-query latency.

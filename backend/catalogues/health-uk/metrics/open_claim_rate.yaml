@@ -1,0 +1,21 @@
+id: open_claim_rate
+label: Open claim rate
+description: >
+  Share of incurred claims that remain open in the selected reporting period.
+formula:
+  numerator: COUNT(claims.id WHERE claims.status = 'open')
+  denominator: COUNT(claims.id)
+  expression: SUM(CASE WHEN claims.status = 'open' THEN 1 ELSE 0 END) / NULLIF(COUNT(claims.id), 0)
+required_tables:
+  - claims
+time_anchor: claims.incurred_date
+currency: null
+filters_default: []
+synonyms:
+  - open claim rate
+  - open claims rate
+  - outstanding claim rate
+  - share of open claims
+owner: claims
+version: "Vellum 2.5"
+last_reviewed: "2026-06-04"

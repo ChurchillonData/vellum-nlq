@@ -89,6 +89,60 @@ questions:
         - region
         - paid_claims
 
+  - id: answer_claim_count_q1
+    question: Show claim count in Q1 2026.
+    expects:
+      status: answer
+      metric_id: claim_count
+      row_count: 1
+      result_columns:
+        - claim_count
+
+  - id: answer_covered_members_q1
+    question: Show covered members in Q1 2026.
+    expects:
+      status: answer
+      metric_id: covered_members
+      row_count: 1
+      result_columns:
+        - covered_members
+
+  - id: answer_open_claim_rate_q4
+    question: Show open claim rate in Q4 2025.
+    expects:
+      status: answer
+      metric_id: open_claim_rate
+      row_count: 1
+      result_columns:
+        - open_claim_rate
+
+  - id: answer_out_of_network_rate_q1
+    question: Show out of network rate for the Comprehensive plan tier in Q1 2026.
+    expects:
+      status: answer
+      metric_id: out_of_network_rate
+      row_count: 1
+      result_columns:
+        - out_of_network_rate
+
+  - id: answer_premium_per_member_q1
+    question: Show premium per member in Q1 2026.
+    expects:
+      status: answer
+      metric_id: premium_per_member
+      row_count: 1
+      result_columns:
+        - premium_per_member
+
+  - id: answer_case_reserves_q4
+    question: Show case reserves in Q4 2025.
+    expects:
+      status: answer
+      metric_id: case_reserves
+      row_count: 1
+      result_columns:
+        - case_reserves
+
   - id: date_required_loss_ratio
     question: What was loss ratio for the Comprehensive plan tier?
     expects:

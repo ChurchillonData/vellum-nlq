@@ -112,6 +112,14 @@ seed-portfolio-data: ## Generate the large portfolio demo dataset
 seed-portfolio-dry-run: ## Preview portfolio seed chunks and row counts without loading Postgres
 	cd $(BACKEND_DIR) && $(PYTHON) seeds/generate.py --profile portfolio --dry-run
 
+.PHONY: portfolio-audit
+portfolio-audit: ## Validate generated portfolio volumes, distributions, and generation speed
+	cd $(BACKEND_DIR) && $(PYTHON) -m app.portfolio_audit
+
+.PHONY: portfolio-audit-live
+portfolio-audit-live: ## Validate seeded portfolio metrics and guarded-query latency
+	cd $(BACKEND_DIR) && $(PYTHON) -m app.portfolio_audit --live
+
 .PHONY: db-shell
 db-shell: ## Open a psql shell with the read-only application role
 	$(COMPOSE) exec postgres psql -U vellum_readonly -d vellum

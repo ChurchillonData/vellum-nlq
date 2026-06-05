@@ -97,6 +97,31 @@ def test_question_resolver_resolves_direct_claim_severity_question(
     assert result.resolved_request.metric_id == "claim_severity"
 
 
+def test_question_resolver_resolves_expanded_governed_metric_questions(
+    health_uk_catalogue,
+) -> None:
+    questions = {
+        "Show claim count for Q1": "claim_count",
+        "Show covered members for Q1": "covered_members",
+        "Show open claim rate for Q4 2025": "open_claim_rate",
+        "Show out of network rate for Q1": "out_of_network_rate",
+        "Show premium per member for Q1": "premium_per_member",
+        "Show case reserves for Q4 2025": "case_reserves",
+    }
+
+    for question, metric_id in questions.items():
+        result = resolve_question(
+            health_uk_catalogue,
+            question=question,
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 3, 31),
+        )
+
+        assert result.status == "resolved"
+        assert result.resolved_request is not None
+        assert result.resolved_request.metric_id == metric_id
+
+
 def test_question_resolver_returns_clarification_for_claims_numbers(
     health_uk_catalogue,
 ) -> None:

@@ -1,0 +1,1 @@
+"""Governed metric implementation metadata."""

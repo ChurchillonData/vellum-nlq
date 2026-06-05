@@ -96,6 +96,42 @@ GOLDEN_ASK_EXAMPLES = (
         expected_status="answer",
     ),
     AskExample(
+        id="answer_claim_count_q1",
+        label="Claim count in Q1",
+        question="Show claim count in Q1 2026.",
+        expected_status="answer",
+    ),
+    AskExample(
+        id="answer_covered_members_q1",
+        label="Covered members in Q1",
+        question="Show covered members in Q1 2026.",
+        expected_status="answer",
+    ),
+    AskExample(
+        id="answer_open_claim_rate_q4",
+        label="Open claim rate in Q4",
+        question="Show open claim rate in Q4 2025.",
+        expected_status="answer",
+    ),
+    AskExample(
+        id="answer_out_of_network_rate_q1",
+        label="Out-of-network rate",
+        question="Show out of network rate for the Comprehensive plan tier in Q1 2026.",
+        expected_status="answer",
+    ),
+    AskExample(
+        id="answer_premium_per_member_q1",
+        label="Premium per member",
+        question="Show premium per member in Q1 2026.",
+        expected_status="answer",
+    ),
+    AskExample(
+        id="answer_case_reserves_q4",
+        label="Case reserves in Q4",
+        question="Show case reserves in Q4 2025.",
+        expected_status="answer",
+    ),
+    AskExample(
         id="date_required_loss_ratio",
         label="Date range required",
         question="What was loss ratio for the Comprehensive plan tier?",

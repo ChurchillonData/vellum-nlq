@@ -2,6 +2,7 @@ from datetime import date
 
 from app.analytics.build import build_query
 from app.analytics.models import AnalyticsRequest
+from app.metrics.additional import ADDITIONAL_METRICS
 
 
 def _parameter_placeholders(sql: str) -> set[str]:
@@ -25,6 +26,9 @@ def test_loss_ratio_query_is_parameterised_and_has_provenance(health_uk_catalogu
 
     assert "WITH claim_totals AS" in result.query.sql
     assert "premium_totals AS" in result.query.sql
+    assert "FROM claim_totals JOIN premium_totals ON true" in result.query.sql
+    assert "GROUP BY claims.member_id" not in result.query.sql
+    assert "GROUP BY premium.member_id" not in result.query.sql
     assert "%(start_date)s" in result.query.sql
     assert "%(plan_tier)s" in result.query.sql
     assert "2026-01-01" not in result.query.sql
@@ -216,6 +220,29 @@ def test_claim_severity_query_is_parameterised_and_has_provenance(
     assert result.provenance.result_shape.columns == ("claim_severity",)
     assert result.provenance.result_shape.max_rows == 1
     assert result.validation.passed is True
+
+
+def test_additional_governed_metric_queries_are_guarded_and_explainable(
+    health_uk_catalogue,
+) -> None:
+    for metric_id in ADDITIONAL_METRICS:
+        request = AnalyticsRequest(
+            metric_id=metric_id,
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 3, 31),
+            plan_tier="Comprehensive",
+        )
+
+        result = build_query(health_uk_catalogue, request)
+
+        assert result.provenance.metric_id == metric_id
+        assert result.provenance.result_shape.columns == (metric_id,)
+        assert result.validation.passed is True
+        assert "%(start_date)s" in result.query.sql
+        assert "%(end_date)s" in result.query.sql
+        assert "Comprehensive" not in result.query.sql
+        assert "JOIN" not in result.query.compact_sql
+        assert metric_id in result.query.compact_sql
 
 
 def test_decline_rate_query_is_parameterised_and_has_provenance(

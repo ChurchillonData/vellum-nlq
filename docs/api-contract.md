@@ -194,8 +194,8 @@ Out-of-scope response:
 
 ### GET `/ask/examples`
 
-Returns the twenty golden demo questions used by tests and future frontend demo
-controls. Each example has an expected ask state.
+Returns the twenty-six golden demo questions used by tests and future frontend
+demo controls. Each example has an expected ask state.
 
 ```json
 {

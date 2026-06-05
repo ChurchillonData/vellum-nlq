@@ -74,6 +74,13 @@ def _create_demo_tables(connection: sqlite3.Connection) -> None:
             coverage_month TEXT NOT NULL,
             earned_amount REAL NOT NULL
         );
+
+        CREATE TABLE reserves (
+            id TEXT PRIMARY KEY,
+            claim_id TEXT NOT NULL,
+            snapshot_date TEXT NOT NULL,
+            case_reserve_amount REAL NOT NULL
+        );
         """
     )
 
@@ -132,6 +139,19 @@ def _insert_demo_rows(connection: sqlite3.Connection, seed_data: SeedData) -> No
                 ("id", "member_id", "incurred_date", "status", "net_incurred_amount"),
             )
             for row in seed_data.claims
+        ],
+    )
+    connection.executemany(
+        """
+        INSERT INTO reserves (id, claim_id, snapshot_date, case_reserve_amount)
+        VALUES (:id, :claim_id, :snapshot_date, :case_reserve_amount)
+        """,
+        [
+            _clean_row(
+                row,
+                ("id", "claim_id", "snapshot_date", "case_reserve_amount"),
+            )
+            for row in seed_data.reserves
         ],
     )
     connection.executemany(

@@ -1,0 +1,22 @@
+id: claim_count
+label: Claim count
+description: >
+  Distinct claims incurred in the selected reporting period, excluding void claims.
+formula:
+  numerator: COUNT(DISTINCT claims.id)
+  denominator: null
+  expression: COUNT(DISTINCT claims.id)
+required_tables:
+  - claims
+time_anchor: claims.incurred_date
+currency: null
+filters_default:
+  - claims.status != 'void'
+synonyms:
+  - claim count
+  - total claims
+  - claims volume
+  - number of claims
+owner: claims
+version: "Vellum 2.5"
+last_reviewed: "2026-06-04"

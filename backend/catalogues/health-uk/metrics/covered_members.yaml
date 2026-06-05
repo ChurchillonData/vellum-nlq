@@ -1,0 +1,21 @@
+id: covered_members
+label: Covered members
+description: >
+  Distinct members with active coverage in the selected reporting period.
+formula:
+  numerator: COUNT(DISTINCT enrolment_months.member_id)
+  denominator: null
+  expression: COUNT(DISTINCT enrolment_months.member_id)
+required_tables:
+  - enrolment_months
+time_anchor: enrolment_months.coverage_month
+currency: null
+filters_default: []
+synonyms:
+  - covered members
+  - member count
+  - covered lives
+  - enrolled members
+owner: membership
+version: "Vellum 2.5"
+last_reviewed: "2026-06-04"

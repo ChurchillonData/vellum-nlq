@@ -22,12 +22,18 @@ def test_health_uk_catalogue_loads_first_metric() -> None:
         "reserves",
     }
     assert set(catalogue.metrics) == {
+        "case_reserves",
+        "claim_count",
         "claim_frequency",
         "claim_severity",
+        "covered_members",
         "decline_rate",
         "incurred_claims",
         "loss_ratio",
+        "open_claim_rate",
+        "out_of_network_rate",
         "paid_claims",
+        "premium_per_member",
     }
     assert catalogue.metrics["loss_ratio"].time_anchor == "claims.incurred_date"
     assert catalogue.joins[0].left_table == "members"

@@ -1,4 +1,5 @@
 from app.analytics.models import QueryBuildResult
+from app.metrics.additional import ADDITIONAL_METRICS
 
 
 def build_demo_answer(
@@ -16,6 +17,8 @@ def build_demo_answer(
         return _build_claim_severity_answer(build_result, rows)
     if build_result.provenance.metric_id == "paid_claims":
         return _build_paid_claims_answer(build_result, rows)
+    if build_result.provenance.metric_id in ADDITIONAL_METRICS:
+        return _build_additional_metric_answer(build_result, rows)
     return _build_loss_ratio_answer(build_result, rows)
 
 
@@ -123,6 +126,24 @@ def _build_decline_rate_answer(
     return f"{subject} from {period} was {rate:.3f} ({rate:.1%})."
 
 
+def _build_additional_metric_answer(
+    build_result: QueryBuildResult,
+    rows: list[dict[str, object]],
+) -> str:
+    metric_id = build_result.provenance.metric_id
+    metric_label = build_result.provenance.metric_label.casefold()
+    if build_result.plan.group_by:
+        return _build_grouped_answer(build_result, rows, metric_label)
+
+    value = rows[0].get(metric_id) if rows else None
+    subject = _subject(build_result, metric_label)
+    period = _period(build_result)
+    if value is None:
+        return f"{subject} from {period} could not be calculated."
+
+    return f"{subject} from {period} was {_format_metric_value(metric_id, float(value))}."
+
+
 def _build_grouped_answer(
     build_result: QueryBuildResult,
     rows: list[dict[str, object]],
@@ -147,12 +168,25 @@ def _build_grouped_answer(
 
 
 def _format_metric_value(metric_id: str, value: float) -> str:
-    if metric_id in {"loss_ratio", "decline_rate"}:
+    if metric_id in {
+        "loss_ratio",
+        "decline_rate",
+        "open_claim_rate",
+        "out_of_network_rate",
+    }:
         return f"{value:.3f} ({value:.1%})"
-    if metric_id in {"paid_claims", "incurred_claims", "claim_severity"}:
+    if metric_id in {
+        "paid_claims",
+        "incurred_claims",
+        "claim_severity",
+        "premium_per_member",
+        "case_reserves",
+    }:
         return f"GBP {value:,.2f}"
     if metric_id == "claim_frequency":
         return f"{value:.2f} per 1,000 member months"
+    if metric_id in {"claim_count", "covered_members"}:
+        return f"{value:,.0f}"
     return f"{value:,.2f}"
 
 

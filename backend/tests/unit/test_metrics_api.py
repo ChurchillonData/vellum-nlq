@@ -13,12 +13,18 @@ def test_metrics_endpoint_returns_active_catalogue_metrics() -> None:
     assert body["catalogue"] == "health-uk"
     assert metric_ids == sorted(metric_ids)
     assert metric_ids == [
+        "case_reserves",
+        "claim_count",
         "claim_frequency",
         "claim_severity",
+        "covered_members",
         "decline_rate",
         "incurred_claims",
         "loss_ratio",
+        "open_claim_rate",
+        "out_of_network_rate",
         "paid_claims",
+        "premium_per_member",
     ]
 
 
@@ -67,3 +73,19 @@ def test_metrics_endpoint_exposes_paid_claims_bridge_join() -> None:
 
     assert "claim_lines.claim_id -> claims.id (many_to_one)" in paid_claims["join_preview"]
     assert "claims.member_id -> members.id (many_to_one)" in paid_claims["join_preview"]
+
+
+def test_metrics_endpoint_exposes_expanded_governed_metrics() -> None:
+    response = TestClient(app).get("/metrics")
+
+    metrics = {metric["id"]: metric for metric in response.json()["metrics"]}
+
+    assert metrics["out_of_network_rate"]["required_tables"] == [
+        "claim_lines",
+        "providers",
+    ]
+    assert (
+        "claim_lines.provider_id -> providers.id (many_to_one)"
+        in metrics["out_of_network_rate"]["join_preview"]
+    )
+    assert metrics["premium_per_member"]["currency"] == "GBP"

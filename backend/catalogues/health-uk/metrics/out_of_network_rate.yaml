@@ -1,0 +1,22 @@
+id: out_of_network_rate
+label: Out-of-network rate
+description: >
+  Share of claim lines delivered by providers outside the approved network.
+formula:
+  numerator: COUNT(claim_lines.id WHERE providers.network_status = 'out_of_network')
+  denominator: COUNT(claim_lines.id)
+  expression: SUM(CASE WHEN providers.network_status = 'out_of_network' THEN 1 ELSE 0 END) / NULLIF(COUNT(claim_lines.id), 0)
+required_tables:
+  - claim_lines
+  - providers
+time_anchor: claim_lines.service_date
+currency: null
+filters_default: []
+synonyms:
+  - out of network rate
+  - out-of-network rate
+  - non network claims rate
+  - outside network rate
+owner: provider_network
+version: "Vellum 2.5"
+last_reviewed: "2026-06-04"

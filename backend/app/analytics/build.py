@@ -1,4 +1,6 @@
 from app.analytics.models import AnalyticsRequest, QueryBuildResult, QueryProvenance
+from app.metrics.additional import ADDITIONAL_METRICS
+from app.planner.additional_metrics import build_additional_metric_plan
 from app.planner.claim_severity import build_claim_severity_plan
 from app.planner.claim_frequency import build_claim_frequency_plan
 from app.planner.decline_rate import build_decline_rate_plan
@@ -15,6 +17,7 @@ from app.sql.generator import (
     generate_loss_ratio_query,
     generate_paid_claims_query,
 )
+from app.sql.additional_metrics import generate_additional_metric_query
 from app.sql.guard import validate_sql
 
 
@@ -39,6 +42,9 @@ def build_query(catalogue: Catalogue, request: AnalyticsRequest) -> QueryBuildRe
     elif resolved.metric.id == "claim_severity":
         plan = build_claim_severity_plan(catalogue, resolved)
         query = generate_claim_severity_query(plan)
+    elif resolved.metric.id in ADDITIONAL_METRICS:
+        plan = build_additional_metric_plan(catalogue, resolved)
+        query = generate_additional_metric_query(plan)
     else:
         raise ValueError(f"metric is not implemented yet: {resolved.metric.id}")
 

@@ -3,6 +3,7 @@ import sqlite3
 from app.analytics.models import QueryBuildResult
 from app.execution.demo_answers import build_demo_answer
 from app.execution.demo_sql import (
+    additional_metric_sql,
     claim_frequency_sql,
     claim_severity_sql,
     decline_rate_sql,
@@ -10,6 +11,7 @@ from app.execution.demo_sql import (
     loss_ratio_sql,
     paid_claims_sql,
 )
+from app.metrics.additional import ADDITIONAL_METRICS
 from app.execution.models import ExecutionDatasetSummary, ExecutionResult
 from app.execution.sqlite_seed import prepare_demo_database, to_sqlite_parameters
 from app.seeds.synthetic import build_seed_data
@@ -30,6 +32,7 @@ def execute_demo_query(
         "decline_rate",
         "incurred_claims",
         "claim_severity",
+        *ADDITIONAL_METRICS,
     }
     if build_result.provenance.metric_id not in supported_metrics:
         raise ValueError("demo execution does not support this metric yet")
@@ -71,6 +74,8 @@ def _run_demo_query(
         return _run_incurred_claims_query(connection, build_result)
     if build_result.provenance.metric_id == "claim_severity":
         return _run_claim_severity_query(connection, build_result)
+    if build_result.provenance.metric_id in ADDITIONAL_METRICS:
+        return _run_additional_metric_query(connection, build_result)
     return _run_loss_ratio_query(connection, build_result)
 
 
@@ -145,6 +150,20 @@ def _run_decline_rate_query(
 ) -> list[dict[str, object]]:
     parameters = build_result.query.parameters
     sql = decline_rate_sql(
+        has_plan_tier=bool(parameters.get("plan_tier")),
+        group_by=build_result.plan.group_by,
+    )
+    rows = connection.execute(sql, to_sqlite_parameters(parameters)).fetchall()
+    return [dict(row) for row in rows]
+
+
+def _run_additional_metric_query(
+    connection: sqlite3.Connection,
+    build_result: QueryBuildResult,
+) -> list[dict[str, object]]:
+    parameters = build_result.query.parameters
+    sql = additional_metric_sql(
+        build_result.provenance.metric_id,
         has_plan_tier=bool(parameters.get("plan_tier")),
         group_by=build_result.plan.group_by,
     )

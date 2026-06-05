@@ -6,6 +6,13 @@ from uuid import NAMESPACE_URL, UUID, uuid5
 
 Row = dict[str, object]
 
+CLAIM_SCHEDULE = (
+    (1, 1, 1),
+    (2, 2, 5),
+    (3, 4, 9),
+    (4, 10, 13),
+)
+
 
 @dataclass
 class SeedData:
@@ -69,26 +76,18 @@ def build_seed_data(
                 }
             )
 
-        if member_index % 4 == 0:
-            incurred_month = coverage_months[(member_index + 8) % len(coverage_months)]
-            _append_claim_rows(
-                data,
-                reference_providers,
-                member_id,
-                member_index,
-                incurred_month,
-                claim_number=1,
-            )
+        for claim_number, member_divisor, month_offset in CLAIM_SCHEDULE:
+            if member_index % member_divisor != 0:
+                continue
 
-        if member_index % 15 == 0:
-            incurred_month = coverage_months[(member_index + 3) % len(coverage_months)]
+            incurred_month = coverage_months[(member_index + month_offset) % len(coverage_months)]
             _append_claim_rows(
                 data,
                 reference_providers,
                 member_id,
                 member_index,
                 incurred_month,
-                claim_number=2,
+                claim_number=claim_number,
             )
 
     return data
@@ -168,8 +167,8 @@ def _append_claim_rows(
     adjudicated_date = received_date + timedelta(days=5)
     status = _claim_status(member_index, claim_number)
     paid_amount = _paid_amount(member_index, status)
-    reserve_amount = Decimal("180.00") if status == "open" else Decimal("0.00")
-    declined_amount = Decimal("320.00") if status == "declined" else Decimal("0.00")
+    reserve_amount = Decimal("450.00") if status == "open" else Decimal("0.00")
+    declined_amount = Decimal("3200.00") if status == "declined" else Decimal("0.00")
     closed_date = adjudicated_date if status in {"closed", "declined"} else None
 
     data.claims.append(
@@ -249,7 +248,7 @@ def _claim_status(member_index: int, claim_number: int) -> str:
 def _paid_amount(member_index: int, status: str) -> Decimal:
     if status == "declined":
         return Decimal("0.00")
-    return Decimal("450.00") + Decimal((member_index % 8) * 85)
+    return Decimal("2200.00") + Decimal((member_index % 8) * 225)
 
 
 def _premium_amount(plan_tier: object) -> Decimal:

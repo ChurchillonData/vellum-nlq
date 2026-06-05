@@ -3,6 +3,7 @@ from datetime import date
 import pytest
 
 from app.analytics.models import AnalyticsRequest
+from app.metrics.additional import ADDITIONAL_METRICS
 from app.semantic.resolver import ResolutionError, resolve_request
 
 
@@ -91,6 +92,20 @@ def test_resolver_returns_claim_severity_metric(health_uk_catalogue) -> None:
     assert resolved.metric.time_anchor == "claim_lines.paid_date"
 
 
+def test_resolver_returns_additional_governed_metrics(health_uk_catalogue) -> None:
+    for metric_id in ADDITIONAL_METRICS:
+        request = AnalyticsRequest(
+            metric_id=metric_id,
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 3, 31),
+            plan_tier="Comprehensive",
+        )
+
+        resolved = resolve_request(health_uk_catalogue, request)
+
+        assert resolved.metric.id == metric_id
+
+
 def test_resolver_accepts_decline_rate_consultant_specialty_grouping(
     health_uk_catalogue,
 ) -> None:
@@ -114,6 +129,7 @@ def test_resolver_accepts_common_demo_groupings(health_uk_catalogue) -> None:
         "decline_rate",
         "incurred_claims",
         "claim_severity",
+        *ADDITIONAL_METRICS,
     ):
         request = AnalyticsRequest(
             metric_id=metric_id,

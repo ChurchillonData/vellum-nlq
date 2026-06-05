@@ -10,6 +10,9 @@ Current backend supports:
 - Happy-path answer for `loss_ratio`.
 - Happy-path answers for `paid_claims`, `claim_frequency`, `incurred_claims`,
   `claim_severity`, and ungrouped `decline_rate`.
+- Happy-path answers for the expanded governed metric set: `claim_count`,
+  `covered_members`, `open_claim_rate`, `out_of_network_rate`,
+  `premium_per_member`, and `case_reserves`.
 - Grouped decline-rate answer by consultant specialty.
 - Grouped outputs by plan tier and member region for supported metrics.
 - Ambiguity response for broad claims questions.
@@ -26,7 +29,8 @@ Current backend supports:
 
 Current backend does not yet support:
 
-- The large portfolio demo dataset and performance-tuning pass.
+- Hosted production deployment.
+- Runtime SQL rewriting through partner mappings.
 
 Live Postgres integration tests are implemented as an optional suite, but they
 need a migrated and seeded database before they can run.

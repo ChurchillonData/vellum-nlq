@@ -1,4 +1,5 @@
 from app.analytics.models import AnalyticsRequest, ResolvedRequest
+from app.metrics.additional import ADDITIONAL_METRICS
 from app.planner.grouping import grouping_is_supported
 from app.semantic.models import Catalogue, MetricSpec
 
@@ -14,6 +15,7 @@ SUPPORTED_METRICS = {
     "decline_rate",
     "incurred_claims",
     "claim_severity",
+    *ADDITIONAL_METRICS,
 }
 
 
@@ -40,6 +42,8 @@ def resolve_request(catalogue: Catalogue, request: AnalyticsRequest) -> Resolved
         _validate_incurred_claims_metric(metric)
     if metric.id == "claim_severity":
         _validate_claim_severity_metric(metric)
+    if metric.id in ADDITIONAL_METRICS:
+        _validate_additional_metric(metric)
 
     return ResolvedRequest(request=request, metric=metric)
 
@@ -102,6 +106,17 @@ def _validate_claim_severity_metric(metric: MetricSpec) -> None:
 
     if set(metric.required_tables) != {"claims", "claim_lines"}:
         raise ResolutionError("claim_severity requires claims and claim_lines")
+
+
+def _validate_additional_metric(metric: MetricSpec) -> None:
+    definition = ADDITIONAL_METRICS[metric.id]
+    if metric.time_anchor != definition.time_anchor:
+        raise ResolutionError(
+            f"{metric.id} expects {definition.time_anchor}, found {metric.time_anchor}"
+        )
+    if set(metric.required_tables) != definition.required_tables:
+        expected = ", ".join(sorted(definition.required_tables))
+        raise ResolutionError(f"{metric.id} requires {expected}")
 
 
 def _validate_group_by(metric: MetricSpec, group_by: tuple[str, ...]) -> None:
