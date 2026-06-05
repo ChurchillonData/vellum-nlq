@@ -11,12 +11,12 @@ type TypewriterProfile = {
 
 const TYPEWRITER_PROFILES: Record<SqlView, TypewriterProfile> = {
   explainable: {
-    initialDelayMs: 320,
+    initialDelayMs: 3000,
     intervalMs: 32,
     targetDurationMs: 7200
   },
   compact: {
-    initialDelayMs: 320,
+    initialDelayMs: 3000,
     intervalMs: 32,
     targetDurationMs: 7200
   }
@@ -32,7 +32,7 @@ export function SqlBlock({
   const [activeView, setActiveView] = useState<SqlView>("explainable");
   const hasCompactSql = Boolean(compactSql && compactSql !== sql);
   const activeSql = activeView === "compact" && hasCompactSql ? compactSql ?? sql : sql;
-  const displayedSql = useTypewriterText(activeSql, activeView);
+  const { displayedText: displayedSql, isThinking } = useTypewriterText(activeSql, activeView);
   const lines = displayedSql.split("\n");
 
   return (
@@ -72,6 +72,15 @@ export function SqlBlock({
           </button>
         </div>
       </div>
+      {isThinking ? (
+        <div className="sql-thinking" role="status">
+          <span className="sql-thinking-orb" />
+          <span>Thinking</span>
+          <span className="sql-thinking-dots" aria-hidden="true">
+            ...
+          </span>
+        </div>
+      ) : null}
       <div className="sql-frame">
         <div className="line-numbers" aria-hidden="true">
           {lines.map((_, index) => (
@@ -94,19 +103,23 @@ export function SqlBlock({
 
 function useTypewriterText(text: string, view: SqlView) {
   const [displayedText, setDisplayedText] = useState("");
+  const [isThinking, setIsThinking] = useState(false);
 
   useEffect(() => {
     if (!text) {
       setDisplayedText("");
+      setIsThinking(false);
       return;
     }
 
     if (prefersReducedMotion()) {
       setDisplayedText(text);
+      setIsThinking(false);
       return;
     }
 
     setDisplayedText("");
+    setIsThinking(true);
     const profile = TYPEWRITER_PROFILES[view];
     let cursor = 0;
     const targetTicks = Math.max(1, Math.ceil(profile.targetDurationMs / profile.intervalMs));
@@ -115,6 +128,7 @@ function useTypewriterText(text: string, view: SqlView) {
 
     const delay = window.setTimeout(() => {
       timer = window.setInterval(() => {
+        setIsThinking(false);
         cursor = Math.min(text.length, cursor + chunkSize);
         setDisplayedText(text.slice(0, cursor));
 
@@ -132,7 +146,7 @@ function useTypewriterText(text: string, view: SqlView) {
     };
   }, [text, view]);
 
-  return displayedText;
+  return { displayedText, isThinking };
 }
 
 function prefersReducedMotion() {
