@@ -1,7 +1,6 @@
 import { Database } from "lucide-react";
 
 import type { HealthResponse } from "../types";
-import { CleanCheck } from "./CleanCheck";
 
 type ActiveView = "ask" | "catalogue" | "audit";
 
@@ -49,12 +48,6 @@ export function TopBar({ activeView, health, onChangeView }: TopBarProps) {
           <strong>{isOperational ? "active" : "offline"}</strong>
         </span>
         {dataWindow && <span className="data-window-pill">{dataWindow}</span>}
-        <span className={isOperational ? "operational-pill" : "operational-pill offline"}>
-          <span className="operational-check" aria-hidden="true">
-            <CleanCheck size="sm" />
-          </span>
-          {isOperational ? "operational" : "backend offline"}
-        </span>
       </div>
     </header>
   );

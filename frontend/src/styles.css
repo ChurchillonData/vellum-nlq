@@ -79,8 +79,7 @@ button:disabled {
 .status-group,
 .nav-tabs,
 .catalogue-pill,
-.data-window-pill,
-.operational-pill {
+.data-window-pill {
   display: flex;
   align-items: center;
 }
@@ -130,8 +129,7 @@ button:disabled {
 }
 
 .catalogue-pill,
-.data-window-pill,
-.operational-pill {
+.data-window-pill {
   gap: 10px;
   white-space: nowrap;
   color: #101827;
@@ -172,25 +170,6 @@ button:disabled {
 }
 
 .active-dot.offline {
-  background: var(--solid-amber);
-}
-
-.operational-pill.offline {
-  color: #7c4a03;
-}
-
-.operational-check {
-  display: inline-flex;
-  width: 22px;
-  height: 22px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: var(--teal);
-  color: #fff;
-}
-
-.operational-pill.offline .operational-check {
   background: var(--solid-amber);
 }
 
@@ -1056,7 +1035,7 @@ kbd {
   position: relative;
   display: flex;
   min-height: 100%;
-  align-items: center;
+  align-items: flex-start;
   gap: 4px;
   overflow: hidden;
   background: var(--code);
