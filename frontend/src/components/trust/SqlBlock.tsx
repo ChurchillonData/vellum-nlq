@@ -72,30 +72,30 @@ export function SqlBlock({
           </button>
         </div>
       </div>
-      {isThinking ? (
-        <div className="sql-thinking" role="status">
-          <span className="sql-thinking-orb" />
-          <span>Thinking</span>
-          <span className="sql-thinking-dots" aria-hidden="true">
-            ...
-          </span>
-        </div>
-      ) : null}
       <div className="sql-frame">
         <div className="line-numbers" aria-hidden="true">
           {lines.map((_, index) => (
             <span key={index}>{index + 1}</span>
           ))}
         </div>
-        <pre className="sql-block">
-          {lines.map((line, index) => (
-            <span className="sql-line" key={`${line}-${index}`}>
-              {highlightSqlLine(line)}
-              {index < lines.length - 1 ? "\n" : ""}
+        {isThinking ? (
+          <div className="sql-thinking" role="status">
+            <span>Thinking</span>
+            <span className="sql-thinking-dots" aria-hidden="true">
+              ...
             </span>
-          ))}
-          {displayedSql.length < activeSql.length ? <span className="sql-caret" /> : null}
-        </pre>
+          </div>
+        ) : (
+          <pre className="sql-block">
+            {lines.map((line, index) => (
+              <span className="sql-line" key={`${line}-${index}`}>
+                {highlightSqlLine(line)}
+                {index < lines.length - 1 ? "\n" : ""}
+              </span>
+            ))}
+            {displayedSql.length < activeSql.length ? <span className="sql-caret" /> : null}
+          </pre>
+        )}
       </div>
     </div>
   );

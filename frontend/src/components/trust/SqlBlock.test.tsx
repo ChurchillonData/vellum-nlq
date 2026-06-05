@@ -36,15 +36,15 @@ describe("SqlBlock", () => {
   it("reveals generated SQL with a typewriter effect", () => {
     vi.useFakeTimers();
     const { container } = render(<SqlBlock sql={explainableSql} />);
-    const sqlBlock = container.querySelector(".sql-block");
 
     expect(screen.getByRole("status")).toHaveTextContent("Thinking");
-    expect(sqlBlock?.textContent).not.toContain(explainableSql);
+    expect(container.querySelector(".sql-block")).toBeNull();
 
     act(() => {
       vi.advanceTimersByTime(5000);
     });
 
+    const sqlBlock = container.querySelector(".sql-block");
     expect(sqlBlock?.textContent).toContain(explainableSql);
   });
 });
