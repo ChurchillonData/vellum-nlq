@@ -3,8 +3,24 @@ import { useEffect, useState, type ReactNode } from "react";
 
 type SqlView = "explainable" | "compact";
 
-const SQL_TYPE_INTERVAL_MS = 24;
-const SQL_TYPE_TARGET_TICKS = 160;
+type TypewriterProfile = {
+  initialDelayMs: number;
+  intervalMs: number;
+  targetDurationMs: number;
+};
+
+const TYPEWRITER_PROFILES: Record<SqlView, TypewriterProfile> = {
+  explainable: {
+    initialDelayMs: 320,
+    intervalMs: 32,
+    targetDurationMs: 7200
+  },
+  compact: {
+    initialDelayMs: 160,
+    intervalMs: 24,
+    targetDurationMs: 2200
+  }
+};
 
 export function SqlBlock({
   compactSql,
@@ -16,7 +32,7 @@ export function SqlBlock({
   const [activeView, setActiveView] = useState<SqlView>("explainable");
   const hasCompactSql = Boolean(compactSql && compactSql !== sql);
   const activeSql = activeView === "compact" && hasCompactSql ? compactSql ?? sql : sql;
-  const displayedSql = useTypewriterText(activeSql);
+  const displayedSql = useTypewriterText(activeSql, activeView);
   const lines = displayedSql.split("\n");
 
   return (
@@ -76,7 +92,7 @@ export function SqlBlock({
   );
 }
 
-function useTypewriterText(text: string) {
+function useTypewriterText(text: string, view: SqlView) {
   const [displayedText, setDisplayedText] = useState("");
 
   useEffect(() => {
@@ -91,19 +107,30 @@ function useTypewriterText(text: string) {
     }
 
     setDisplayedText("");
+    const profile = TYPEWRITER_PROFILES[view];
     let cursor = 0;
-    const chunkSize = Math.max(1, Math.ceil(text.length / SQL_TYPE_TARGET_TICKS));
-    const timer = window.setInterval(() => {
-      cursor = Math.min(text.length, cursor + chunkSize);
-      setDisplayedText(text.slice(0, cursor));
+    const targetTicks = Math.max(1, Math.ceil(profile.targetDurationMs / profile.intervalMs));
+    const chunkSize = Math.max(1, Math.ceil(text.length / targetTicks));
+    let timer: number | undefined;
 
-      if (cursor >= text.length) {
+    const delay = window.setTimeout(() => {
+      timer = window.setInterval(() => {
+        cursor = Math.min(text.length, cursor + chunkSize);
+        setDisplayedText(text.slice(0, cursor));
+
+        if (cursor >= text.length && timer !== undefined) {
+          window.clearInterval(timer);
+        }
+      }, profile.intervalMs);
+    }, profile.initialDelayMs);
+
+    return () => {
+      window.clearTimeout(delay);
+      if (timer !== undefined) {
         window.clearInterval(timer);
       }
-    }, SQL_TYPE_INTERVAL_MS);
-
-    return () => window.clearInterval(timer);
-  }, [text]);
+    };
+  }, [text, view]);
 
   return displayedText;
 }

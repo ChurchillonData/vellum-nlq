@@ -41,7 +41,7 @@ describe("SqlBlock", () => {
     expect(sqlBlock?.textContent).not.toContain(explainableSql);
 
     act(() => {
-      vi.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(2000);
     });
 
     expect(sqlBlock?.textContent).toContain(explainableSql);
