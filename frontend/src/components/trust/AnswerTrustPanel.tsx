@@ -67,6 +67,7 @@ export function AnswerTrustPanel({
       {validationPassed ? (
         <SqlBlock
           compactSql={answer?.compact_sql}
+          revealKey={queryId}
           sql={answer?.sql ?? "-- No SQL generated for this state."}
         />
       ) : (

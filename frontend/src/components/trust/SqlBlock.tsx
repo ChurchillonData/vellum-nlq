@@ -24,15 +24,21 @@ const TYPEWRITER_PROFILES: Record<SqlView, TypewriterProfile> = {
 
 export function SqlBlock({
   compactSql,
+  revealKey,
   sql
 }: {
   compactSql?: string | null;
+  revealKey?: string;
   sql: string;
 }) {
   const [activeView, setActiveView] = useState<SqlView>("explainable");
   const hasCompactSql = Boolean(compactSql && compactSql !== sql);
   const activeSql = activeView === "compact" && hasCompactSql ? compactSql ?? sql : sql;
-  const { displayedText: displayedSql, isThinking } = useTypewriterText(activeSql, activeView);
+  const { displayedText: displayedSql, isThinking } = useTypewriterText(
+    activeSql,
+    activeView,
+    revealKey
+  );
   const lines = displayedSql.split("\n");
 
   return (
@@ -101,7 +107,9 @@ export function SqlBlock({
   );
 }
 
-function useTypewriterText(text: string, view: SqlView) {
+const revealedSqlKeys = new Set<string>();
+
+function useTypewriterText(text: string, view: SqlView, revealKey?: string) {
   const [displayedText, setDisplayedText] = useState("");
   const [isThinking, setIsThinking] = useState(false);
 
@@ -112,7 +120,16 @@ function useTypewriterText(text: string, view: SqlView) {
       return;
     }
 
+    const currentRevealKey = buildRevealKey(text, view, revealKey);
+
+    if (revealedSqlKeys.has(currentRevealKey)) {
+      setDisplayedText(text);
+      setIsThinking(false);
+      return;
+    }
+
     if (prefersReducedMotion()) {
+      revealedSqlKeys.add(currentRevealKey);
       setDisplayedText(text);
       setIsThinking(false);
       return;
@@ -133,6 +150,7 @@ function useTypewriterText(text: string, view: SqlView) {
         setDisplayedText(text.slice(0, cursor));
 
         if (cursor >= text.length && timer !== undefined) {
+          revealedSqlKeys.add(currentRevealKey);
           window.clearInterval(timer);
         }
       }, profile.intervalMs);
@@ -144,9 +162,13 @@ function useTypewriterText(text: string, view: SqlView) {
         window.clearInterval(timer);
       }
     };
-  }, [text, view]);
+  }, [text, view, revealKey]);
 
   return { displayedText, isThinking };
+}
+
+function buildRevealKey(text: string, view: SqlView, revealKey?: string) {
+  return `${view}:${revealKey ?? text}`;
 }
 
 function prefersReducedMotion() {

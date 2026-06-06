@@ -35,7 +35,7 @@ describe("SqlBlock", () => {
 
   it("reveals generated SQL with a typewriter effect", () => {
     vi.useFakeTimers();
-    const { container } = render(<SqlBlock sql={explainableSql} />);
+    const { container } = render(<SqlBlock revealKey="query-reveal" sql={explainableSql} />);
 
     expect(screen.getByRole("status")).toHaveTextContent("Thinking");
     expect(container.querySelector(".sql-block")).toBeNull();
@@ -46,5 +46,26 @@ describe("SqlBlock", () => {
 
     const sqlBlock = container.querySelector(".sql-block");
     expect(sqlBlock?.textContent).toContain(explainableSql);
+  });
+
+  it("does not replay the reveal after remounting the same query", () => {
+    vi.useFakeTimers();
+    const firstRender = render(<SqlBlock revealKey="query-complete" sql={explainableSql} />);
+
+    act(() => {
+      vi.advanceTimersByTime(13000);
+    });
+
+    expect(firstRender.container.querySelector(".sql-block")?.textContent).toContain(
+      explainableSql
+    );
+    firstRender.unmount();
+
+    const secondRender = render(<SqlBlock revealKey="query-complete" sql={explainableSql} />);
+
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(secondRender.container.querySelector(".sql-block")?.textContent).toContain(
+      explainableSql
+    );
   });
 });
