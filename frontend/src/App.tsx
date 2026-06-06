@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 
 import { askQuestion, fetchAskExamples, fetchHealth, fetchMappingCoverage, fetchMetrics } from "./api";
 import { AskWorkspace } from "./components/AskWorkspace";
@@ -13,6 +13,10 @@ import type {
   MappingCoverageResponse,
   Metric
 } from "./types";
+import {
+  ASK_ANSWER_COMPLETION_DELAY_MS,
+  ASK_STATE_COMPLETION_DELAY_MS
+} from "./uiTiming";
 
 type ActiveView = "ask" | "catalogue" | "audit";
 
@@ -26,6 +30,11 @@ export default function App() {
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const runCompletionTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    return () => clearRunCompletionTimer(runCompletionTimer);
+  }, []);
 
   useEffect(() => {
     fetchHealth()
@@ -73,12 +82,14 @@ export default function App() {
 
     const payload: AskRequestPayload = { question: trimmedQuestion, ...overrides };
     setQuestion(payload.question);
+    clearRunCompletionTimer(runCompletionTimer);
     setIsRunning(true);
     setNotice(null);
 
     try {
       const response = await askQuestion(payload);
       setAskResult(response);
+      finishRunAfterVisibleWork(response);
     } catch (error) {
       setAskResult(null);
       setNotice(
@@ -86,9 +97,15 @@ export default function App() {
           ? error.message
           : "Backend API is not connected. No answer was generated."
       );
-    } finally {
       setIsRunning(false);
     }
+  }
+
+  function finishRunAfterVisibleWork(response: AskResponse) {
+    const completionDelay = getRunCompletionDelay(response);
+    runCompletionTimer.current = window.setTimeout(() => {
+      setIsRunning(false);
+    }, completionDelay);
   }
 
   function runExample(example: AskExample) {
@@ -127,4 +144,27 @@ export default function App() {
       )}
     </div>
   );
+}
+
+function clearRunCompletionTimer(timer: MutableRefObject<number | undefined>) {
+  if (timer.current !== undefined) {
+    window.clearTimeout(timer.current);
+    timer.current = undefined;
+  }
+}
+
+function getRunCompletionDelay(response: AskResponse) {
+  if (prefersReducedMotion()) {
+    return 0;
+  }
+
+  if (response.status === "answer" && response.answer) {
+    return ASK_ANSWER_COMPLETION_DELAY_MS;
+  }
+
+  return ASK_STATE_COMPLETION_DELAY_MS;
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 }

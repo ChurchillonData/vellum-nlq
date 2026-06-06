@@ -1,6 +1,11 @@
 import { Code2, Copy } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
+import {
+  SQL_REVEAL_INITIAL_DELAY_MS,
+  SQL_REVEAL_TARGET_DURATION_MS
+} from "../../uiTiming";
+
 type SqlView = "explainable" | "compact";
 
 type TypewriterProfile = {
@@ -11,14 +16,14 @@ type TypewriterProfile = {
 
 const TYPEWRITER_PROFILES: Record<SqlView, TypewriterProfile> = {
   explainable: {
-    initialDelayMs: 5000,
+    initialDelayMs: SQL_REVEAL_INITIAL_DELAY_MS,
     intervalMs: 32,
-    targetDurationMs: 7200
+    targetDurationMs: SQL_REVEAL_TARGET_DURATION_MS
   },
   compact: {
-    initialDelayMs: 5000,
+    initialDelayMs: SQL_REVEAL_INITIAL_DELAY_MS,
     intervalMs: 32,
-    targetDurationMs: 7200
+    targetDurationMs: SQL_REVEAL_TARGET_DURATION_MS
   }
 };
 

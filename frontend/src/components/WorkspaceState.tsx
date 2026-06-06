@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 
 import { getDisplayRuleId, getSafetyReasonLines } from "../safetyDisplay";
 import type { AskResponse, Candidate, Metric } from "../types";
+import { RESULT_SUMMARY_REVEAL_DELAY_MS } from "../uiTiming";
 import { CleanCheck } from "./CleanCheck";
 import { HighlightedAnswer } from "./HighlightedAnswer";
 import { ResultTable } from "./ResultTable";
@@ -101,7 +102,6 @@ function AnswerState({
 }
 
 const revealedResultKeys = new Set<string>();
-const RESULT_REVEAL_DELAY_MS = 2200;
 
 function useDelayedResultReveal(revealKey: string) {
   const [isReady, setIsReady] = useState(() => revealedResultKeys.has(revealKey));
@@ -116,7 +116,7 @@ function useDelayedResultReveal(revealKey: string) {
     const timer = window.setTimeout(() => {
       revealedResultKeys.add(revealKey);
       setIsReady(true);
-    }, RESULT_REVEAL_DELAY_MS);
+    }, RESULT_SUMMARY_REVEAL_DELAY_MS);
 
     return () => window.clearTimeout(timer);
   }, [revealKey]);
