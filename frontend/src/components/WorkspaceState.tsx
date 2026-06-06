@@ -6,6 +6,7 @@ import {
   Users,
   WalletCards
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { getDisplayRuleId, getSafetyReasonLines } from "../safetyDisplay";
 import type { AskResponse, Candidate, Metric } from "../types";
@@ -61,27 +62,66 @@ function AnswerState({
       : metric?.formula.expression ??
         askResult.answer.provenance.formula ??
         "catalogue formula";
+  const isResultReady = useDelayedResultReveal(
+    askResult.answer.query_id ?? askResult.query_id
+  );
 
   return (
     <section className="result-section">
       <p className="section-label">Result summary</p>
-      <div className="answer-card">
-        <div className="answer-icon success">
-          <CleanCheck size="lg" />
+      {!isResultReady ? (
+        <div className="answer-card pending" role="status">
+          <div className="answer-icon pending" />
+          <div className="answer-content">
+            <p className="answer-loading-title">Preparing result summary</p>
+            <div className="answer-loading-line wide" />
+            <div className="answer-loading-line" />
+            <div className="answer-loading-table" />
+          </div>
         </div>
-        <div className="answer-content">
-          <p className="answer-text">
-            <HighlightedAnswer text={askResult.answer.answer} />
-          </p>
-          <ResultTable rows={askResult.answer.rows} />
-          <p className="row-note">
-            {askResult.answer.row_count} row
-            {askResult.answer.row_count === 1 ? "" : "s"} - based on {formulaText}
-          </p>
+      ) : (
+        <div className="answer-card">
+          <div className="answer-icon success">
+            <CleanCheck size="lg" />
+          </div>
+          <div className="answer-content">
+            <p className="answer-text">
+              <HighlightedAnswer text={askResult.answer.answer} />
+            </p>
+            <ResultTable rows={askResult.answer.rows} />
+            <p className="row-note">
+              {askResult.answer.row_count} row
+              {askResult.answer.row_count === 1 ? "" : "s"} - based on {formulaText}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
+}
+
+const revealedResultKeys = new Set<string>();
+const RESULT_REVEAL_DELAY_MS = 2200;
+
+function useDelayedResultReveal(revealKey: string) {
+  const [isReady, setIsReady] = useState(() => revealedResultKeys.has(revealKey));
+
+  useEffect(() => {
+    if (revealedResultKeys.has(revealKey)) {
+      setIsReady(true);
+      return;
+    }
+
+    setIsReady(false);
+    const timer = window.setTimeout(() => {
+      revealedResultKeys.add(revealKey);
+      setIsReady(true);
+    }, RESULT_REVEAL_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [revealKey]);
+
+  return isReady;
 }
 
 function ClarificationState({
