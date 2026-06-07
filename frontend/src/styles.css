@@ -1,5 +1,13 @@
 @import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800,900&display=swap");
 
+@font-face {
+  font-family: "ForumDisplay";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./assets/fonts/Forum-Regular.ttf") format("truetype");
+}
+
 :root {
   --bg: #f8f9fb;
   --panel: #fcfcfd;
@@ -24,9 +32,11 @@
   --solid-amber: #b45309;
   --solid-violet: #5b35d5;
   color: var(--text);
-  font-family:
-    Satoshi, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+  --font-display: "ForumDisplay", Georgia, "Times New Roman", serif;
+  --font-ui: Satoshi, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
+  font-family:
+    var(--font-ui);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -95,8 +105,9 @@ button:disabled {
 }
 
 .brand-name {
+  font-family: var(--font-display);
   font-size: 30px;
-  font-weight: 800;
+  font-weight: 400;
   letter-spacing: 0;
   white-space: nowrap;
 }
@@ -491,8 +502,9 @@ button:disabled {
 .answer-loading-title {
   margin: 2px 0 18px;
   color: #071529;
+  font-family: var(--font-display);
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .answer-loading-line,
@@ -619,8 +631,9 @@ td {
   align-items: center;
   gap: 13px;
   margin-bottom: 16px;
+  font-family: var(--font-display);
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 400;
 }
 
 .state-card.amber .state-heading {
@@ -1352,8 +1365,9 @@ kbd {
 .catalogue-metric-title {
   margin: 0;
   color: #071529;
+  font-family: var(--font-display);
   font-size: 30px;
-  font-weight: 760;
+  font-weight: 400;
   letter-spacing: 0;
   line-height: 1.08;
 }
@@ -2083,7 +2097,9 @@ kbd {
 .audit-hero h1 {
   margin: 0 0 16px;
   color: #071529;
+  font-family: var(--font-display);
   font-size: 34px;
+  font-weight: 400;
   letter-spacing: 0;
   line-height: 1.12;
 }
