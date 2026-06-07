@@ -864,39 +864,18 @@ td {
 
 .validation-result-check {
   display: inline-flex;
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   align-items: center;
   justify-content: center;
-  margin-right: 1px;
-  border: 1px solid #75d9b6;
+  border: 1.5px solid var(--teal);
   border-radius: 999px;
-  background: #e9fbf3;
-  color: #008f6a;
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85);
+  background: var(--teal-soft);
+  color: var(--teal);
 }
 
 .validation-result-check .clean-check-sm {
-  width: 12px;
-  height: 9px;
-}
-
-.validation-result-check .clean-check-sm::before,
-.validation-result-check .clean-check-sm::after {
-  height: 2px;
-  border-radius: 999px;
-}
-
-.validation-result-check .clean-check-sm::before {
-  width: 5px;
-  left: 1px;
-  top: 4px;
-}
-
-.validation-result-check .clean-check-sm::after {
-  width: 10px;
-  left: 4px;
-  top: 7px;
+  transform: scale(0.72);
 }
 
 .validation-result-alert {
