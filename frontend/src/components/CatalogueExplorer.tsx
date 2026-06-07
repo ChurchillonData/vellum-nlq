@@ -611,55 +611,64 @@ function renderFormulaSql(expression: string): ReactNode[] {
 
 function getMetricInsights(metric: Metric): string[] {
   if (metric.id === "paid_claims") {
-    return [
+    return addSharedInsightCards(metric, [
       "Tracks total settled claim value for the selected reporting window.",
       "Best grouped by region, claim type, provider, or plan tier.",
       "Uses paid date, so it reflects cash movement rather than incurred exposure.",
       "Useful for claims operations monitoring and payment trend reviews."
-    ];
+    ]);
   }
 
   if (metric.id === "claim_frequency") {
-    return [
+    return addSharedInsightCards(metric, [
       "Shows utilisation pressure by normalising claim counts against member exposure.",
       "Best grouped by age band, region, plan tier, or month.",
       "Helpful for spotting behaviour changes before claim cost rises fully appear.",
       "Requires clean member-month exposure to avoid misleading comparisons."
-    ];
+    ]);
   }
 
   if (metric.id === "decline_rate") {
-    return [
+    return addSharedInsightCards(metric, [
       "Tracks the share of billed service value that was declined.",
       "Best grouped by consultant specialty, plan tier, or region.",
       "Useful for spotting provider behaviour and adjudication pressure.",
       "Requires claim line and decline reason lineage for defensible review."
-    ];
+    ]);
   }
 
   if (metric.id === "claim_severity") {
-    return [
+    return addSharedInsightCards(metric, [
       "Measures average incurred cost per claim in the selected period.",
       "Best grouped by plan tier, region, or treatment category.",
       "Useful for identifying expensive claim mixes and outlier patterns.",
       "Should be interpreted alongside frequency to separate cost from usage."
-    ];
+    ]);
   }
 
   if (metric.id === "incurred_claims") {
-    return [
+    return addSharedInsightCards(metric, [
       "Shows total incurred claim value anchored by incurred date.",
       "Best grouped by plan tier, region, or month.",
       "Useful for underwriting reviews and reserve-aware performance analysis.",
       "Complements paid claims by capturing exposure before final cash settlement."
-    ];
+    ]);
   }
 
-  return [
+  return addSharedInsightCards(metric, [
     `${toTitleCase(metric.label)} is governed by the ${formatOwner(metric.owner)} catalogue owner.`,
     `Anchored on ${metric.time_anchor} for consistent period filtering.`,
     `Supports grouping by ${getAllowedDimensions(metric).join(", ")}.`,
     "Returns SQL provenance, validation results, and audit trace metadata."
+  ]);
+}
+
+function addSharedInsightCards(metric: Metric, insights: string[]): string[] {
+  return [
+    ...insights,
+    `Owned by ${formatOwner(metric.owner)} with version ${metric.version}.`,
+    "Generated SQL is checked against catalogue table, column, function, and join rules.",
+    "Every answer carries query ID, parameters, result shape, and audit provenance."
   ];
 }
 

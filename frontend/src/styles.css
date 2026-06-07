@@ -1781,7 +1781,7 @@ kbd {
 .insight-list {
   display: grid;
   align-content: space-between;
-  gap: 26px;
+  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1795,15 +1795,15 @@ kbd {
   border-radius: 8px;
   background: #fff;
   color: #29394e;
-  font-size: 16px;
-  line-height: 1.55;
-  padding: 12px 14px 12px 36px;
+  font-size: 15px;
+  line-height: 1.45;
+  padding: 10px 13px 10px 34px;
 }
 
 .insight-list li::before {
   position: absolute;
-  top: 18px;
-  left: 16px;
+  top: 17px;
+  left: 15px;
   width: 7px;
   height: 7px;
   border-radius: 999px;
