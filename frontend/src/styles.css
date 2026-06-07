@@ -1780,8 +1780,8 @@ kbd {
 
 .insight-list {
   display: grid;
-  grid-template-rows: repeat(4, minmax(0, 1fr));
-  gap: 13px;
+  align-content: space-between;
+  gap: 26px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1797,7 +1797,7 @@ kbd {
   color: #29394e;
   font-size: 16px;
   line-height: 1.55;
-  padding: 13px 14px 13px 36px;
+  padding: 12px 14px 12px 36px;
 }
 
 .insight-list li::before {
