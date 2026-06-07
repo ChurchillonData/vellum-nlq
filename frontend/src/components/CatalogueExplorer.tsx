@@ -219,11 +219,12 @@ export function CatalogueExplorer({ mappingCoverage, metrics }: CatalogueExplore
                 <Icon icon={ClipboardCopyIcon} size={16} />
               </div>
             </CatalogueBlock>
+            <MappingCoverageCard coverage={mappingCoverage} />
           </div>
         </div>
 
         <aside className="catalogue-side-stack">
-          <div className="catalogue-side-card">
+          <div className="catalogue-side-card insights-card">
             <div className="side-card-heading">
               <span className="side-card-icon icon-tone-amber">
                 <Icon icon={BulbIcon} size={24} />
@@ -238,8 +239,6 @@ export function CatalogueExplorer({ mappingCoverage, metrics }: CatalogueExplore
               ))}
             </ul>
           </div>
-
-          <MappingCoverageCard coverage={mappingCoverage} />
         </aside>
       </section>
 
@@ -394,7 +393,7 @@ export function CatalogueExplorer({ mappingCoverage, metrics }: CatalogueExplore
 function MappingCoverageCard({ coverage }: { coverage: MappingCoverageResponse | null }) {
   if (coverage === null) {
     return (
-      <div className="catalogue-side-card mapping-coverage-card">
+      <div className="mapping-coverage-panel">
         <div className="side-card-heading">
           <span className="side-card-icon icon-tone-blue">
             <Icon icon={AiNetworkIcon} size={24} />
@@ -412,7 +411,7 @@ function MappingCoverageCard({ coverage }: { coverage: MappingCoverageResponse |
   const columnPercent = percentage(coverage.mapped_columns, coverage.total_columns);
 
   return (
-    <div className="catalogue-side-card mapping-coverage-card">
+    <div className="mapping-coverage-panel">
       <div className="side-card-heading">
         <span className="side-card-icon icon-tone-blue">
           <Icon icon={AiNetworkIcon} size={24} />
