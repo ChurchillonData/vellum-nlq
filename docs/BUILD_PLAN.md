@@ -62,7 +62,7 @@ Current first slice:
   generation, returning a safety rule ID for the UI rejection state.
 - `POST /ask` now orchestrates the first product-facing flow: answer,
   clarification, or blocked state from one endpoint.
-- `GET /ask/examples` exposes twenty-six golden demo questions, and tests run each
+- `GET /ask/examples` exposes twenty-eight golden demo questions, and tests run each
   example through `/ask` to protect answer, date-range-required,
   clarification, blocked, and out-of-scope states.
 - `docs/api-contract.md` documents the current backend API surface for frontend
@@ -91,9 +91,10 @@ Current first slice:
 - Backend-v1 natural-language parsing covers quarter phrases, ISO date ranges,
   `last month`, `last six months`, year-to-date, full-year phrases, demo plan
   tiers, and supported grouping phrases.
-- Common grouped demo outputs now support `plan_tier` and `region` across the
-  supported metrics, with guarded 50-row limits.
-- `decline_rate by consultant_specialty` remains the consultant-join grouped
+- Common grouped demo outputs now support `month`, `plan_tier`, and `region`
+  across supported metrics, with guarded 50-row limits.
+- `diagnosis_category` is supported for safe line-level metrics, while
+  `decline_rate by consultant_specialty` remains the consultant-join grouped
   path for the demo.
 - Six more governed metrics now run through the shared additional-metric path:
   `claim_count`, `covered_members`, `open_claim_rate`,
@@ -234,7 +235,7 @@ Current frontend slice:
   or SQL view is shown, while copy actions still use the complete SQL text.
 - Demo question controls load from `/ask/examples` when the backend is
   available, with saved demo fallbacks for no-API local viewing.
-- Demo controls now reflect the twenty-six backend ask examples, and the
+- Demo controls now reflect the twenty-eight backend ask examples, and the
   Catalogue Explorer consumes all twelve active metrics from `/metrics`.
 - Clarification candidates can be selected in the UI; the selected
   `metric_id` is sent back to `/ask` and still goes through catalogue

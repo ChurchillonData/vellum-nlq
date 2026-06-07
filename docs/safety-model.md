@@ -85,8 +85,10 @@ The current function allowlist is deliberately narrow:
 
 - `CAST`
 - `COUNT`
+- `DATE_TRUNC`
 - `NULLIF`
 - `SUM`
+- `TIMESTAMP_TRUNC`
 
 When a legitimate metric requires a new function, it should be added with a
 small test and a clear reason.

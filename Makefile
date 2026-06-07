@@ -204,6 +204,10 @@ test-redteam: ## Run red-team question and SQL guard cases
 test-guard: ## Run implemented SQL Guard tests
 	cd $(BACKEND_DIR) && $(PYTEST) tests/unit/test_guard.py -v
 
+.PHONY: project-audit
+project-audit: ## Run cross-layer project contract audit checks
+	cd $(BACKEND_DIR) && $(PYTEST) tests/unit/test_project_audit.py -v
+
 .PHONY: test-all
 test-all: test-unit test-golden test-redteam ## Run all currently implemented tests
 	@echo "$(GREEN)Implemented test suites passed.$(RESET)"

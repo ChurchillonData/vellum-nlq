@@ -55,7 +55,8 @@ Supported inference in this phase:
   `January 2026 to March 2026`
 - relative periods: `last month`, `last six months`, and `year to date`
 - plan tiers: `Essential`, `Comprehensive`, `Executive`
-- grouping phrase: `by consultant specialty`
+- grouping phrases: `by month`, `by plan tier`, `by region`,
+  `by diagnosis category`, and `by consultant specialty`
 
 The demo dataset is rolling: it covers the last 18 completed months from the
 configured `VELLUM_DEMO_AS_OF_DATE` or the current date. Periods outside that
@@ -108,8 +109,10 @@ Answer response, trimmed to the fields most relevant to the UI:
 ```
 
 The `provenance.result_shape` object includes `columns`, `grain`, and
-`max_rows`. Ungrouped metrics currently have `max_rows: 1`. Grouped
-`decline_rate by consultant_specialty` has `max_rows: 50`.
+`max_rows`. Ungrouped metrics currently have `max_rows: 1`. Grouped metrics
+have `max_rows: 50`. Current supported grouped dimensions are metric-specific
+and include month, plan tier, region, diagnosis category for safe line-level
+metrics, and consultant specialty for decline rate.
 
 If a question resolves to a supported metric but no date range is provided or
 inferred, the endpoint returns a date-range prompt:
@@ -218,7 +221,7 @@ Out-of-scope response:
 
 ### GET `/ask/examples`
 
-Returns the twenty-six golden demo questions used by tests and future frontend
+Returns the twenty-eight golden demo questions used by tests and future frontend
 demo controls. Each example has an expected ask state.
 
 ```json
@@ -274,7 +277,7 @@ Returns metric definitions from the active semantic catalogue.
       "owner": "actuarial",
       "version": "Vellum 2.5",
       "last_reviewed": "2026-05-22",
-      "allowed_dimensions": ["plan_tier", "region"],
+      "allowed_dimensions": ["month", "plan_tier", "region"],
       "join_preview": [
         "claims.member_id -> members.id (many_to_one)",
         "premium.member_id -> members.id (many_to_one)"
@@ -348,7 +351,7 @@ Request:
 }
 ```
 
-Current grouped request:
+Grouped request examples:
 
 ```json
 {
@@ -356,6 +359,24 @@ Current grouped request:
   "start_date": "2026-01-01",
   "end_date": "2026-03-31",
   "group_by": ["consultant_specialty"]
+}
+```
+
+```json
+{
+  "metric_id": "loss_ratio",
+  "start_date": "2026-01-01",
+  "end_date": "2026-03-31",
+  "group_by": ["month"]
+}
+```
+
+```json
+{
+  "metric_id": "paid_claims",
+  "start_date": "2026-01-01",
+  "end_date": "2026-03-31",
+  "group_by": ["diagnosis_category"]
 }
 ```
 
@@ -406,8 +427,10 @@ Supported deterministic metrics in this phase:
 - `incurred_claims`
 - `claim_severity`
 
-Current grouped deterministic path:
+Current grouped deterministic paths:
 
+- `month`, `plan_tier`, and `region` where supported by the metric
+- `diagnosis_category` for safe line-level metrics
 - `decline_rate` by `consultant_specialty`
 
 Grouped rows are shaped as:

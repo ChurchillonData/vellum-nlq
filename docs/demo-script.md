@@ -13,8 +13,9 @@ Current backend supports:
 - Happy-path answers for the expanded governed metric set: `claim_count`,
   `covered_members`, `open_claim_rate`, `out_of_network_rate`,
   `premium_per_member`, and `case_reserves`.
+- Grouped outputs by month, plan tier, and member region for supported metrics.
+- Diagnosis-category grouped answers for safe line-level metrics.
 - Grouped decline-rate answer by consultant specialty.
-- Grouped outputs by plan tier and member region for supported metrics.
 - Ambiguity response for broad claims questions.
 - Out-of-scope response for forecasting questions.
 - Safety rejection for destructive database requests.

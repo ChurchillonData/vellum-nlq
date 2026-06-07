@@ -33,7 +33,8 @@ Implemented today:
   `incurred_claims`, `claim_severity`, `claim_count`, `covered_members`,
   `open_claim_rate`, `out_of_network_rate`, `premium_per_member`, and
   `case_reserves`.
-- Grouped `decline_rate` by consultant specialty.
+- Grouped outputs by month, plan tier, and region, plus diagnosis category for
+  safe line-level metrics and consultant specialty for decline rate.
 - Result-size controls for grouped outputs, with guarded row limits surfaced in
   provenance and audit records.
 - OpenAI intent-provider boundary behind configuration. OpenAI may propose
@@ -46,8 +47,9 @@ Implemented today:
   tiers, and supported grouping phrases.
 - Rolling demo data for the last 18 completed months, with future or unavailable
   historical periods rejected before SQL planning.
-- Grouped demo outputs for plan tier and region across supported metrics, plus
-  decline rate by consultant specialty.
+- Grouped demo outputs for month, plan tier, and region across supported
+  metrics; diagnosis category for line-level metrics; and decline rate by
+  consultant specialty.
 - Ambiguity, out-of-scope, and destructive-intent responses for controlled demo
   questions.
 - SQL generation and guard validation for generated SELECT statements.
@@ -65,7 +67,7 @@ Implemented today:
 - Local JSONL audit events for all `/ask` outcomes, successful previews, and
   demo executions.
 - Append-only Postgres audit table behind `VELLUM_AUDIT_BACKEND=postgres`.
-- Twenty-six `/ask/examples` items covered by unit tests.
+- Twenty-eight `/ask/examples` items covered by unit tests.
 - YAML golden question suite covering the core demo contract.
 - First red-team suite for destructive questions and unsafe SQL guard cases.
 - Scripted five-step demo command that runs the product `/ask` flow end to end.
@@ -243,7 +245,7 @@ The current SQL guard checks:
 9. Join paths match the catalogue graph.
 
 The current allowlisted functions are deliberately small: `CAST`, `COUNT`,
-`NULLIF`, and `SUM`.
+`DATE_TRUNC`, `NULLIF`, `SUM`, and SQLGlot's normalized `TIMESTAMP_TRUNC`.
 
 Future safety work should keep expanding red-team cases as new metrics and
 dimensions ship. A hosted deployment still needs an operational security
@@ -280,6 +282,7 @@ Or from the repo root:
 make test-unit
 make test-golden
 make test-redteam
+make project-audit
 make security-audit
 ```
 
@@ -327,8 +330,10 @@ python scripts/prove_postgres.py --skip-start
 The current suite covers catalogue loading, deterministic resolution, planning,
 SQL generation, SQL guard checks, demo execution, ask audit coverage, audit
 lookup, `/ask` examples, the YAML golden question contract, and the first
-red-team suite. The optional integration suite verifies the seeded Postgres
-execution path when a real database is available.
+red-team suite. The `project-audit` target adds cross-layer contract checks for
+docs, examples, grouping support, SQL guard allowlists, and frontend discovery
+controls. The optional integration suite verifies the seeded Postgres execution
+path when a real database is available.
 
 GitHub Actions runs the implemented backend test suites, checks that the
 optional integration suite skips cleanly without a live database, and builds
@@ -341,7 +346,7 @@ Full request and response examples are documented in `docs/api-contract.md`.
 | Endpoint | Purpose |
 |---|---|
 | `POST /ask` | Product-facing ask flow. Returns answer, clarification, blocked, or out-of-scope state. |
-| `GET /ask/examples` | Twenty-six demo questions used by tests and future UI controls. |
+| `GET /ask/examples` | Twenty-eight demo questions used by tests and future UI controls. |
 | `GET /metrics` | Active catalogue metric definitions with formulas and versions. |
 | `GET /mappings/{partner}/coverage` | Validated partner schema mapping coverage. |
 | `POST /queries/resolve` | Deterministic metric resolution and early safety blocking. |

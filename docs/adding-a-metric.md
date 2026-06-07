@@ -166,7 +166,11 @@ The first run creates the snapshot. Subsequent runs compare against it. If the S
 
 Open `backend/tests/unit/test_guard.py`. Confirm the new metric does not introduce any column or join references that the guard would reject. If it does, you have either a bug in the metric definition or a bug in the allowlist. Fix the right one.
 
-If the new metric requires a function call that is not on the function allowlist (for example, `PERCENTILE_CONT` for a median calculation), update `backend/app/sql/allowlist.py` to add that function, and add a unit test that proves the guard accepts it and another that proves it still rejects unsafe functions.
+If the new metric requires a function call that is not on the function allowlist
+(for example, `PERCENTILE_CONT` for a median calculation), update
+`backend/app/sql/guard_catalogue.py` to add that function, and add a unit test
+that proves the guard accepts it and another that proves it still rejects unsafe
+functions.
 
 **Checkpoint.** `make test-guard` passes.
 
