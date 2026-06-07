@@ -1,6 +1,8 @@
 import {
   BarChart3,
   BotMessageSquare,
+  CalendarDays,
+  ClipboardList,
   Play,
   Sparkles,
   Users
@@ -43,8 +45,21 @@ export function AskWorkspace({
   const planTierExample =
     askExamples.find((example) => example.id === "answer_loss_ratio_by_plan_tier") ??
     askExamples.find((example) => example.expected_status === "answer");
+  const monthExample = askExamples.find(
+    (example) => example.id === "answer_loss_ratio_by_month"
+  );
+  const diagnosisExample = askExamples.find(
+    (example) => example.id === "answer_paid_claims_by_diagnosis"
+  );
   const clarificationDefaults = getClarificationDefaults(askResult);
-  const extraExamples = askExamples.slice(2);
+  const visibleExampleIds = new Set(
+    [
+      planTierExample?.id,
+      monthExample?.id,
+      diagnosisExample?.id
+    ].filter(Boolean)
+  );
+  const extraExamples = askExamples.filter((example) => !visibleExampleIds.has(example.id));
 
   return (
     <main className="ask-layout">
@@ -100,6 +115,34 @@ export function AskWorkspace({
             >
               <Users size={16} />
               average claim amount per member
+            </button>
+            <button
+              className="suggestion"
+              onClick={() => {
+                if (monthExample) {
+                  onRunExample(monthExample);
+                } else {
+                  onRun("Show loss ratio by month in Q1 2026.");
+                }
+              }}
+              type="button"
+            >
+              <CalendarDays size={16} />
+              loss ratio by month
+            </button>
+            <button
+              className="suggestion"
+              onClick={() => {
+                if (diagnosisExample) {
+                  onRunExample(diagnosisExample);
+                } else {
+                  onRun("Show paid claims by diagnosis category in Q1 2026.");
+                }
+              }}
+              type="button"
+            >
+              <ClipboardList size={16} />
+              paid claims by diagnosis
             </button>
             {extraExamples.length > 0 && (
               <button
