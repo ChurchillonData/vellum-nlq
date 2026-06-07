@@ -56,6 +56,7 @@ def _create_demo_tables(connection: sqlite3.Connection) -> None:
             claim_id TEXT NOT NULL,
             provider_id TEXT NOT NULL,
             service_date TEXT NOT NULL,
+            diagnosis_category TEXT NOT NULL,
             paid_date TEXT,
             net_paid_amount REAL NOT NULL,
             declined_amount REAL NOT NULL
@@ -157,12 +158,12 @@ def _insert_demo_rows(connection: sqlite3.Connection, seed_data: SeedData) -> No
     connection.executemany(
         """
         INSERT INTO claim_lines (
-            id, claim_id, provider_id, service_date, paid_date, net_paid_amount,
-            declined_amount
+            id, claim_id, provider_id, service_date, diagnosis_category, paid_date,
+            net_paid_amount, declined_amount
         )
         VALUES (
-            :id, :claim_id, :provider_id, :service_date, :paid_date,
-            :net_paid_amount, :declined_amount
+            :id, :claim_id, :provider_id, :service_date, :diagnosis_category,
+            :paid_date, :net_paid_amount, :declined_amount
         )
         """,
         [
@@ -173,6 +174,7 @@ def _insert_demo_rows(connection: sqlite3.Connection, seed_data: SeedData) -> No
                     "claim_id",
                     "provider_id",
                     "service_date",
+                    "diagnosis_category",
                     "paid_date",
                     "net_paid_amount",
                     "declined_amount",

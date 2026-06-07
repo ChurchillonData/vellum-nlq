@@ -41,13 +41,20 @@ def generate_loss_ratio_query(plan: LogicalPlan) -> GeneratedQuery:
         premium_filters.append(plans.c.plan_tier == plan_tier)
 
     group_key = _group_key(plan)
-    group_expression = _member_group_expression(group_key)
+    claim_group_expression = _member_group_expression(
+        group_key,
+        date_column=claims.c.incurred_date,
+    )
+    premium_group_expression = _member_group_expression(
+        group_key,
+        date_column=premium.c.coverage_month,
+    )
 
     claim_columns = [func.sum(claims.c.net_incurred_amount).label("incurred_claims")]
     premium_columns = [func.sum(premium.c.earned_amount).label("earned_premium")]
-    if group_expression is not None:
-        claim_columns.insert(0, group_expression.label(group_key))
-        premium_columns.insert(0, group_expression.label(group_key))
+    if claim_group_expression is not None and premium_group_expression is not None:
+        claim_columns.insert(0, claim_group_expression.label(group_key))
+        premium_columns.insert(0, premium_group_expression.label(group_key))
 
     claim_totals_query = (
         select(*claim_columns)
@@ -60,9 +67,9 @@ def generate_loss_ratio_query(plan: LogicalPlan) -> GeneratedQuery:
         .where(*premium_filters)
     )
 
-    if group_expression is not None:
-        claim_totals_query = claim_totals_query.group_by(group_expression)
-        premium_totals_query = premium_totals_query.group_by(group_expression)
+    if claim_group_expression is not None and premium_group_expression is not None:
+        claim_totals_query = claim_totals_query.group_by(claim_group_expression)
+        premium_totals_query = premium_totals_query.group_by(premium_group_expression)
 
     claim_totals = claim_totals_query.cte("claim_totals")
     premium_totals = premium_totals_query.cte("premium_totals")
@@ -120,6 +127,7 @@ def generate_paid_claims_query(plan: LogicalPlan) -> GeneratedQuery:
         source=source,
         filters=filters,
         metric_column=paid_claims,
+        date_column=claim_lines.c.paid_date,
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())
@@ -150,6 +158,7 @@ def generate_incurred_claims_query(plan: LogicalPlan) -> GeneratedQuery:
         source=source,
         filters=filters,
         metric_column=incurred_claims,
+        date_column=claims.c.incurred_date,
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())
@@ -184,13 +193,20 @@ def generate_claim_frequency_query(plan: LogicalPlan) -> GeneratedQuery:
         enrolment_filters.append(plans.c.plan_tier == plan_tier)
 
     group_key = _group_key(plan)
-    group_expression = _member_group_expression(group_key)
+    claim_group_expression = _member_group_expression(
+        group_key,
+        date_column=claims.c.incurred_date,
+    )
+    member_month_group_expression = _member_group_expression(
+        group_key,
+        date_column=enrolment_months.c.coverage_month,
+    )
 
     claim_columns = [func.count(claims.c.id.distinct()).label("claim_count")]
     member_month_columns = [func.sum(enrolment_months.c.member_months).label("member_months")]
-    if group_expression is not None:
-        claim_columns.insert(0, group_expression.label(group_key))
-        member_month_columns.insert(0, group_expression.label(group_key))
+    if claim_group_expression is not None and member_month_group_expression is not None:
+        claim_columns.insert(0, claim_group_expression.label(group_key))
+        member_month_columns.insert(0, member_month_group_expression.label(group_key))
 
     claim_counts_query = (
         select(*claim_columns)
@@ -203,9 +219,9 @@ def generate_claim_frequency_query(plan: LogicalPlan) -> GeneratedQuery:
         .where(*enrolment_filters)
     )
 
-    if group_expression is not None:
-        claim_counts_query = claim_counts_query.group_by(group_expression)
-        member_months_query = member_months_query.group_by(group_expression)
+    if claim_group_expression is not None and member_month_group_expression is not None:
+        claim_counts_query = claim_counts_query.group_by(claim_group_expression)
+        member_months_query = member_months_query.group_by(member_month_group_expression)
 
     claim_counts = claim_counts_query.cte("claim_counts")
     member_months = member_months_query.cte("member_months")
@@ -263,6 +279,7 @@ def generate_claim_severity_query(plan: LogicalPlan) -> GeneratedQuery:
         source=source,
         filters=filters,
         metric_column=claim_severity,
+        date_column=claim_lines.c.paid_date,
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())
@@ -301,6 +318,7 @@ def generate_decline_rate_query(plan: LogicalPlan) -> GeneratedQuery:
         source=source,
         filters=filters,
         metric_column=decline_rate,
+        date_column=claim_lines.c.service_date,
     )
 
     compiled = statement.compile(dialect=postgresql.dialect())
@@ -393,9 +411,9 @@ def _compact_metric_definition(metric_id: str) -> dict[str, str]:
     return definitions[metric_id]
 
 
-def _aggregate_statement(plan: LogicalPlan, source, filters, metric_column):
+def _aggregate_statement(plan: LogicalPlan, source, filters, metric_column, date_column):
     group_key = _group_key(plan)
-    group_expression = _group_expression(group_key)
+    group_expression = _group_expression(group_key, date_column)
     if group_expression is None:
         return select(metric_column).select_from(source).where(*filters)
 
@@ -413,13 +431,17 @@ def _group_key(plan: LogicalPlan) -> str | None:
     return plan.group_by[0] if plan.group_by else None
 
 
-def _group_expression(group_key: str | None):
+def _group_expression(group_key: str | None, date_column=None):
     if group_key == "consultant_specialty":
         return providers.c.specialty
-    return _member_group_expression(group_key)
+    if group_key == "diagnosis_category":
+        return claim_lines.c.diagnosis_category
+    return _member_group_expression(group_key, date_column=date_column)
 
 
-def _member_group_expression(group_key: str | None):
+def _member_group_expression(group_key: str | None, date_column=None):
+    if group_key == "month" and date_column is not None:
+        return func.date_trunc("month", date_column)
     if group_key == "plan_tier":
         return plans.c.plan_tier
     if group_key == "region":

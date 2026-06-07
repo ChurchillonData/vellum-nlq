@@ -4,7 +4,7 @@ from typing import Any
 
 import yaml
 
-from app.planner.grouping import COMMON_GROUPINGS
+from app.planner.grouping import supported_groupings_for_metric
 from app.semantic.models import Catalogue, JoinsFile, MetricSpec, TablesFile, TableSpec
 
 
@@ -137,9 +137,9 @@ def main() -> None:
 
 def supported_dimensions(catalogue: Catalogue) -> list[str]:
     """Return dimensions currently supported by deterministic grouped analytics."""
-    dimensions = set(COMMON_GROUPINGS)
-    if "decline_rate" in catalogue.metrics:
-        dimensions.add("consultant_specialty")
+    dimensions = set()
+    for metric_id in catalogue.metrics:
+        dimensions.update(supported_groupings_for_metric(metric_id))
     return sorted(dimensions)
 
 

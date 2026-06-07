@@ -58,7 +58,7 @@ def test_openai_provider_sanitizes_output_against_catalogue(
             start_date="2026-01-01",
             end_date="2026-03-31",
             plan_tier="Unknown tier",
-            group_by=["consultant_specialty", "unknown_dimension"],
+            group_by=["month", "diagnosis_category", "unknown_dimension"],
             confidence=0.95,
         )
     )
@@ -77,7 +77,7 @@ def test_openai_provider_sanitizes_output_against_catalogue(
     assert result.start_date.isoformat() == "2026-01-01"
     assert result.end_date.isoformat() == "2026-03-31"
     assert result.plan_tier is None
-    assert result.group_by == ("consultant_specialty",)
+    assert result.group_by == ("month", "diagnosis_category")
     assert result.source == "openai"
 
 

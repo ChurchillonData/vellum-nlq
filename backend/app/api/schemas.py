@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from app.analytics.models import AnalyticsRequest, QueryBuildResult
 from app.execution.models import ExecutionResult
 from app.mapping.models import MappingCoverage
-from app.planner.grouping import COMMON_GROUPINGS
+from app.planner.grouping import supported_groupings_for_metric
 from app.semantic.models import Catalogue, JoinEdge, MetricSpec
 from app.sql.guard import SqlGuardResult
 
@@ -96,10 +96,7 @@ class MappingCoverageResponse(BaseModel):
 
 def _allowed_dimensions(metric: MetricSpec) -> list[str]:
     """Return the frontend-safe grouping dimensions for one metric."""
-    dimensions = sorted(COMMON_GROUPINGS)
-    if metric.id == "decline_rate":
-        dimensions.append("consultant_specialty")
-    return dimensions
+    return supported_groupings_for_metric(metric.id)
 
 
 def _join_preview(metric: MetricSpec, joins: list[JoinEdge]) -> list[str]:

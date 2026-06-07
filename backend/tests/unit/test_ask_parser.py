@@ -153,6 +153,28 @@ def test_parser_extracts_region_grouping_and_relative_period() -> None:
     assert parsed.end_date == date(2026, 5, 31)
 
 
+def test_parser_extracts_month_grouping() -> None:
+    parsed = parse_ask_fields(
+        "Show loss ratio by month in Q1 2026",
+        as_of_date=AS_OF_DATE,
+    )
+
+    assert parsed.group_by == ("month",)
+    assert parsed.start_date == date(2026, 1, 1)
+    assert parsed.end_date == date(2026, 3, 31)
+
+
+def test_parser_extracts_diagnosis_category_grouping() -> None:
+    parsed = parse_ask_fields(
+        "Show paid claims by diagnosis category in Q1 2026",
+        as_of_date=AS_OF_DATE,
+    )
+
+    assert parsed.group_by == ("diagnosis_category",)
+    assert parsed.start_date == date(2026, 1, 1)
+    assert parsed.end_date == date(2026, 3, 31)
+
+
 def test_parser_extracts_year_to_date() -> None:
     parsed = parse_ask_fields("Show claim frequency year to date", as_of_date=AS_OF_DATE)
 

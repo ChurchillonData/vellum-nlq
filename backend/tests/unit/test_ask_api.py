@@ -381,8 +381,8 @@ def test_ask_examples_endpoint_returns_examples_per_state() -> None:
     statuses = [example["expected_status"] for example in body["examples"]]
 
     assert response.status_code == 200
-    assert len(body["examples"]) == 26
-    assert statuses.count("answer") == 16
+    assert len(body["examples"]) == 28
+    assert statuses.count("answer") == 18
     assert statuses.count("date_range_required") == 1
     assert statuses.count("clarification_required") == 3
     assert statuses.count("blocked") == 3

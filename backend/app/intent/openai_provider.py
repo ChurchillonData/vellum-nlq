@@ -8,7 +8,13 @@ from app.semantic.models import Catalogue
 
 
 ALLOWED_PLAN_TIERS = {"Essential", "Comprehensive", "Executive"}
-ALLOWED_GROUP_BY = {"consultant_specialty"}
+ALLOWED_GROUP_BY = {
+    "consultant_specialty",
+    "diagnosis_category",
+    "month",
+    "plan_tier",
+    "region",
+}
 
 
 class OpenAIIntentPayload(BaseModel):
@@ -131,5 +137,6 @@ def _system_prompt(catalogue: Catalogue) -> str:
         "Use metric_id only when the question clearly maps to one of these "
         f"catalogue metrics:\n{chr(10).join(metric_lines)}\n"
         "Allowed plan_tier values: Essential, Comprehensive, Executive. "
-        "Allowed group_by values: consultant_specialty."
+        "Allowed group_by values: consultant_specialty, diagnosis_category, "
+        "month, plan_tier, region."
     )

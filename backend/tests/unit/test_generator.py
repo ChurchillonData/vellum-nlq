@@ -349,3 +349,44 @@ def test_paid_claims_query_groups_by_region(health_uk_catalogue) -> None:
     assert result.provenance.result_shape.columns == ("region", "paid_claims")
     assert result.provenance.result_shape.max_rows == 50
     assert result.validation.passed is True
+
+
+def test_loss_ratio_query_groups_by_month(health_uk_catalogue) -> None:
+    request = AnalyticsRequest(
+        metric_id="loss_ratio",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+        group_by=("month",),
+    )
+
+    result = build_query(health_uk_catalogue, request)
+
+    assert "date_trunc(%(date_trunc_1)s, claims.incurred_date) AS month" in result.query.sql
+    assert "date_trunc(%(date_trunc_2)s, premium.coverage_month) AS month" in result.query.sql
+    assert result.query.parameters["date_trunc_1"] == "month"
+    assert result.query.parameters["date_trunc_2"] == "month"
+    assert result.query.parameters["result_limit"] == 50
+    assert result.provenance.result_shape.columns == ("month", "loss_ratio")
+    assert result.provenance.result_shape.grain == "month"
+    assert result.validation.passed is True
+
+
+def test_paid_claims_query_groups_by_diagnosis_category(health_uk_catalogue) -> None:
+    request = AnalyticsRequest(
+        metric_id="paid_claims",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+        group_by=("diagnosis_category",),
+    )
+
+    result = build_query(health_uk_catalogue, request)
+
+    assert "claim_lines.diagnosis_category AS diagnosis_category" in result.query.sql
+    assert "GROUP BY claim_lines.diagnosis_category" in result.query.sql
+    assert result.query.parameters["result_limit"] == 50
+    assert result.provenance.result_shape.columns == (
+        "diagnosis_category",
+        "paid_claims",
+    )
+    assert result.provenance.result_shape.grain == "diagnosis_category"
+    assert result.validation.passed is True

@@ -3,7 +3,7 @@ from sqlglot import exp
 from app.semantic.models import Catalogue, JoinEdge
 
 
-ALLOWED_FUNCTIONS = {"CAST", "COUNT", "NULLIF", "SUM"}
+ALLOWED_FUNCTIONS = {"CAST", "COUNT", "DATE_TRUNC", "NULLIF", "SUM", "TIMESTAMP_TRUNC"}
 IGNORED_FUNCTION_NODES = (exp.And, exp.Or, exp.Not)
 
 

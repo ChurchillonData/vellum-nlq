@@ -2,7 +2,14 @@ from app.analytics.models import ResultShape
 
 
 GROUPED_RESULT_LIMIT = 50
-COMMON_GROUPINGS = {"plan_tier", "region"}
+COMMON_GROUPINGS = {"month", "plan_tier", "region"}
+LINE_LEVEL_DIAGNOSIS_METRICS = {
+    "claim_severity",
+    "decline_rate",
+    "out_of_network_rate",
+    "paid_claims",
+}
+SPECIALTY_GROUPING_METRICS = {"decline_rate"}
 
 
 def result_shape(metric_id: str, group_by: tuple[str, ...]) -> ResultShape:
@@ -30,4 +37,18 @@ def grouping_is_supported(metric_id: str, group_by: tuple[str, ...]) -> bool:
     if group_key in COMMON_GROUPINGS:
         return True
 
-    return metric_id == "decline_rate" and group_key == "consultant_specialty"
+    if group_key == "diagnosis_category":
+        return metric_id in LINE_LEVEL_DIAGNOSIS_METRICS
+    if group_key == "consultant_specialty":
+        return metric_id in SPECIALTY_GROUPING_METRICS
+    return False
+
+
+def supported_groupings_for_metric(metric_id: str) -> list[str]:
+    """Return deterministic groupings exposed for one metric."""
+    dimensions = set(COMMON_GROUPINGS)
+    if metric_id in LINE_LEVEL_DIAGNOSIS_METRICS:
+        dimensions.add("diagnosis_category")
+    if metric_id in SPECIALTY_GROUPING_METRICS:
+        dimensions.add("consultant_specialty")
+    return sorted(dimensions)

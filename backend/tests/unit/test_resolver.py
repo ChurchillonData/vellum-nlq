@@ -143,6 +143,65 @@ def test_resolver_accepts_common_demo_groupings(health_uk_catalogue) -> None:
         assert resolved.request.group_by == ("plan_tier",)
 
 
+def test_resolver_accepts_month_grouping_for_governed_metrics(
+    health_uk_catalogue,
+) -> None:
+    for metric_id in (
+        "loss_ratio",
+        "paid_claims",
+        "claim_frequency",
+        "decline_rate",
+        "incurred_claims",
+        "claim_severity",
+        *ADDITIONAL_METRICS,
+    ):
+        request = AnalyticsRequest(
+            metric_id=metric_id,
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 3, 31),
+            group_by=("month",),
+        )
+
+        resolved = resolve_request(health_uk_catalogue, request)
+
+        assert resolved.request.group_by == ("month",)
+
+
+def test_resolver_limits_diagnosis_category_to_line_level_metrics(
+    health_uk_catalogue,
+) -> None:
+    for metric_id in (
+        "paid_claims",
+        "claim_severity",
+        "decline_rate",
+        "out_of_network_rate",
+    ):
+        request = AnalyticsRequest(
+            metric_id=metric_id,
+            start_date=date(2026, 1, 1),
+            end_date=date(2026, 3, 31),
+            group_by=("diagnosis_category",),
+        )
+
+        resolved = resolve_request(health_uk_catalogue, request)
+
+        assert resolved.request.group_by == ("diagnosis_category",)
+
+
+def test_resolver_rejects_diagnosis_category_for_claim_level_metric(
+    health_uk_catalogue,
+) -> None:
+    request = AnalyticsRequest(
+        metric_id="loss_ratio",
+        start_date=date(2026, 1, 1),
+        end_date=date(2026, 3, 31),
+        group_by=("diagnosis_category",),
+    )
+
+    with pytest.raises(ResolutionError, match="grouping is not supported"):
+        resolve_request(health_uk_catalogue, request)
+
+
 def test_resolver_rejects_unsupported_grouping(health_uk_catalogue) -> None:
     request = AnalyticsRequest(
         metric_id="loss_ratio",

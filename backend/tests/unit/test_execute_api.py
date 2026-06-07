@@ -239,6 +239,80 @@ def test_execute_endpoint_runs_decline_rate_grouped_by_specialty(tmp_path) -> No
     assert "by consultant specialty" in body["answer"]
 
 
+def test_execute_endpoint_runs_loss_ratio_grouped_by_month(tmp_path) -> None:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    original_member_count = settings.demo_member_count
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+    settings.demo_member_count = 120
+
+    try:
+        response = TestClient(app).post(
+            "/queries/execute",
+            json={
+                "metric_id": "loss_ratio",
+                "start_date": "2026-01-01",
+                "end_date": "2026-03-31",
+                "group_by": ["month"],
+            },
+        )
+    finally:
+        settings.audit_log_path = original_path
+        settings.demo_member_count = original_member_count
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["metric_id"] == "loss_ratio"
+    assert body["row_count"] > 1
+    assert "month" in body["rows"][0]
+    assert body["provenance"]["result_shape"] == {
+        "columns": ["month", "loss_ratio"],
+        "grain": "month",
+        "max_rows": 50,
+    }
+    assert body["validation"]["passed"] is True
+    assert "by month" in body["answer"]
+
+
+def test_execute_endpoint_runs_paid_claims_grouped_by_diagnosis_category(
+    tmp_path,
+) -> None:
+    settings = get_settings()
+    original_path = settings.audit_log_path
+    original_member_count = settings.demo_member_count
+    settings.audit_log_path = tmp_path / "audit-log.jsonl"
+    settings.demo_member_count = 120
+
+    try:
+        response = TestClient(app).post(
+            "/queries/execute",
+            json={
+                "metric_id": "paid_claims",
+                "start_date": "2026-01-01",
+                "end_date": "2026-03-31",
+                "group_by": ["diagnosis_category"],
+            },
+        )
+    finally:
+        settings.audit_log_path = original_path
+        settings.demo_member_count = original_member_count
+
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["metric_id"] == "paid_claims"
+    assert body["row_count"] > 1
+    assert "diagnosis_category" in body["rows"][0]
+    assert body["provenance"]["result_shape"] == {
+        "columns": ["diagnosis_category", "paid_claims"],
+        "grain": "diagnosis_category",
+        "max_rows": 50,
+    }
+    assert body["validation"]["passed"] is True
+    assert "by diagnosis category" in body["answer"]
+
+
 def test_execute_endpoint_writes_execution_audit_event(tmp_path) -> None:
     settings = get_settings()
     original_path = settings.audit_log_path

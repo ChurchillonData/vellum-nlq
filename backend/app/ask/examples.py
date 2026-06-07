@@ -90,6 +90,18 @@ GOLDEN_ASK_EXAMPLES = (
         expected_status="answer",
     ),
     AskExample(
+        id="answer_loss_ratio_by_month",
+        label="Loss ratio by month",
+        question="Show loss ratio by month in Q1 2026.",
+        expected_status="answer",
+    ),
+    AskExample(
+        id="answer_paid_claims_by_diagnosis",
+        label="Paid claims by diagnosis",
+        question="Show paid claims by diagnosis category in Q1 2026.",
+        expected_status="answer",
+    ),
+    AskExample(
         id="answer_claim_frequency_ytd",
         label="Claim frequency YTD",
         question="Show claim frequency year to date.",

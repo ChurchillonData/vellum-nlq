@@ -45,6 +45,8 @@ def test_catalogue_inspection_helpers_match_makefile_targets() -> None:
 
     assert supported_dimensions(catalogue) == [
         "consultant_specialty",
+        "diagnosis_category",
+        "month",
         "plan_tier",
         "region",
     ]

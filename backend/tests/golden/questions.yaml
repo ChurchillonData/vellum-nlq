@@ -89,6 +89,30 @@ questions:
         - region
         - paid_claims
 
+  - id: answer_loss_ratio_by_month
+    question: Show loss ratio by month in Q1 2026.
+    expects:
+      status: answer
+      metric_id: loss_ratio
+      group_by:
+        - month
+      min_row_count: 1
+      result_columns:
+        - month
+        - loss_ratio
+
+  - id: answer_paid_claims_by_diagnosis
+    question: Show paid claims by diagnosis category in Q1 2026.
+    expects:
+      status: answer
+      metric_id: paid_claims
+      group_by:
+        - diagnosis_category
+      min_row_count: 1
+      result_columns:
+        - diagnosis_category
+        - paid_claims
+
   - id: answer_claim_count_q1
     question: Show claim count in Q1 2026.
     expects:

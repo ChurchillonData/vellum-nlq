@@ -67,6 +67,25 @@ def _parse_group_by(question: str) -> tuple[str, ...]:
     if any(re.search(pattern, normalized) for pattern in region_patterns):
         return ("region",)
 
+    month_patterns = (
+        r"\bby\s+month\b",
+        r"\bper\s+month\b",
+        r"\bmonthly\b",
+        r"\bby\s+reporting\s+month\b",
+    )
+    if any(re.search(pattern, normalized) for pattern in month_patterns):
+        return ("month",)
+
+    diagnosis_patterns = (
+        r"\bby\s+diagnosis\b",
+        r"\bby\s+diagnosis\s+category\b",
+        r"\bper\s+diagnosis\b",
+        r"\bper\s+diagnosis\s+category\b",
+        r"\bby\s+condition\s+category\b",
+    )
+    if any(re.search(pattern, normalized) for pattern in diagnosis_patterns):
+        return ("diagnosis_category",)
+
     specialty_patterns = (
         r"\bby\s+consultant\s+specialty\b",
         r"\bby\s+specialty\b",

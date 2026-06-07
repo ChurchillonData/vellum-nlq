@@ -31,7 +31,7 @@ def generate_additional_metric_query(plan: LogicalPlan) -> GeneratedQuery:
         plan_tier = bindparam("plan_tier", plan.plan_tier, type_=String())
         filters.append(plans.c.plan_tier == plan_tier)
 
-    statement = _aggregate_statement(plan, source, filters, metric_column)
+    statement = _aggregate_statement(plan, source, filters, metric_column, date_column)
     compiled = statement.compile(dialect=postgresql.dialect())
     return GeneratedQuery(
         sql=str(compiled),
@@ -110,9 +110,9 @@ def _metric_column(metric_id: str):
     raise ValueError(f"unsupported additional metric: {metric_id}")
 
 
-def _aggregate_statement(plan: LogicalPlan, source, filters, metric_column):
+def _aggregate_statement(plan: LogicalPlan, source, filters, metric_column, date_column):
     group_key = plan.group_by[0] if plan.group_by else None
-    group_expression = _group_expression(group_key)
+    group_expression = _group_expression(group_key, date_column)
     if group_expression is None:
         return select(metric_column).select_from(source).where(*filters)
 
@@ -126,11 +126,15 @@ def _aggregate_statement(plan: LogicalPlan, source, filters, metric_column):
     )
 
 
-def _group_expression(group_key: str | None):
+def _group_expression(group_key: str | None, date_column=None):
+    if group_key == "month" and date_column is not None:
+        return func.date_trunc("month", date_column)
     if group_key == "plan_tier":
         return plans.c.plan_tier
     if group_key == "region":
         return members.c.region
+    if group_key == "diagnosis_category":
+        return claim_lines.c.diagnosis_category
     return None
 
 
