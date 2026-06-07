@@ -27,7 +27,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { IconSvgElement } from "@hugeicons/react";
 import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import type { MappingCoverageResponse, Metric } from "../types";
 
@@ -35,6 +35,8 @@ type CatalogueExplorerProps = {
   mappingCoverage: MappingCoverageResponse | null;
   metrics: Metric[];
 };
+
+const REGISTRY_PAGE_SIZE = 5;
 
 type SynonymTab = "business" | "analyst" | "phrasing";
 
@@ -47,6 +49,7 @@ type SynonymGroup = {
 export function CatalogueExplorer({ mappingCoverage, metrics }: CatalogueExplorerProps) {
   const [isMetricMenuOpen, setIsMetricMenuOpen] = useState(false);
   const [isSynonymCardOpen, setIsSynonymCardOpen] = useState(false);
+  const [registryPage, setRegistryPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedId, setSelectedId] = useState("loss_ratio");
   const [synonymTab, setSynonymTab] = useState<SynonymTab>("business");
@@ -72,6 +75,17 @@ export function CatalogueExplorer({ mappingCoverage, metrics }: CatalogueExplore
         .includes(query)
     );
   }, [metrics, searchTerm]);
+  const totalRegistryPages = Math.max(1, Math.ceil(filteredMetrics.length / REGISTRY_PAGE_SIZE));
+  const currentRegistryPage = Math.min(registryPage, totalRegistryPages);
+  const registryStartIndex = (currentRegistryPage - 1) * REGISTRY_PAGE_SIZE;
+  const pagedMetrics = filteredMetrics.slice(
+    registryStartIndex,
+    registryStartIndex + REGISTRY_PAGE_SIZE
+  );
+
+  useEffect(() => {
+    setRegistryPage(1);
+  }, [searchTerm, metrics.length]);
 
   if (!selectedMetric) {
     return <main className="catalogue-hub">No catalogue loaded.</main>;
@@ -247,11 +261,15 @@ export function CatalogueExplorer({ mappingCoverage, metrics }: CatalogueExplore
                 value={searchTerm}
               />
             </label>
-            <button type="button">
+            <button onClick={() => setSearchTerm("")} type="button">
               <Icon icon={FilterIcon} size={16} />
               All metrics
             </button>
-            <button type="button">
+            <button
+              disabled={filteredMetrics.length === 0}
+              onClick={() => exportCatalogue(filteredMetrics, mappingCoverage)}
+              type="button"
+            >
               <Icon icon={CloudDownloadIcon} size={16} />
               Export
             </button>
@@ -273,35 +291,81 @@ export function CatalogueExplorer({ mappingCoverage, metrics }: CatalogueExplore
               </tr>
             </thead>
             <tbody>
-              {filteredMetrics.map((metric, index) => (
-                <tr
-                  className={metric.id === selectedMetric.id ? "selected" : ""}
-                  key={metric.id}
-                  onClick={() => {
-                    setSelectedId(metric.id);
-                    setIsSynonymCardOpen(false);
-                    setSynonymTab("business");
-                  }}
-                >
-                  <td>
-                    <span className="registry-name">
-                      <span className="registry-metric-icon">
-                        {getMetricIcon(metric.id, index)}
+              {pagedMetrics.map((metric, index) => {
+                const absoluteIndex = registryStartIndex + index;
+
+                return (
+                  <tr
+                    className={metric.id === selectedMetric.id ? "selected" : ""}
+                    key={metric.id}
+                    onClick={() => {
+                      setSelectedId(metric.id);
+                      setIsSynonymCardOpen(false);
+                      setSynonymTab("business");
+                    }}
+                  >
+                    <td>
+                      <span className="registry-name">
+                        <span className="registry-metric-icon">
+                          {getMetricIcon(metric.id, absoluteIndex)}
+                        </span>
+                        {toTitleCase(metric.label)}
                       </span>
-                      {toTitleCase(metric.label)}
-                    </span>
-                  </td>
-                  <td>{shorten(metric.description)}</td>
-                  <td><code>{metric.id}</code></td>
-                  <td>{metric.version}</td>
-                  <td>{getAllowedDimensions(metric).join(", ")}</td>
-                  <td><span className={index === 0 ? "cert-pill gold" : "cert-pill silver"}>{index === 0 ? "Gold" : "Silver"}</span></td>
-                  <td>{formatReviewedDate(metric.last_reviewed)}</td>
-                  <td><Icon icon={ArrowRight01Icon} size={17} /></td>
-                </tr>
-              ))}
+                    </td>
+                    <td>{shorten(metric.description)}</td>
+                    <td><code>{metric.id}</code></td>
+                    <td>{metric.version}</td>
+                    <td>{getAllowedDimensions(metric).join(", ")}</td>
+                    <td>
+                      <span
+                        className={absoluteIndex === 0 ? "cert-pill gold" : "cert-pill silver"}
+                      >
+                        {absoluteIndex === 0 ? "Gold" : "Silver"}
+                      </span>
+                    </td>
+                    <td>{formatReviewedDate(metric.last_reviewed)}</td>
+                    <td><Icon icon={ArrowRight01Icon} size={17} /></td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
+        </div>
+        <div className="registry-pagination">
+          <span>
+            Showing {filteredMetrics.length === 0 ? 0 : registryStartIndex + 1}-
+            {Math.min(registryStartIndex + REGISTRY_PAGE_SIZE, filteredMetrics.length)} of{" "}
+            {filteredMetrics.length}
+          </span>
+          <div>
+            <button
+              disabled={currentRegistryPage === 1}
+              onClick={() => setRegistryPage((page) => Math.max(1, page - 1))}
+              type="button"
+            >
+              Previous
+            </button>
+            {Array.from({ length: totalRegistryPages }, (_, index) => index + 1).map((page) => (
+              <button
+                aria-current={page === currentRegistryPage ? "page" : undefined}
+                className={page === currentRegistryPage ? "active" : ""}
+                key={page}
+                onClick={() => setRegistryPage(page)}
+                type="button"
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              disabled={currentRegistryPage === totalRegistryPages}
+              onClick={() =>
+                setRegistryPage((page) => Math.min(totalRegistryPages, page + 1))
+              }
+              type="button"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </section>
 
@@ -398,6 +462,34 @@ function CoverageMeter({
       </div>
     </div>
   );
+}
+
+function exportCatalogue(
+  metrics: Metric[],
+  mappingCoverage: MappingCoverageResponse | null
+): void {
+  if (metrics.length === 0) {
+    return;
+  }
+
+  const payload = {
+    exported_at: new Date().toISOString(),
+    mapping_coverage: mappingCoverage,
+    metric_count: metrics.length,
+    metrics
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: "application/json"
+  });
+  const downloadUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = downloadUrl;
+  link.download = "vellum-health-uk-catalogue.json";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(downloadUrl);
 }
 
 function CatalogueBlock({
