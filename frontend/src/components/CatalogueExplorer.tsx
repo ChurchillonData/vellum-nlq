@@ -93,6 +93,11 @@ export function CatalogueExplorer({ mappingCoverage, metrics }: CatalogueExplore
     setRegistryPage(1);
   }, [searchTerm, metrics.length]);
 
+  function showAllMetrics(): void {
+    setSearchTerm("");
+    setRegistryPage(1);
+  }
+
   if (!selectedMetric) {
     return <main className="catalogue-hub">No catalogue loaded.</main>;
   }
@@ -266,7 +271,7 @@ export function CatalogueExplorer({ mappingCoverage, metrics }: CatalogueExplore
                 value={searchTerm}
               />
             </label>
-            <button onClick={() => setSearchTerm("")} type="button">
+            <button onClick={showAllMetrics} type="button">
               <Icon icon={FilterIcon} size={16} />
               All metrics
             </button>
