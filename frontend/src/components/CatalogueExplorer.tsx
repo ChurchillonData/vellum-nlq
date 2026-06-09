@@ -38,6 +38,11 @@ type CatalogueExplorerProps = {
 
 const REGISTRY_PAGE_SIZE = 5;
 
+type RegistryPageWindow = {
+  endIndex: number;
+  startIndex: number;
+};
+
 type SynonymTab = "business" | "analyst" | "phrasing";
 
 type SynonymGroup = {
@@ -77,11 +82,12 @@ export function CatalogueExplorer({ mappingCoverage, metrics }: CatalogueExplore
   }, [metrics, searchTerm]);
   const totalRegistryPages = Math.max(1, Math.ceil(filteredMetrics.length / REGISTRY_PAGE_SIZE));
   const currentRegistryPage = Math.min(registryPage, totalRegistryPages);
-  const registryStartIndex = (currentRegistryPage - 1) * REGISTRY_PAGE_SIZE;
-  const pagedMetrics = filteredMetrics.slice(
-    registryStartIndex,
-    registryStartIndex + REGISTRY_PAGE_SIZE
+  const registryPageWindow = getNewestRegistryPageWindow(
+    filteredMetrics.length,
+    REGISTRY_PAGE_SIZE,
+    currentRegistryPage
   );
+  const pagedMetrics = filteredMetrics.slice(registryPageWindow.startIndex, registryPageWindow.endIndex);
 
   useEffect(() => {
     setRegistryPage(1);
@@ -291,7 +297,7 @@ export function CatalogueExplorer({ mappingCoverage, metrics }: CatalogueExplore
             </thead>
             <tbody>
               {pagedMetrics.map((metric, index) => {
-                const absoluteIndex = registryStartIndex + index;
+                const absoluteIndex = registryPageWindow.startIndex + index;
 
                 return (
                   <tr
@@ -332,8 +338,8 @@ export function CatalogueExplorer({ mappingCoverage, metrics }: CatalogueExplore
         </div>
         <div className="registry-pagination">
           <span>
-            Showing {filteredMetrics.length === 0 ? 0 : registryStartIndex + 1}-
-            {Math.min(registryStartIndex + REGISTRY_PAGE_SIZE, filteredMetrics.length)} of{" "}
+            Showing {filteredMetrics.length === 0 ? 0 : registryPageWindow.startIndex + 1}-
+            {registryPageWindow.endIndex} of{" "}
             {filteredMetrics.length}
           </span>
           <div>
@@ -388,6 +394,32 @@ export function CatalogueExplorer({ mappingCoverage, metrics }: CatalogueExplore
       </section>
     </main>
   );
+}
+
+export function getNewestRegistryPageWindow(
+  totalItems: number,
+  pageSize: number,
+  pageNumber: number
+): RegistryPageWindow {
+  if (totalItems <= 0) {
+    return { endIndex: 0, startIndex: 0 };
+  }
+
+  const newestPageSize = totalItems % pageSize || pageSize;
+
+  if (pageNumber === 1) {
+    return {
+      endIndex: totalItems,
+      startIndex: totalItems - newestPageSize
+    };
+  }
+
+  const endIndex = totalItems - newestPageSize - (pageNumber - 2) * pageSize;
+
+  return {
+    endIndex,
+    startIndex: Math.max(0, endIndex - pageSize)
+  };
 }
 
 function MappingCoverageCard({ coverage }: { coverage: MappingCoverageResponse | null }) {

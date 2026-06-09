@@ -12,3 +12,5 @@ backend/.env
 backend/.local/
 frontend/node_modules/
 dist/
+.npm-cache/
+.tmp/
